@@ -1,0 +1,306 @@
+@import "tailwindcss";
+
+:root {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-soft: hsl(var(--primary-soft));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 40 33% 97%;
+    --foreground: 222 30% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 14%;
+    --primary: 218 65% 22%;
+    --primary-foreground: 40 33% 97%;
+    --primary-soft: 218 50% 94%;
+    --secondary: 215 25% 94%;
+    --secondary-foreground: 218 50% 18%;
+    --muted: 215 20% 95%;
+    --muted-foreground: 218 12% 42%;
+    --accent: 38 75% 52%;
+    --accent-foreground: 222 30% 14%;
+    --success: 145 55% 38%;
+    --success-foreground: 40 33% 97%;
+    --warning: 38 90% 50%;
+    --warning-foreground: 222 30% 14%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 40 33% 97%;
+    --ink-red: 358 78% 48%;
+    --ink-green: 145 60% 36%;
+    --ink-blue: 215 70% 38%;
+    --ink-highlight: 52 100% 70%;
+    --paper: 42 38% 96%;
+    --paper-line: 215 25% 86%;
+    --paper-shadow: 220 30% 14%;
+    --border: 215 22% 86%;
+    --input: 215 22% 86%;
+    --ring: 218 65% 22%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 35% 8%;
+    --foreground: 40 33% 95%;
+    --card: 222 32% 11%;
+    --card-foreground: 40 33% 95%;
+    --popover: 222 32% 11%;
+    --popover-foreground: 40 33% 95%;
+    --primary: 38 75% 55%;
+    --primary-foreground: 222 35% 8%;
+    --primary-soft: 218 30% 18%;
+    --secondary: 222 25% 16%;
+    --secondary-foreground: 40 33% 95%;
+    --muted: 222 22% 14%;
+    --muted-foreground: 215 15% 65%;
+    --accent: 38 75% 55%;
+    --accent-foreground: 222 35% 8%;
+    --success: 145 50% 45%;
+    --success-foreground: 40 33% 95%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 222 35% 8%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 40 33% 95%;
+    --paper: 40 15% 92%;
+    --paper-line: 215 15% 70%;
+    --paper-shadow: 0 0% 0%;
+    --border: 222 22% 18%;
+    --input: 222 22% 18%;
+    --ring: 38 75% 55%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .font-serif-paper {
+    font-family: "Source Serif 4", Georgia, serif;
+  }
+
+  .font-open-sans {
+    font-family: "Open Sans", "Inter", system-ui, -apple-system, sans-serif;
+  }
+
+  .font-handwritten {
+    font-family: "Caveat", "Comic Sans MS", cursive;
+  }
+}
+
+.theme-light-only {
+  --background: 40 33% 97%;
+  --foreground: 222 30% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 30% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 30% 14%;
+  --primary: 218 65% 22%;
+  --primary-foreground: 40 33% 97%;
+  --primary-soft: 218 50% 94%;
+  --secondary: 215 25% 94%;
+  --secondary-foreground: 218 50% 18%;
+  --muted: 215 20% 95%;
+  --muted-foreground: 218 12% 42%;
+  --accent: 38 75% 52%;
+  --accent-foreground: 222 30% 14%;
+  --success: 145 55% 38%;
+  --success-foreground: 40 33% 97%;
+  --warning: 38 90% 50%;
+  --warning-foreground: 222 30% 14%;
+  --destructive: 0 72% 48%;
+  --destructive-foreground: 40 33% 97%;
+  --ink-red: 358 78% 48%;
+  --ink-green: 145 60% 36%;
+  --ink-blue: 215 70% 38%;
+  --ink-highlight: 52 100% 70%;
+  --paper: 42 38% 96%;
+  --paper-line: 215 25% 86%;
+  --paper-shadow: 220 30% 14%;
+  --border: 215 22% 86%;
+  --input: 215 22% 86%;
+  --ring: 218 65% 22%;
+}
+
+.paperlab-shell {
+  --base: #1e1e2e;
+  --mantle: #181825;
+  --crust: #11111b;
+  --surface0: #313244;
+  --surface1: #45475a;
+  --surface2: #585b70;
+  --overlay0: #6c7086;
+  --overlay1: #7f849c;
+  --subtext0: #a6adc8;
+  --subtext1: #bac2de;
+  --text: #cdd6f4;
+  --mauve: #cba6f7;
+  --blue: #89b4fa;
+  --green: #a6e3a1;
+  --yellow: #f9e2af;
+  --red: #f38ba8;
+  --peach: #fab387;
+  --teal: #94e2d5;
+  --bg-page: #181825;
+  --bg-panel: #1e1e2e;
+  --bg-input: #313244;
+  color: var(--text);
+  background: var(--base);
+}
+
+.paperlab-shell-light {
+  --base: #f7f8fb;
+  --mantle: #eef1f6;
+  --crust: #e5e9f1;
+  --surface0: #cdd3df;
+  --surface1: #b9c1d0;
+  --surface2: #a4afc2;
+  --overlay0: #6c758a;
+  --overlay1: #5b6478;
+  --subtext0: #474f63;
+  --subtext1: #3c4458;
+  --text: #2a3143;
+  --mauve: #7f4ecb;
+  --blue: #2f6fd6;
+  --green: #2f8f5b;
+  --yellow: #b7791f;
+  --red: #c0394b;
+  --peach: #d7833d;
+  --teal: #2f8f99;
+  --bg-page: #eef1f6;
+  --bg-panel: #f7f8fb;
+  --bg-input: #dde3ee;
+  color: var(--text);
+  background: var(--base);
+}
+
+@layer components {
+  .question-part {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: start;
+  }
+
+  .question-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .question-content {
+    min-width: 0;
+    line-height: 1.55;
+  }
+
+  .subpart {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    column-gap: 8px;
+    margin-left: 42px;
+    align-items: start;
+  }
+
+  .subpart-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .subpart-content {
+    min-width: 0;
+    line-height: 1.55;
+  }
+
+  .answer-area {
+    margin-top: 16px;
+    min-width: 0;
+  }
+
+  .paper-sheet {
+    background: hsl(var(--paper));
+    box-shadow:
+      0 1px 2px hsl(var(--paper-shadow) / 0.08),
+      0 8px 24px hsl(var(--paper-shadow) / 0.12);
+    border: 1px solid hsl(var(--paper-line) / 0.6);
+  }
+
+  .paper-lines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      hsl(var(--paper-line) / 0.55) 28px
+    );
+    line-height: 28px;
+  }
+
+  .answer-input {
+    font-family: "Caveat", "Comic Sans MS", cursive;
+    color: hsl(var(--ink-blue));
+    background: transparent;
+    font-size: 1.25rem;
+  }
+
+  .answer-input:focus {
+    outline: none;
+    background: hsl(var(--ink-highlight) / 0.15);
+  }
+
+  .answer-input::placeholder {
+    color: hsl(var(--muted-foreground) / 0.5);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 0.875rem;
+  }
+
+  .marker-tick {
+    color: hsl(var(--ink-green));
+    font-family: "Caveat", cursive;
+  }
+
+  .marker-cross {
+    color: hsl(var(--ink-red));
+    font-family: "Caveat", cursive;
+  }
+
+  .marker-comment {
+    font-family: "Caveat", "Comic Sans MS", cursive;
+    color: hsl(var(--ink-red));
+  }
+}

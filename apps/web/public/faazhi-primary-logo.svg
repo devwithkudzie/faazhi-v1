@@ -1,0 +1,33 @@
+<svg width="900" height="260" viewBox="0 0 900 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Faazhi Logo</title>
+  <desc id="desc">Faazhi wordmark with universal learning book icon and tagline Learn. Practice. Excel.</desc>
+  <defs>
+    <linearGradient id="faazhiGradient" x1="44" y1="50" x2="190" y2="198" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B2A6F"/>
+      <stop offset="0.55" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: open book + learning path -->
+  <g transform="translate(44 42)">
+    <path d="M84 34C52 20 27 19 14 28V168C31 158 56 159 84 174V34Z" fill="white" stroke="url(#faazhiGradient)" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M84 34C116 20 141 19 154 28V168C137 158 112 159 84 174V34Z" fill="white" stroke="url(#faazhiGradient)" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M35 71C51 67 65 70 80 78" stroke="#0B2A6F" stroke-width="8" stroke-linecap="round"/>
+    <path d="M133 71C117 67 103 70 88 78" stroke="#0B2A6F" stroke-width="8" stroke-linecap="round"/>
+    <path d="M84 60V174" stroke="url(#faazhiGradient)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M47 121H121" stroke="#06B6D4" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="235" y="126"
+        font-family="Plus Jakarta Sans, Satoshi, Manrope, Poppins, Arial, sans-serif"
+        font-size="84" font-weight="800" letter-spacing="-3"
+        fill="#08256B">Faazhi</text>
+
+  <!-- Tagline -->
+  <text x="240" y="174"
+        font-family="Plus Jakarta Sans, Manrope, Poppins, Arial, sans-serif"
+        font-size="25" font-weight="600" letter-spacing="3"
+        fill="#334155">LEARN. PRACTICE. EXCEL.</text>
+</svg>

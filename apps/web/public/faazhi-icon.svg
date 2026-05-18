@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title id="title">Faazhi Learning Icon</title>
+  <defs>
+    <linearGradient id="faazhiGradient" x1="70" y1="80" x2="430" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B2A6F"/>
+      <stop offset="0.55" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <path d="M255 118C195 88 145 90 112 112V358C145 338 195 344 255 380V118Z" fill="white" stroke="url(#faazhiGradient)" stroke-width="32" stroke-linejoin="round"/>
+  <path d="M255 118C315 88 365 90 400 112V358C365 338 315 344 255 380V118Z" fill="white" stroke="url(#faazhiGradient)" stroke-width="32" stroke-linejoin="round"/>
+  <path d="M255 150V380" stroke="url(#faazhiGradient)" stroke-width="32" stroke-linecap="round"/>
+  <path d="M165 255H345" stroke="#06B6D4" stroke-width="34" stroke-linecap="round"/>
+</svg>
