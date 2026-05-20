@@ -1,0 +1,138 @@
+{
+  "id": "system-software-checkpoint",
+  "title": "Checkpoint",
+  "description": "Three full past-paper system software questions covering OS, translators and IDE usage.",
+  "notes": "Answer all checkpoint questions in clear exam language.",
+  "starterCode": "",
+  "questionPrompt": "Answer all system software checkpoint questions.",
+  "marks": 20,
+  "examples": [],
+  "checkpointQuestions": [
+    {
+      "id": "ss-checkpoint-1",
+      "title": "Operating System Management in Practice",
+      "paper": "9618/12/M/J/24",
+      "question": "Q6",
+      "sourceType": "past-paper",
+      "prompt": "9618/12/M/J/24 Q6: A computer has an OS. Memory management and process management are two OS tasks. Explain how these two tasks support multi-tasking.",
+      "marks": 6,
+      "objectiveRefs": [
+        "operating-systems",
+        "process-management",
+        "memory-management"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Memory management explained with multitasking context",
+          "marks": 3
+        },
+        {
+          "criterion": "Process management explained with multitasking context",
+          "marks": 3
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Memory management in multitasking"
+          },
+          {
+            "id": "b",
+            "label": "Process management in multitasking"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ss-checkpoint-2",
+      "title": "OS and Utility Software in a Student Workflow",
+      "paper": "9618/11/O/N/24",
+      "question": "Q4(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/O/N/24 Q4(a)(b): A student uses a laptop to write and email a text file. Describe OS file management tasks. Explain the need for back-up software. Explain benefits of compressing the file before emailing it.",
+      "marks": 7,
+      "objectiveRefs": [
+        "os-file-management",
+        "utility-software",
+        "compression"
+      ],
+      "markScheme": [
+        {
+          "criterion": "File management tasks accurate",
+          "marks": 2
+        },
+        {
+          "criterion": "Backup software justification",
+          "marks": 2
+        },
+        {
+          "criterion": "Compression benefits explained",
+          "marks": 3
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "OS file management tasks"
+          },
+          {
+            "id": "b",
+            "label": "Need for backup software"
+          },
+          {
+            "id": "c",
+            "label": "Benefits of compression for email attachment"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ss-checkpoint-3",
+      "title": "Translators and IDE Features",
+      "paper": "9618/12/M/J/22",
+      "question": "Q6",
+      "sourceType": "past-paper",
+      "prompt": "9618/12/M/J/22 Q6(a)(b)(c): A programmer uses language translators when writing/testing a program. Describe compiler operation. Describe interpreter operation. Explain how a typical IDE can support writing and testing.",
+      "marks": 7,
+      "objectiveRefs": [
+        "translators",
+        "ide"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Compiler operation explained",
+          "marks": 2
+        },
+        {
+          "criterion": "Interpreter operation explained",
+          "marks": 2
+        },
+        {
+          "criterion": "IDE writing/testing support explained",
+          "marks": 3
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Compiler operation"
+          },
+          {
+            "id": "b",
+            "label": "Interpreter operation"
+          },
+          {
+            "id": "c",
+            "label": "IDE support for writing/testing"
+          }
+        ]
+      }
+    }
+  ]
+}

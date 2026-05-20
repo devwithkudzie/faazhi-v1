@@ -1,0 +1,234 @@
+{
+  "id": "information-representation-learn",
+  "title": "Learn",
+  "description": "Objective-based learning blocks for number systems, binary logic, and media representation.",
+  "notes": "Learn blocks are completed when each Try It task is submitted and meets the mark threshold.",
+  "starterCode": "",
+  "questionPrompt": "Complete all Try It tasks to finish this Learn section.",
+  "marks": 12,
+  "examples": [],
+  "lessons": [
+    {
+      "id": "number-systems-and-place-value",
+      "title": "Number Systems and Place Value",
+      "slides": [
+        {
+          "id": "ir-notes-1",
+          "type": "concept",
+          "title": "Number Systems and Place Value",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "In Paper 1, you must confidently convert between binary, denary, and hexadecimal."
+            }
+          ]
+        },
+        {
+          "id": "ir-notes-1__slide-2",
+          "type": "concept",
+          "title": "Number Systems and Place Value (2/3)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Binary uses base 2 with place values 1, 2, 4, 8, 16, ...",
+                "Denary uses base 10",
+                "Hexadecimal uses base 16 with digits 0-9 and A-F"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ir-notes-1__slide-3",
+          "type": "concept",
+          "title": "Number Systems and Place Value: Key terms",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "keyword",
+              "label": "Exam Tip",
+              "text": "Show each conversion step clearly to secure method marks."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ir-example-1",
+          "type": "example",
+          "title": "Binary to Denary Worked Example",
+          "duration": 12,
+          "problem": "Convert 10110110₂ to denary.",
+          "code": "10110110₂ = 128 + 32 + 16 + 4 + 2 = 182₁₀",
+          "explanation": "Add only the place values where the bit is 1."
+        },
+        {
+          "id": "ir-tryit-1",
+          "type": "tryit",
+          "title": "Try It: Number Conversion",
+          "task": "Convert 11001101₂ to denary and hexadecimal. Show each stage.",
+          "marks": 4,
+          "expectedAnswer": "Denary: 205\nHexadecimal: CD",
+          "markScheme": [
+            {
+              "criterion": "Correct denary conversion",
+              "marks": 2
+            },
+            {
+              "criterion": "Correct hexadecimal conversion",
+              "marks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "binary-arithmetic-and-shifts",
+      "title": "Binary Arithmetic and Shifts",
+      "slides": [
+        {
+          "id": "ir-notes-2",
+          "type": "concept",
+          "title": "Binary Arithmetic and Shifts",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Binary addition and bit shifts are common in theory and short-answer questions."
+            }
+          ]
+        },
+        {
+          "id": "ir-notes-2__slide-2",
+          "type": "concept",
+          "title": "Binary Arithmetic and Shifts (2/3)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "0 + 0 = 0",
+                "0 + 1 = 1",
+                "1 + 1 = 10 (carry 1)"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ir-notes-2__slide-3",
+          "type": "concept",
+          "title": "Binary Arithmetic and Shifts: Key terms",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "keyword",
+              "label": "Shift Rule",
+              "text": "A left shift by 1 multiplies by 2. A right shift by 1 divides by 2 (integer values)."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ir-example-2",
+          "type": "example",
+          "title": "Binary Addition Example",
+          "duration": 12,
+          "problem": "Add 0111₂ and 0101₂.",
+          "code": "  0111\n+ 0101\n------\n  1100",
+          "explanation": "Carry across each column where 1 + 1 occurs."
+        },
+        {
+          "id": "ir-tryit-2",
+          "type": "tryit",
+          "title": "Try It: Binary Operations",
+          "task": "1) Add 10011010₂ and 00110101₂.\n2) Left shift 00101101₂ by 2.",
+          "marks": 4,
+          "expectedAnswer": "1) 11001111₂\n2) 10110100₂",
+          "markScheme": [
+            {
+              "criterion": "Correct binary addition result",
+              "marks": 2
+            },
+            {
+              "criterion": "Correct left-shift result",
+              "marks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "image-and-sound-representation",
+      "title": "Image and Sound Representation",
+      "slides": [
+        {
+          "id": "ir-notes-3",
+          "type": "concept",
+          "title": "Image and Sound Representation",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "You should explain file size and quality using technical terms like resolution, colour depth, sampling rate, and bit depth."
+            }
+          ]
+        },
+        {
+          "id": "ir-notes-3__slide-2",
+          "type": "concept",
+          "title": "Image and Sound Representation (2/2)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Higher image resolution increases detail and file size",
+                "Higher colour depth increases colour range and file size",
+                "Higher sampling rate and bit depth improve sound quality but increase storage"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ir-example-3",
+          "type": "example",
+          "title": "Audio Size Relationship",
+          "duration": 12,
+          "problem": "How do we estimate uncompressed audio file size?",
+          "code": "fileSize = sampleRate * bitDepth * channels * duration",
+          "explanation": "This relation helps compare quality choices against storage cost."
+        },
+        {
+          "id": "ir-tryit-3",
+          "type": "tryit",
+          "title": "Try It: Explain Quality vs Storage",
+          "task": "Explain how increasing (a) image resolution and (b) audio bit depth affects quality and file size.",
+          "marks": 4,
+          "expectedAnswer": "Higher resolution and higher bit depth both improve quality and increase file size.",
+          "markScheme": [
+            {
+              "criterion": "Explains image resolution impact on quality",
+              "marks": 1
+            },
+            {
+              "criterion": "Explains image resolution impact on file size",
+              "marks": 1
+            },
+            {
+              "criterion": "Explains audio bit depth impact on quality",
+              "marks": 1
+            },
+            {
+              "criterion": "Explains audio bit depth impact on file size",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

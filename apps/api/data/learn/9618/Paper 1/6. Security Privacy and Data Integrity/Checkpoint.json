@@ -1,0 +1,148 @@
+{
+  "id": "security-privacy-and-data-integrity-checkpoint",
+  "title": "Checkpoint",
+  "description": "Three full past-paper questions covering security, privacy and integrity.",
+  "notes": "Answer all three in exam style with method-threat links.",
+  "starterCode": "",
+  "questionPrompt": "Answer all checkpoint questions.",
+  "marks": 20,
+  "examples": [],
+  "checkpointQuestions": [
+    {
+      "id": "sec-checkpoint-1",
+      "title": "Security vs Integrity in a User Scenario",
+      "paper": "9618/11/O/N/21",
+      "question": "Q2(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/O/N/21 Q2(a)(b): Explain the difference between data security and data integrity. Describe how data validation helps protect integrity and give an example. Describe how data verification helps protect integrity and give an example.",
+      "marks": 7,
+      "objectiveRefs": [
+        "security",
+        "integrity",
+        "validation",
+        "verification"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Security vs integrity distinction",
+          "marks": 2
+        },
+        {
+          "criterion": "Validation method and example",
+          "marks": 2
+        },
+        {
+          "criterion": "Verification method and example",
+          "marks": 2
+        },
+        {
+          "criterion": "Overall clarity and relevance",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Security vs integrity"
+          },
+          {
+            "id": "b",
+            "label": "Validation + example"
+          },
+          {
+            "id": "c",
+            "label": "Verification + example"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-checkpoint-2",
+      "title": "Confidential Data in Transit",
+      "paper": "9618/11/M/J/25",
+      "question": "Q7(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/M/J/25 Q7(a)(b): A banker transfers and receives confidential data across the internet. Identify and describe one method to reduce interception risk. Explain how a digital signature can ensure data has not changed during transmission.",
+      "marks": 7,
+      "objectiveRefs": [
+        "encryption",
+        "digital-signature",
+        "secure-transfer"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Transfer protection method explained",
+          "marks": 3
+        },
+        {
+          "criterion": "Digital signature integrity check explained",
+          "marks": 3
+        },
+        {
+          "criterion": "Correct technical terminology",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Method to reduce interception risk"
+          },
+          {
+            "id": "b",
+            "label": "How digital signatures detect tampering"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-checkpoint-3",
+      "title": "Threat Recognition and Mitigation",
+      "paper": "9618/13/O/N/23",
+      "question": "Q8",
+      "sourceType": "past-paper",
+      "prompt": "9618/13/O/N/23 Q8(a)(b)(c): Data verification is one method of protecting integrity. Describe one other integrity method. State one difference and one similarity between pharming and phishing. Explain how malware security risks can be restricted.",
+      "marks": 6,
+      "objectiveRefs": [
+        "integrity",
+        "threat-types",
+        "malware-controls"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Integrity method valid",
+          "marks": 2
+        },
+        {
+          "criterion": "Pharming vs phishing comparison valid",
+          "marks": 2
+        },
+        {
+          "criterion": "Malware controls explained",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Another data integrity method"
+          },
+          {
+            "id": "b",
+            "label": "Difference and similarity: pharming vs phishing"
+          },
+          {
+            "id": "c",
+            "label": "Malware risk restriction methods"
+          }
+        ]
+      }
+    }
+  ]
+}

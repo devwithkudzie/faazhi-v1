@@ -1,0 +1,240 @@
+{
+  "section": "patterns",
+  "title": "Patterns",
+  "description": "Common validation patterns used in Cambridge 9618 Paper 2 pseudocode questions.",
+  "lessons": [
+    {
+      "id": "pattern-1-range-check",
+      "title": "Pattern 1 - Range Check",
+      "slides": [
+        {
+          "id": "input-validation-pattern-1-notes",
+          "type": "concept",
+          "title": "Pattern 1 - Range Check",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use a range check when a value must fall between a minimum and maximum value."
+            }
+          ]
+        },
+        {
+          "id": "input-validation-pattern-1-notes__slide-2",
+          "type": "concept",
+          "title": "Thinking steps:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "Thinking steps:",
+              "items": [
+                "Identify the lowest valid value",
+                "Identify the highest valid value",
+                "Write the invalid condition",
+                "Repeat input while invalid"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "input-validation-pattern-1-notes__slide-3",
+          "type": "concept",
+          "title": "Pattern 1 - Range Check: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "INPUT value\n\nWHILE value < minimum OR value > maximum\n    OUTPUT \"Invalid\"\n    INPUT value\nENDWHILE"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "input-validation-pattern-1-example",
+          "type": "example",
+          "title": "Range check for score",
+          "duration": 12,
+          "problem": "Input a score between 0 and 50 inclusive.",
+          "code": "DECLARE score : INTEGER\n\nINPUT score\n\nWHILE score < 0 OR score > 50\n    OUTPUT \"Invalid score\"\n    INPUT score\nENDWHILE",
+          "explanation": "The score is invalid if it is below 0 or above 50."
+        },
+        {
+          "id": "input-validation-pattern-1-tryit",
+          "type": "tryit",
+          "title": "Try It - Range Check",
+          "task": "Input a rating between 1 and 10 inclusive.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE rating : INTEGER\n\nINPUT rating\n\nWHILE rating < 1 OR rating > 10\n    OUTPUT \"Invalid rating\"\n    INPUT rating\nENDWHILE",
+          "markScheme": [
+            {
+              "criterion": "DECLARE rating variable",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT rating before loop",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct lower-bound check",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct upper-bound check",
+              "marks": 1
+            },
+            {
+              "criterion": "Repeats input while invalid",
+              "marks": 1
+            },
+            {
+              "criterion": "Uses valid loop structure",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-2-length-check",
+      "title": "Pattern 2 - Length Check",
+      "slides": [
+        {
+          "id": "input-validation-pattern-2-notes",
+          "type": "concept",
+          "title": "Pattern 2 - Length Check",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use a length check when a string must have a certain number of characters."
+            }
+          ]
+        },
+        {
+          "id": "input-validation-pattern-2-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 2 - Length Check: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "WHILE LENGTH(value) < requiredLength\n    OUTPUT \"Too short\"\n    INPUT value\nENDWHILE"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "input-validation-pattern-2-example",
+          "type": "example",
+          "title": "Length check for password",
+          "duration": 12,
+          "problem": "Input a password that must be at least 8 characters long.",
+          "code": "DECLARE password : STRING\n\nINPUT password\n\nWHILE LENGTH(password) < 8\n    OUTPUT \"Password too short\"\n    INPUT password\nENDWHILE",
+          "explanation": "The password is invalid while its length is less than 8."
+        },
+        {
+          "id": "input-validation-pattern-2-tryit",
+          "type": "tryit",
+          "title": "Try It - Length Check",
+          "task": "Input a product code that must be exactly 6 characters long.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE productCode : STRING\n\nINPUT productCode\n\nWHILE LENGTH(productCode) <> 6\n    OUTPUT \"Invalid product code\"\n    INPUT productCode\nENDWHILE",
+          "markScheme": [
+            {
+              "criterion": "DECLARE productCode variable",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT productCode before loop",
+              "marks": 1
+            },
+            {
+              "criterion": "Uses LENGTH function",
+              "marks": 1
+            },
+            {
+              "criterion": "Checks for exactly 6 characters",
+              "marks": 2
+            },
+            {
+              "criterion": "Repeats input if invalid",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-3-presence-check",
+      "title": "Pattern 3 - Presence Check",
+      "slides": [
+        {
+          "id": "input-validation-pattern-3-notes",
+          "type": "concept",
+          "title": "Pattern 3 - Presence Check",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use a presence check when a value must not be left empty."
+            }
+          ]
+        },
+        {
+          "id": "input-validation-pattern-3-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 3 - Presence Check: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "WHILE value = \"\"\n    OUTPUT \"Value required\"\n    INPUT value\nENDWHILE"
+            }
+          ],
+          "startsBlock": false
+        }
+      ]
+    },
+    {
+      "id": "pattern-4-format-check",
+      "title": "Pattern 4 - Format Check",
+      "slides": [
+        {
+          "id": "input-validation-pattern-4-notes",
+          "type": "concept",
+          "title": "Pattern 4 - Format Check",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use a format check when the input must follow a particular pattern, such as a fixed length or a required starting character."
+            },
+            {
+              "type": "paragraph",
+              "text": "Format checks are usually built from string operations such as LENGTH and substring/character checks."
+            }
+          ]
+        },
+        {
+          "id": "input-validation-pattern-4-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 4 - Format Check: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "WHILE LENGTH(code) <> 6 OR LEFT(code, 1) <> \"A\"\n    OUTPUT \"Invalid code\"\n    INPUT code\nENDWHILE"
+            }
+          ],
+          "startsBlock": false
+        }
+      ]
+    }
+  ]
+}

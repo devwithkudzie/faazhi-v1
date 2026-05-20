@@ -1,0 +1,124 @@
+{
+  "section": "practice",
+  "title": "Practice",
+  "questions": [
+    {
+      "id": "foundation-practice-1",
+      "type": "practice",
+      "title": "Product of Two Numbers",
+      "task": "Write pseudocode to input two numbers and output their product.",
+      "difficulty": "easy",
+      "expectedThinking": [
+        "INPUT: two numbers",
+        "PROCESS: multiply the numbers",
+        "OUTPUT: product"
+      ],
+      "assessment": {
+        "totalMarks": 5,
+        "markScheme": [
+          {
+            "criterion": "DECLARE variables",
+            "marks": 1
+          },
+          {
+            "criterion": "INPUT both numbers",
+            "marks": 2
+          },
+          {
+            "criterion": "Correct multiplication",
+            "marks": 1
+          },
+          {
+            "criterion": "OUTPUT product",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE num1, num2, product : INTEGER\n\nINPUT num1\nINPUT num2\n\nproduct <- num1 * num2\n\nOUTPUT product",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "foundation-practice-2",
+      "type": "practice",
+      "title": "Average of Three Numbers",
+      "task": "Write pseudocode to input three numbers, calculate their average, and output the average.",
+      "difficulty": "easy",
+      "expectedThinking": [
+        "INPUT: three numbers",
+        "PROCESS: add the numbers and divide by 3",
+        "OUTPUT: average"
+      ],
+      "assessment": {
+        "totalMarks": 7,
+        "markScheme": [
+          {
+            "criterion": "DECLARE variables",
+            "marks": 1
+          },
+          {
+            "criterion": "INPUT three numbers",
+            "marks": 3
+          },
+          {
+            "criterion": "Correct total calculation",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct average calculation",
+            "marks": 1
+          },
+          {
+            "criterion": "OUTPUT average",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE num1, num2, num3 : REAL\nDECLARE total, average : REAL\n\nINPUT num1\nINPUT num2\nINPUT num3\n\ntotal <- num1 + num2 + num3\naverage <- total / 3\n\nOUTPUT average",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "foundation-practice-3",
+      "type": "practice",
+      "title": "Convert Minutes to Seconds",
+      "task": "Write pseudocode to input a time in minutes and convert it to seconds.",
+      "difficulty": "easy",
+      "expectedThinking": [
+        "INPUT: minutes",
+        "PROCESS: seconds <- minutes * 60",
+        "OUTPUT: seconds"
+      ],
+      "assessment": {
+        "totalMarks": 5,
+        "markScheme": [
+          {
+            "criterion": "DECLARE variables",
+            "marks": 1
+          },
+          {
+            "criterion": "INPUT minutes",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct conversion calculation",
+            "marks": 2
+          },
+          {
+            "criterion": "OUTPUT seconds",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE minutes, seconds : INTEGER\n\nINPUT minutes\n\nseconds <- minutes * 60\n\nOUTPUT seconds",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit"
+        }
+      }
+    }
+  ]
+}

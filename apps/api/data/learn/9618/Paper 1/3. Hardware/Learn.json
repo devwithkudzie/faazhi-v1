@@ -1,0 +1,194 @@
+{
+  "id": "hardware-learn",
+  "title": "Learn",
+  "description": "Objective-based learning for embedded systems, memory technologies, and peripheral operation.",
+  "notes": "Complete each Try It task to finish this Hardware section.",
+  "starterCode": "",
+  "questionPrompt": "Complete all Hardware Try It tasks.",
+  "marks": 12,
+  "examples": [],
+  "lessons": [
+    {
+      "id": "embedded-and-control-systems",
+      "title": "Embedded and Control Systems",
+      "slides": [
+        {
+          "id": "hw-notes-1",
+          "type": "concept",
+          "title": "Embedded and Control Systems",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Hardware questions often combine sensors, storage, and system purpose (monitoring vs control)."
+            }
+          ]
+        },
+        {
+          "id": "hw-notes-1__slide-2",
+          "type": "concept",
+          "title": "Embedded and Control Systems (2/2)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Embedded systems perform dedicated tasks",
+                "Monitoring reports conditions; control changes conditions",
+                "Feedback and actuators are key in control systems"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "hw-tryit-1",
+          "type": "tryit",
+          "title": "Try It: Embedded Features",
+          "task": "Select all characteristics that support classifying a device as embedded.",
+          "marks": 4,
+          "responseMode": "checkbox",
+          "responseConfig": {
+            "allowMultiple": true,
+            "checkboxOptions": [
+              {
+                "id": "c1",
+                "label": "Designed for a specific dedicated purpose",
+                "isCorrect": true
+              },
+              {
+                "id": "c2",
+                "label": "General-purpose software development workstation",
+                "isCorrect": false
+              },
+              {
+                "id": "c3",
+                "label": "Integrated into a larger physical device",
+                "isCorrect": true
+              },
+              {
+                "id": "c4",
+                "label": "Always allows unrestricted user upgrades of all hardware",
+                "isCorrect": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "memory-in-devices",
+      "title": "Memory in Devices",
+      "slides": [
+        {
+          "id": "hw-notes-2",
+          "type": "concept",
+          "title": "Memory in Devices",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "DRAM is denser/cheaper than SRAM but needs refresh",
+                "EEPROM can be electrically rewritten in-circuit",
+                "EPROM requires UV erasure and usually physical removal"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hw-tryit-2",
+          "type": "tryit",
+          "title": "Try It: Memory Matching",
+          "task": "Match each memory type to its best description.",
+          "marks": 4,
+          "responseMode": "matching",
+          "responseConfig": {
+            "matchingPairs": [
+              {
+                "id": "m1",
+                "left": "DRAM",
+                "options": [
+                  "Needs refresh cycles",
+                  "Retains data with no power",
+                  "Erased by UV light"
+                ],
+                "answer": "Needs refresh cycles"
+              },
+              {
+                "id": "m2",
+                "left": "EEPROM",
+                "options": [
+                  "Electrically erased and rewritten",
+                  "Write-once only",
+                  "Acts as volatile cache only"
+                ],
+                "answer": "Electrically erased and rewritten"
+              },
+              {
+                "id": "m3",
+                "left": "EPROM",
+                "options": [
+                  "Erased by UV light",
+                  "Always embedded in CPU cache",
+                  "Only stores audio"
+                ],
+                "answer": "Erased by UV light"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "buffers-and-peripheral-operation",
+      "title": "Buffers and Peripheral Operation",
+      "slides": [
+        {
+          "id": "hw-notes-3",
+          "type": "concept",
+          "title": "Buffers and Peripheral Operation",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "You should explain why buffers are needed when device and processor speeds differ."
+            }
+          ]
+        },
+        {
+          "id": "hw-tryit-3",
+          "type": "tryit",
+          "title": "Try It: Fill Core Terms",
+          "task": "Fill in key hardware terms.",
+          "marks": 4,
+          "responseMode": "fill-in",
+          "responseConfig": {
+            "fillInFields": [
+              {
+                "id": "f1",
+                "label": "A ______ system changes a process based on sensor input.",
+                "answer": "control"
+              },
+              {
+                "id": "f2",
+                "label": "A ______ temporarily stores data to smooth speed differences.",
+                "answer": "buffer"
+              },
+              {
+                "id": "f3",
+                "label": "______ RAM usually has higher density and lower cost per bit.",
+                "answer": "dynamic"
+              },
+              {
+                "id": "f4",
+                "label": "______ can be rewritten electrically without UV light.",
+                "answer": "eeprom"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

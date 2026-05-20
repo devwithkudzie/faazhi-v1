@@ -1,0 +1,288 @@
+{
+  "id": "security-privacy-and-data-integrity-practice",
+  "title": "Practice",
+  "description": "Past-paper practice on threats, controls, integrity and secure transmission.",
+  "notes": "Attempt all six and always tie controls to specific threats.",
+  "starterCode": "",
+  "questionPrompt": "Answer the following Security, Privacy and Data Integrity practice questions.",
+  "marks": 24,
+  "examples": [],
+  "practiceQuestions": [
+    {
+      "id": "sec-practice-1",
+      "title": "Security Feature Mapping",
+      "prompt": "9618/11/O/N/22 Q2: Match security features (firewall, pharming, anti-virus, encryption) to their descriptions.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/22",
+      "question": "Q2",
+      "objectiveRefs": [
+        "security-measures",
+        "threat-types"
+      ],
+      "markScheme": [
+        {
+          "criterion": "All mappings correct",
+          "marks": 4
+        }
+      ],
+      "responseMode": "matching",
+      "responseConfig": {
+        "matchingPairs": [
+          {
+            "id": "m1",
+            "left": "firewall",
+            "options": [
+              "converts data to an alternative form",
+              "redirects a user to a fake website",
+              "scans files for malicious software",
+              "accepts/rejects packets based on criteria"
+            ],
+            "answer": "accepts/rejects packets based on criteria"
+          },
+          {
+            "id": "m2",
+            "left": "pharming",
+            "options": [
+              "converts data to an alternative form",
+              "redirects a user to a fake website",
+              "scans files for malicious software",
+              "accepts/rejects packets based on criteria"
+            ],
+            "answer": "redirects a user to a fake website"
+          },
+          {
+            "id": "m3",
+            "left": "anti-virus software",
+            "options": [
+              "converts data to an alternative form",
+              "redirects a user to a fake website",
+              "scans files for malicious software",
+              "accepts/rejects packets based on criteria"
+            ],
+            "answer": "scans files for malicious software"
+          },
+          {
+            "id": "m4",
+            "left": "encryption",
+            "options": [
+              "converts data to an alternative form",
+              "redirects a user to a fake website",
+              "scans files for malicious software",
+              "accepts/rejects packets based on criteria"
+            ],
+            "answer": "converts data to an alternative form"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-practice-2",
+      "title": "Security vs Integrity",
+      "prompt": "9618/11/O/N/21 Q2(a): Explain the difference between data security and data integrity.",
+      "marks": 3,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/21",
+      "question": "Q2(a)",
+      "objectiveRefs": [
+        "security-vs-integrity"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Security definition accurate",
+          "marks": 1
+        },
+        {
+          "criterion": "Integrity definition accurate",
+          "marks": 1
+        },
+        {
+          "criterion": "Clear contrast",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Data security definition"
+          },
+          {
+            "id": "b",
+            "label": "Data integrity definition"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-practice-3",
+      "title": "Validation and Verification",
+      "prompt": "9618/11/O/N/21 Q2(b): Describe how validation and verification protect integrity, each with an example.",
+      "marks": 5,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/21",
+      "question": "Q2(b)",
+      "objectiveRefs": [
+        "validation",
+        "verification",
+        "integrity"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Validation described correctly",
+          "marks": 1
+        },
+        {
+          "criterion": "Valid validation example",
+          "marks": 1
+        },
+        {
+          "criterion": "Verification described correctly",
+          "marks": 1
+        },
+        {
+          "criterion": "Valid verification example",
+          "marks": 1
+        },
+        {
+          "criterion": "Integrity link made clearly",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Validation description + example"
+          },
+          {
+            "id": "b",
+            "label": "Verification description + example"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-practice-4",
+      "title": "Secure Data Transfer",
+      "prompt": "9618/11/M/J/25 Q7(a): Identify and describe one method to reduce interception risk during internet transfer of confidential data.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/11/M/J/25",
+      "question": "Q7(a)",
+      "objectiveRefs": [
+        "encryption",
+        "secure-transfer"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Appropriate method identified",
+          "marks": 1
+        },
+        {
+          "criterion": "Method operation explained",
+          "marks": 2
+        },
+        {
+          "criterion": "Threat reduction link",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Method to reduce interception risk"
+          },
+          {
+            "id": "b",
+            "label": "How method reduces the risk"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-practice-5",
+      "title": "Digital Signature Integrity",
+      "prompt": "9618/11/M/J/25 Q7(b): Explain how a digital signature can show data was not changed in transmission.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/11/M/J/25",
+      "question": "Q7(b)",
+      "objectiveRefs": [
+        "digital-signatures",
+        "integrity"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Signature/hash concept explained",
+          "marks": 2
+        },
+        {
+          "criterion": "Detection of tampering explained",
+          "marks": 1
+        },
+        {
+          "criterion": "Authentication/integrity distinction handled",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "How digital signature verifies integrity"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sec-practice-6",
+      "title": "Pharming vs Phishing + Malware Controls",
+      "prompt": "9618/13/O/N/23 Q8(b)(c): State one similarity and one difference between pharming and phishing, then explain malware risk controls.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/13/O/N/23",
+      "question": "Q8(b)(c)",
+      "objectiveRefs": [
+        "phishing-pharming",
+        "malware-controls"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Difference valid",
+          "marks": 1
+        },
+        {
+          "criterion": "Similarity valid",
+          "marks": 1
+        },
+        {
+          "criterion": "Risk controls explained",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Difference between pharming and phishing"
+          },
+          {
+            "id": "b",
+            "label": "Similarity"
+          },
+          {
+            "id": "c",
+            "label": "How malware risks can be restricted"
+          }
+        ]
+      }
+    }
+  ]
+}

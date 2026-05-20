@@ -1,0 +1,240 @@
+{
+  "id": "ethics-and-ownership-practice",
+  "title": "Practice",
+  "description": "Past-paper ethics and ownership practice on conduct, licensing and professional responsibility.",
+  "notes": "Attempt all six with scenario-based justification.",
+  "starterCode": "",
+  "questionPrompt": "Answer the following Ethics and Ownership practice questions.",
+  "marks": 24,
+  "examples": [],
+  "practiceQuestions": [
+    {
+      "id": "eth-practice-1",
+      "title": "Ethical Conduct at Work",
+      "prompt": "9618/12/O/N/24 Q5(a): Explain why a programmer must act ethically towards colleagues and the public.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/12/O/N/24",
+      "question": "Q5(a)",
+      "objectiveRefs": [
+        "professional-ethics"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Colleague-focused reasons",
+          "marks": 2
+        },
+        {
+          "criterion": "Public-focused reasons",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Why act ethically toward colleagues"
+          },
+          {
+            "id": "b",
+            "label": "Why act ethically toward the public"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eth-practice-2",
+      "title": "Licence Justification",
+      "prompt": "9618/12/O/N/24 Q5(b): Choose a suitable software licence for a business-use program and justify the choice.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/12/O/N/24",
+      "question": "Q5(b)",
+      "objectiveRefs": [
+        "software-licensing"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Suitable licence type selected",
+          "marks": 1
+        },
+        {
+          "criterion": "Justification linked to source modification rights",
+          "marks": 1
+        },
+        {
+          "criterion": "Justification linked to maintenance/update model",
+          "marks": 1
+        },
+        {
+          "criterion": "Business-fit clarity",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Suitable licence type"
+          },
+          {
+            "id": "b",
+            "label": "Reasons for your choice"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eth-practice-3",
+      "title": "Benefit of Ethical Bodies",
+      "prompt": "9618/11/O/N/21 Q4(a): Describe benefits to a developer of joining a professional ethical body.",
+      "marks": 3,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/21",
+      "question": "Q4(a)",
+      "objectiveRefs": [
+        "ethical-bodies"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Benefit 1 valid",
+          "marks": 1
+        },
+        {
+          "criterion": "Benefit 2 valid",
+          "marks": 1
+        },
+        {
+          "criterion": "Benefit 3 valid",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Your answer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eth-practice-4",
+      "title": "Ethical Behaviour in Unfamiliar IDE",
+      "prompt": "9618/11/O/N/21 Q4(b)(i): Describe how a programmer can act ethically when required to use an unfamiliar IDE.",
+      "marks": 3,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/21",
+      "question": "Q4(b)(i)",
+      "objectiveRefs": [
+        "ethical-conduct",
+        "professionalism"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Honest communication about competence limits",
+          "marks": 1
+        },
+        {
+          "criterion": "Safe/quality-focused behaviour",
+          "marks": 1
+        },
+        {
+          "criterion": "Responsible help-seeking/upskilling approach",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Your answer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eth-practice-5",
+      "title": "Shareware vs Commercial Benefits",
+      "prompt": "9618/11/O/N/24 Q7(a)(b): Give two benefits each for shareware and commercial software licensing.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/24",
+      "question": "Q7(a)(b)",
+      "objectiveRefs": [
+        "software-licensing"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Two shareware benefits",
+          "marks": 2
+        },
+        {
+          "criterion": "Two commercial licence benefits",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Shareware benefit 1"
+          },
+          {
+            "id": "b",
+            "label": "Shareware benefit 2"
+          },
+          {
+            "id": "c",
+            "label": "Commercial licence benefit 1"
+          },
+          {
+            "id": "d",
+            "label": "Commercial licence benefit 2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eth-practice-6",
+      "title": "Why Join a Professional Body",
+      "prompt": "9618/13/O/N/23 Q6(b): Explain why joining a professional ethical body is important for programmers.",
+      "marks": 6,
+      "sourceType": "past-paper",
+      "paper": "9618/13/O/N/23",
+      "question": "Q6(b)",
+      "objectiveRefs": [
+        "ethical-bodies",
+        "professional-standards"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Standards/accountability value explained",
+          "marks": 2
+        },
+        {
+          "criterion": "Professional development/credibility value",
+          "marks": 2
+        },
+        {
+          "criterion": "Public trust/legal/safety relevance",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Your answer"
+          }
+        ]
+      }
+    }
+  ]
+}

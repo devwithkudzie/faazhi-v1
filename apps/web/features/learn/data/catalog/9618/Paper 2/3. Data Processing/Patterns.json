@@ -1,0 +1,399 @@
+{
+  "section": "patterns",
+  "title": "Patterns",
+  "description": "Exam-based Data Processing patterns. Each pattern has a real past-paper reference and a Try It card.",
+  "lessons": [
+    {
+      "id": "pattern-1-count-with-condition",
+      "title": "Pattern 1 - Count With Condition",
+      "slides": [
+        {
+          "id": "dp-pattern-1-notes",
+          "type": "concept",
+          "title": "Pattern 1 - Count With Condition",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when the question asks how many values meet a condition."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-1-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 1 - Count With Condition: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "count <- 0\n\nFOR i <- 1 TO n\n    IF value meets condition THEN\n        count <- count + 1\n    ENDIF\nNEXT i\n\nOUTPUT count"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-1-tryit",
+          "type": "tryit",
+          "title": "Try It - Count With Condition",
+          "task": "Paste exact question text from 9618/22/M/J/21 Q5(a)(i). Pattern focus: declare 1D array RNum, generate random values, count values in the inclusive range 66 to 173, output count.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE RNum : ARRAY[1:100] OF INTEGER\nDECLARE i, count : INTEGER\n\ncount <- 0\n\nFOR i <- 1 TO 100\n    RNum[i] <- RANDOM(1, 200)\n\n    IF RNum[i] >= 66 AND RNum[i] <= 173 THEN\n        count <- count + 1\n    ENDIF\nNEXT i\n\nOUTPUT count",
+          "markScheme": [
+            {
+              "criterion": "Correct 1D array declaration",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct loop for 100 elements",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct random generation in range 1 to 200",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct inclusive range condition",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct count increment",
+              "marks": 1
+            },
+            {
+              "criterion": "OUTPUT count",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-2-total-and-average",
+      "title": "Pattern 2 - Total and Average",
+      "slides": [
+        {
+          "id": "dp-pattern-2-notes",
+          "type": "concept",
+          "title": "Pattern 2 - Total and Average",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when the question asks for a total, an average, or both."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-2-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 2 - Total and Average: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "total <- 0\n\nFOR i <- 1 TO n\n    INPUT value\n    total <- total + value\nNEXT i\n\naverage <- total / n\nOUTPUT average"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-2-tryit",
+          "type": "tryit",
+          "title": "Try It - Total and Average",
+          "task": "Paste exact question text from 9618/22/M/J/21 Q4. Pattern focus: process marks, calculate total/average, and use conditions where required.",
+          "marks": 6,
+          "expectedAnswer": "TO_BE_ADJUSTED_AFTER_EXACT_QUESTION_TEXT_IS_PASTED",
+          "markScheme": [
+            {
+              "criterion": "Uses a loop to process all marks",
+              "marks": 1
+            },
+            {
+              "criterion": "Correctly accumulates total marks",
+              "marks": 1
+            },
+            {
+              "criterion": "Correctly applies required condition logic",
+              "marks": 2
+            },
+            {
+              "criterion": "Calculates average after processing",
+              "marks": 1
+            },
+            {
+              "criterion": "Outputs required results",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-3-highest-lowest",
+      "title": "Pattern 3 - Highest / Lowest",
+      "slides": [
+        {
+          "id": "dp-pattern-3-notes",
+          "type": "concept",
+          "title": "Pattern 3 - Highest / Lowest",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when the question asks for the largest or smallest value."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-3-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 3 - Highest / Lowest: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "INPUT value\nhighest <- value\n\nFOR i <- 2 TO n\n    INPUT value\n    IF value > highest THEN\n        highest <- value\n    ENDIF\nNEXT i\n\nOUTPUT highest"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-3-tryit",
+          "type": "tryit",
+          "title": "Try It - Highest and Average",
+          "task": "Paste exact question text from 9618/21/M/J/21 Q2(c). Pattern focus: input 50 unique integer values, find largest, calculate average excluding largest.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE value, highest, total, average, i : INTEGER\n\nINPUT value\nhighest <- value\ntotal <- value\n\nFOR i <- 2 TO 50\n    INPUT value\n    total <- total + value\n\n    IF value > highest THEN\n        highest <- value\n    ENDIF\nNEXT i\n\naverage <- (total - highest) / 49\n\nOUTPUT highest\nOUTPUT average",
+          "markScheme": [
+            {
+              "criterion": "Correct loop/input structure for 50 values",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct total accumulation",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct largest-value tracking",
+              "marks": 2
+            },
+            {
+              "criterion": "Correct average excluding largest",
+              "marks": 1
+            },
+            {
+              "criterion": "Outputs largest and average",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-4-2d-array-processing",
+      "title": "Pattern 4 - 2D Array Processing",
+      "slides": [
+        {
+          "id": "dp-pattern-4-notes",
+          "type": "concept",
+          "title": "Pattern 4 - 2D Array Processing",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when data is stored in rows and columns and each row/column must be processed."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-4-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 4 - 2D Array Processing: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "FOR column <- 1 TO NumberOfColumns\n    total <- 0\n    count <- 0\n\n    FOR row <- 1 TO NumberOfRows\n        IF Data[row, column] > limit THEN\n            total <- total + Data[row, column]\n            count <- count + 1\n        ENDIF\n    NEXT row\n\n    Result[column] <- total / count\nNEXT column"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-4-tryit",
+          "type": "tryit",
+          "title": "Try It - 2D Array Processing",
+          "task": "Paste exact question text from 9618/21/M/J/23 Q6. Pattern focus: process a 2D array using nested loops, ignore values based on a condition, and store averages.",
+          "marks": 6,
+          "expectedAnswer": "TO_BE_ADJUSTED_AFTER_EXACT_QUESTION_TEXT_IS_PASTED",
+          "markScheme": [
+            {
+              "criterion": "Correct outer loop",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct inner loop",
+              "marks": 1
+            },
+            {
+              "criterion": "Initializes total and count for each group",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct condition to include/ignore values",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct total/count processing",
+              "marks": 1
+            },
+            {
+              "criterion": "Stores calculated average",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-5-generate-and-process",
+      "title": "Pattern 5 - Generate and Process",
+      "slides": [
+        {
+          "id": "dp-pattern-5-notes",
+          "type": "concept",
+          "title": "Pattern 5 - Generate and Process",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when the algorithm must create values and then process or test them."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-5-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 5 - Generate and Process: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "value1 <- RANDOM(min, max)\n\nREPEAT\n    value2 <- RANDOM(min, max)\nUNTIL value2 <> value1\n\nIF condition THEN\n    value3 <- RANDOM(otherMin, otherMax)\nENDIF"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-5-tryit",
+          "type": "tryit",
+          "title": "Try It - Generate and Process",
+          "task": "Paste exact question text from 9618/22/M/J/25 Q3. Pattern focus: generate random integers, ensure uniqueness, test conditions, and output required values.",
+          "marks": 8,
+          "expectedAnswer": "TO_BE_ADJUSTED_AFTER_EXACT_QUESTION_TEXT_IS_PASTED",
+          "markScheme": [
+            {
+              "criterion": "Correct first random number generation",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct second random number generation",
+              "marks": 1
+            },
+            {
+              "criterion": "Ensures uniqueness",
+              "marks": 2
+            },
+            {
+              "criterion": "Outputs required generated values",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct conditional logic",
+              "marks": 2
+            },
+            {
+              "criterion": "Generates extra value if required",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pattern-6-report-from-structured-data",
+      "title": "Pattern 6 - Report From Structured Data",
+      "slides": [
+        {
+          "id": "dp-pattern-6-notes",
+          "type": "concept",
+          "title": "Pattern 6 - Report From Structured Data",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use this pattern when values are stored in a structured array and the algorithm must produce a report."
+            }
+          ]
+        },
+        {
+          "id": "dp-pattern-6-notes__slide-2",
+          "type": "concept",
+          "title": "Pattern 6 - Report From Structured Data: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "total <- 0\ncount <- 0\n\nFOR row <- 1 TO maxRows\n    IF record is used THEN\n        count <- count + 1\n        total <- total + value\n\n        IF value meets condition THEN\n            OUTPUT key\n        ENDIF\n    ENDIF\nNEXT row\n\nOUTPUT total / count"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-pattern-6-tryit",
+          "type": "tryit",
+          "title": "Try It - Structured Data Report",
+          "task": "Paste exact question text from 9618/22/M/J/25 Q7(b). Pattern focus: process a structured array, output selected records, and calculate an average.",
+          "marks": 8,
+          "expectedAnswer": "TO_BE_ADJUSTED_AFTER_EXACT_QUESTION_TEXT_IS_PASTED",
+          "markScheme": [
+            {
+              "criterion": "Loops through structured array rows",
+              "marks": 1
+            },
+            {
+              "criterion": "Identifies valid/used rows",
+              "marks": 1
+            },
+            {
+              "criterion": "Accesses correct fields/columns",
+              "marks": 1
+            },
+            {
+              "criterion": "Outputs selected records using condition",
+              "marks": 2
+            },
+            {
+              "criterion": "Accumulates total",
+              "marks": 1
+            },
+            {
+              "criterion": "Counts valid records",
+              "marks": 1
+            },
+            {
+              "criterion": "Calculates and outputs average",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

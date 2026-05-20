@@ -1,31 +1,225 @@
+"use client";
+
 import Link from "next/link";
-import { BarChart3, BookOpen, Code2, FileText } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Binary,
+  CheckCircle2,
+  ChevronDown,
+  CircuitBoard,
+  Circle,
+  Clock,
+  Code2,
+  FileText,
+  Flame,
+  Sparkles,
+  Star,
+  Table2,
+  TrendingUp,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { AppShell } from "@/shared/components/layout/AppShell";
+import styles from "./subject-workspace.module.css";
 
 const tools = [
+  { label: "Pseudocode Runner", href: "playground?tool=pseudocode", icon: Code2 },
+  { label: "Diagram Sandbox", href: "playground?tool=diagram", icon: Binary },
+  { label: "Logic Gate Simulator", href: "playground?tool=logic-gates", icon: CircuitBoard },
+  { label: "Trace Table Builder", href: "playground?tool=trace-table", icon: Table2 },
+  { label: "Progress", href: "progress", icon: BarChart3 },
+];
+
+const modules = [
   {
-    title: "Learn",
-    description: "Study notes, examples, Try It tasks, and checkpoints.",
-    href: "learn",
-    icon: BookOpen,
+    name: "Paper 1",
+    title: "Theory Fundamentals",
+    href: "paper-1",
+    progress: 68,
+    lessons: 22,
+    completed: 15,
+    estimatedTime: "18-22 hours",
+    focus: "Information representation, hardware, networking, and databases.",
+    topics: [
+      "Information representation",
+      "Communication and internet technologies",
+      "Hardware and virtual machines",
+      "Processor fundamentals",
+      "System software",
+      "Security, privacy, and data integrity",
+    ],
   },
   {
-    title: "PaperLab",
-    description: "Practise full exam papers in a realistic workspace.",
-    href: "papers",
-    icon: FileText,
+    name: "Paper 2",
+    title: "Problem Solving & Programming",
+    href: "paper-2",
+    progress: 45,
+    lessons: 20,
+    completed: 9,
+    estimatedTime: "16-20 hours",
+    focus: "Pseudocode, algorithms, trace tables, testing, and file handling.",
+    topics: [
+      "Algorithm design and problem solving",
+      "Pseudocode and flowcharts",
+      "Data types and structures",
+      "Programming constructs",
+      "Testing, validation, and verification",
+      "File handling",
+    ],
   },
   {
-    title: "Playground",
-    description: "Experiment with pseudocode, diagrams, and concepts.",
-    href: "playground",
-    icon: Code2,
+    name: "Paper 3",
+    title: "Advanced Theory",
+    href: "paper-3",
+    progress: 28,
+    lessons: 18,
+    completed: 5,
+    estimatedTime: "14-18 hours",
+    focus: "Advanced networks, databases, operating systems, and security.",
+    topics: [
+      "Data representation and compression",
+      "Communication and networking",
+      "Database modelling and normalisation",
+      "Operating systems",
+      "Floating-point arithmetic",
+      "Logic gates and Boolean algebra",
+    ],
   },
   {
-    title: "Progress",
-    description: "Track topic mastery, weak areas, and performance.",
-    href: "progress",
-    icon: BarChart3,
+    name: "Paper 4",
+    title: "Practical Programming",
+    href: "paper-4",
+    progress: 0,
+    lessons: 16,
+    completed: 0,
+    estimatedTime: "12-16 hours",
+    focus: "Hands-on programming tasks with independent project-style practice.",
+    topics: [
+      "Programming techniques",
+      "Object-oriented programming",
+      "Abstract data types",
+      "Recursion",
+      "Searching and sorting",
+      "Practical debugging and refinement",
+    ],
   },
+];
+
+const topics = [
+  { name: "Information Representation", done: true },
+  { name: "Communication & Networking", done: true },
+  { name: "Hardware & Virtual Machines", done: false },
+  { name: "Logic Gates & Boolean Algebra", done: false },
+  { name: "Databases & File Organisation", done: false },
+  { name: "Algorithm Design & Analysis", done: false },
+  { name: "Programming Fundamentals", done: false },
+];
+
+const recent = [
+  { label: "Completed: Two's Complement", time: "2h ago" },
+  { label: "Attempted: 9618 Paper 2 Q4", time: "Yesterday" },
+  { label: "Completed: Character Encoding", time: "2 days ago" },
+];
+
+const pageNav = [
+  { label: "About", href: "#about", id: "about" },
+  { label: "Modules", href: "#modules", id: "modules" },
+  { label: "Practice", href: "#practice", id: "practice" },
+  { label: "Tools", href: "#tools", id: "tools" },
+  { label: "Testimonials", href: "#testimonials", id: "testimonials" },
+];
+
+const activeModules = modules
+  .filter((module) => module.completed > 0 && module.completed < module.lessons)
+  .sort((a, b) => b.progress - a.progress);
+
+const primaryActiveModule = activeModules[0] ?? modules[0];
+
+const syllabusObjectives = [
+  "Understand the core principles of computer systems, data, networks, software, and security.",
+  "Apply computational thinking to break complex problems into structured solutions.",
+  "Read, write, trace, test, and improve algorithms using Cambridge-style pseudocode.",
+  "Connect theory knowledge with past-paper questions and practical programming tasks.",
+];
+
+const skillsGained = [
+  "Algorithmic problem solving",
+  "Programming fluency",
+  "Trace-table reasoning",
+  "Database and network analysis",
+  "Exam technique",
+  "Independent revision planning",
+];
+
+const relevantDetails = [
+  { label: "Qualification", value: "Cambridge International AS & A Level" },
+  { label: "Syllabus", value: "Computer Science 9618" },
+  { label: "Assessment", value: "Four papers split across theory and practical pathways" },
+];
+
+const testimonials = [
+  {
+    name: "Tariro M.",
+    meta: "Learner since 2024",
+    avatar: "TM",
+    photoClass: "bg-[radial-gradient(circle_at_50%_30%,#fde68a_0_18%,#f59e0b_19%_34%,#92400e_35%_100%)]",
+    quote:
+      "The module progress makes it easy to see which paper I should revise next. I can work on Paper 2 without feeling behind on Paper 1.",
+  },
+  {
+    name: "Aisha K.",
+    meta: "Learner since 2023",
+    avatar: "AK",
+    photoClass: "bg-[radial-gradient(circle_at_50%_28%,#fbcfe8_0_18%,#be185d_19%_34%,#831843_35%_100%)]",
+    quote:
+      "The pseudocode practice helped me stop guessing. I can now trace algorithms and explain what each step is doing.",
+  },
+  {
+    name: "Daniel R.",
+    meta: "Learner since 2025",
+    avatar: "DR",
+    photoClass: "bg-[radial-gradient(circle_at_50%_30%,#bfdbfe_0_18%,#2563eb_19%_34%,#1e3a8a_35%_100%)]",
+    quote:
+      "PaperLab turned past-paper practice into a weekly routine. The workspace feels focused and exam-ready.",
+  },
+  {
+    name: "Mr. Ncube",
+    meta: "Computer Science tutor",
+    avatar: "MN",
+    photoClass: "bg-[radial-gradient(circle_at_50%_28%,#bbf7d0_0_18%,#16a34a_19%_34%,#14532d_35%_100%)]",
+    quote:
+      "I like that each paper can be tracked independently. It matches how students actually prepare for 9618.",
+  },
+];
+
+const reviews = [
+  {
+    rating: 5,
+    name: "KS",
+    date: "Reviewed on May 8, 2026",
+    body: "Very useful for organising revision. The module breakdown makes the syllabus less overwhelming, especially for Paper 2 practice.",
+  },
+  {
+    rating: 5,
+    name: "JM",
+    date: "Reviewed on Apr 18, 2026",
+    body: "The tools are exactly what I need for Computer Science: pseudocode, diagrams, logic gates, and trace tables in one place.",
+  },
+  {
+    rating: 4,
+    name: "PL",
+    date: "Reviewed on Mar 2, 2026",
+    body: "Strong subject workspace. I would like even more marked examples, but the progress tracking is already very helpful.",
+  },
+];
+
+const ratingBreakdown = [
+  { label: "5 stars", value: 86 },
+  { label: "4 stars", value: 11 },
+  { label: "3 stars", value: 2 },
+  { label: "2 stars", value: 0.6 },
+  { label: "1 star", value: 0.4 },
 ];
 
 export default function SubjectWorkspacePage({
@@ -33,30 +227,576 @@ export default function SubjectWorkspacePage({
 }: {
   subjectId: string;
 }) {
-  return (
-    <main className="min-h-screen bg-background p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
-        <p className="text-sm text-muted-foreground">Subject workspace</p>
-        <h1 className="mt-1 font-serif-paper text-3xl font-semibold">
-          Computer Science {subjectId}
-        </h1>
+  const [activeSection, setActiveSection] = useState(pageNav[0].id);
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {tools.map((tool) => (
-            <Link
-              key={tool.title}
-              href={`/subjects/${subjectId}/${tool.href}`}
-              className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/50 hover:shadow-sm"
-            >
-              <tool.icon className="h-6 w-6 text-primary" />
-              <h2 className="mt-4 font-semibold text-foreground">{tool.title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {tool.description}
-              </p>
-            </Link>
-          ))}
+  useEffect(() => {
+    const sections = pageNav
+      .map((item) => document.getElementById(item.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible?.target.id) {
+          setActiveSection(visible.target.id);
+        }
+      },
+      {
+        rootMargin: "-96px 0px -58% 0px",
+        threshold: [0.12, 0.24, 0.48],
+      },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <AppShell>
+      <section className="bg-background">
+        <div
+          className="bg-[#eef3ff] shadow-[0_20px_70px_rgba(37,99,235,0.12)]"
+        >
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
+              <div>
+                <span className="inline-flex rounded-full border border-primary/15 bg-white px-3 py-1 text-xs font-medium text-primary">
+                  Cambridge A Level · {subjectId}
+                </span>
+
+                <h1 className="mt-4 font-serif-paper text-4xl font-semibold tracking-tight text-foreground">
+                  Computer Science 9618
+                </h1>
+
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Master algorithms, programming, databases, networking, and
+                  exam techniques through guided learning, practice, and
+                  PaperLab.
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-6 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-orange-500" />
+                    7 day streak
+                  </span>
+
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    74% average score
+                  </span>
+
+                  <span className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    Last: Data Representation
+                  </span>
+                </div>
+
+                <div className="mt-6 max-w-md">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Subject progress</span>
+                    <span>42%</span>
+                  </div>
+
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+                    <div className="h-full w-[42%] rounded-full bg-primary" />
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href={`/subjects/${subjectId}/${primaryActiveModule.href}`}
+                className="rounded-2xl border border-primary/10 bg-white p-5 text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:shadow-md"
+              >
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Continue your active module
+                </p>
+
+                <h2 className="mt-2 text-lg font-semibold">
+                  {primaryActiveModule.name}: {primaryActiveModule.title}
+                </h2>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {primaryActiveModule.completed} of {primaryActiveModule.lessons} lessons
+                  complete · {primaryActiveModule.estimatedTime} total
+                </p>
+
+                {activeModules.length > 1 && (
+                  <div className="mt-4 space-y-2">
+                    {activeModules.slice(1, 3).map((module) => (
+                      <span
+                        key={module.name}
+                        className="block rounded-md bg-[#eef5ff] px-3 py-2 text-sm font-medium text-[#0645ad]"
+                      >
+                        Also active: {module.name} · {module.progress}%
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#0645ad] px-3 py-2 text-sm font-semibold text-white">
+                  Continue module <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
+
+        <nav className="sticky top-0 z-[100] bg-white shadow-[0_10px_34px_rgba(15,23,42,0.12)] dark:bg-card">
+          <div className="absolute inset-0 -z-10 bg-white dark:bg-card" />
+
+          <div className="relative mx-auto flex max-w-7xl items-center gap-12 px-4 sm:px-6 lg:px-8">
+            <Link
+              href="#about"
+              className="hidden min-w-60 shrink-0 py-5 text-base font-semibold text-foreground md:block"
+            >
+              Computer Science 9618
+            </Link>
+
+            <div className="grid min-w-0 flex-1 auto-cols-[minmax(150px,1fr)] grid-flow-col gap-4 overflow-x-auto lg:auto-cols-fr lg:gap-6">
+              {pageNav.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setActiveSection(item.id)}
+                  className={[
+                    "my-2 flex min-h-12 items-center justify-center rounded-md px-4 py-3 text-center text-base font-semibold transition",
+                    activeSection === item.id
+                      ? "bg-[#eef5ff] text-[#0645ad]"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="space-y-6">
+            <section
+              id="about"
+              className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
+            >
+              <h2 className="font-semibold text-foreground">About this subject</h2>
+
+              <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
+                <div className="rounded-lg bg-background p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Syllabus objectives
+                  </h3>
+
+                  <div className="mt-4 space-y-3">
+                    {syllabusObjectives.map((objective) => (
+                      <div key={objective} className="flex gap-3">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                        <p className="text-sm leading-6 text-foreground">
+                          {objective}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <div className="rounded-lg bg-background p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Skills to be gained
+                    </h3>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {skillsGained.map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-[inset_0_0_0_1px_rgba(148,163,184,0.18)]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-background p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Useful details
+                    </h3>
+
+                    <dl className="mt-4 space-y-3">
+                      {relevantDetails.map((detail) => (
+                        <div key={detail.label}>
+                          <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {detail.label}
+                          </dt>
+                          <dd className="mt-1 text-sm text-foreground">
+                            {detail.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              id="modules"
+              className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
+            >
+              <h2 className="font-semibold text-foreground">4 modules</h2>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                Each paper pathway can be completed independently, with its own
+                lessons, practice, and progress.
+              </p>
+
+              <div className="mt-5 space-y-3">
+                {modules.map((module) => (
+                  <details
+                    key={module.name}
+                    className={`${styles.module} rounded-lg bg-background shadow-[0_1px_4px_rgba(15,23,42,0.07)] transition hover:bg-[#f5f9ff] hover:shadow-[0_8px_24px_rgba(6,69,173,0.12)]`}
+                  >
+                    <summary className="flex cursor-pointer list-none items-center gap-4 p-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-foreground">
+                          {module.name}: {module.title}
+                        </p>
+
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {module.completed} of {module.lessons} lessons complete
+                        </p>
+
+                        <p className="mt-1 text-sm font-medium text-[#0645ad]">
+                          Estimated completion: {module.estimatedTime}
+                        </p>
+                      </div>
+
+                      <div className="hidden w-36 shrink-0 sm:block">
+                        <div className="flex justify-between text-xs font-semibold text-[#0645ad]">
+                          <span>Progress</span>
+                          <span>{module.progress}%</span>
+                        </div>
+
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#dbeafe]">
+                          <div
+                            className="h-full rounded-full bg-[#0645ad]"
+                            style={{ width: `${module.progress}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <ChevronDown
+                        className={`${styles.chevron} h-4 w-4 shrink-0 text-muted-foreground transition`}
+                      />
+                    </summary>
+
+                    <div className="px-4 pb-4 pt-2">
+                      <div className="sm:hidden">
+                        <div className="flex justify-between text-xs font-semibold text-[#0645ad]">
+                          <span>Module progress</span>
+                          <span>{module.progress}%</span>
+                        </div>
+
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#dbeafe]">
+                          <div
+                            className="h-full rounded-full bg-[#0645ad]"
+                            style={{ width: `${module.progress}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground sm:mt-0">
+                        {module.focus}
+                      </p>
+
+                      <div className="mt-5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Main topics
+                        </h3>
+
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {module.topics.map((topic) => (
+                            <div
+                              key={topic}
+                              className="flex items-center gap-2 rounded-md bg-card px-3 py-2 text-sm text-foreground shadow-[inset_0_0_0_1px_rgba(148,163,184,0.16)]"
+                            >
+                              <Circle className="h-3 w-3 shrink-0 text-primary/60" />
+                              {topic}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/subjects/${subjectId}/learn/${module.href}`}
+                        className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#0645ad] px-3 py-2 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(6,69,173,0.18)] transition hover:bg-[#053a91]"
+                      >
+                        {module.completed > 0 ? "Continue module" : "Start module"}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            <section
+              id="practice"
+              className={`${styles.section} rounded-lg bg-[#eef5ff] p-6 shadow-[0_14px_34px_rgba(6,69,173,0.1),inset_0_0_0_1px_rgba(6,69,173,0.12)]`}
+            >
+              <div className="grid gap-5 lg:grid-cols-[1fr_260px] lg:items-center">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#0645ad]">
+                    Practice
+                  </p>
+
+                  <h2 className="mt-2 flex items-center gap-2 text-2xl font-semibold text-foreground">
+                    <FileText className="h-5 w-5 text-[#0645ad]" />
+                    PaperLab
+                  </h2>
+
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Practise complete exam papers, time sections, review mark
+                    schemes, and build confidence before moving back into
+                    module study.
+                  </p>
+                </div>
+
+                <Link
+                  href={`/subjects/${subjectId}/papers`}
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-[#0645ad] px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_22px_rgba(6,69,173,0.2)] transition hover:bg-[#053a91]"
+                >
+                  Open PaperLab <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </section>
+
+            <section
+              id="tools"
+              className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
+            >
+
+              <h2 className="font-semibold text-foreground">Tools</h2>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {tools.map((tool) => (
+                  <Link
+                    key={tool.href}
+                    href={`/subjects/${subjectId}/${tool.href}`}
+                    className="flex items-center gap-3 rounded-lg bg-background p-4 shadow-[0_1px_4px_rgba(15,23,42,0.07)] transition hover:bg-primary-soft"
+                  >
+                    <tool.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">
+                      {tool.label}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
+              <h2 className="font-semibold text-foreground">
+                Syllabus topics
+              </h2>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {topics.map((topic) => (
+                  <div
+                    key={topic.name}
+                    className="flex items-center gap-3 rounded-lg bg-background px-4 py-3 shadow-[0_1px_4px_rgba(15,23,42,0.06)]"
+                  >
+                    {topic.done ? (
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                    ) : (
+                      <Circle className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+
+                    <span className="text-sm text-foreground">
+                      {topic.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section
+              id="testimonials"
+              className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
+            >
+              <h2 className="text-2xl font-semibold text-foreground">
+                Why learners choose this workspace
+              </h2>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {testimonials.map((item) => (
+                  <figure
+                    key={item.quote}
+                    className="rounded-lg bg-background p-5 shadow-[0_1px_4px_rgba(15,23,42,0.07),inset_0_0_0_1px_rgba(148,163,184,0.18)]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        aria-hidden="true"
+                        className={`h-14 w-14 shrink-0 rounded-full ${item.photoClass}`}
+                      />
+
+                      <div>
+                        <figcaption className="font-semibold text-foreground">
+                          {item.name}
+                        </figcaption>
+
+                        <p className="text-sm text-muted-foreground">
+                          {item.meta}
+                        </p>
+                      </div>
+                    </div>
+
+                    <blockquote className="mt-5 text-sm leading-7 text-muted-foreground">
+                      &quot;{item.quote}&quot;
+                    </blockquote>
+                  </figure>
+                ))}
+              </div>
+            </section>
+
+            <section
+              id="reviews"
+              className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
+            >
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <h2 className="text-2xl font-semibold text-foreground">
+                  Learner reviews
+                </h2>
+
+                <p className="text-sm text-muted-foreground">
+                  Showing 3 of 1,284 reviews
+                </p>
+              </div>
+
+              <div className="mt-6 grid gap-8 lg:grid-cols-[280px_1fr]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 fill-primary text-primary" />
+
+                    <p className="text-3xl font-semibold text-foreground">
+                      4.8
+                    </p>
+                  </div>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    1,284 reviews
+                  </p>
+
+                  <div className="mt-6 space-y-3">
+                    {ratingBreakdown.map((item) => (
+                      <div
+                        key={item.label}
+                        className="grid grid-cols-[58px_1fr_46px] items-center gap-3 text-sm"
+                      >
+                        <span className="font-medium text-[#0645ad]">
+                          {item.label}
+                        </span>
+
+                        <div className="h-2 overflow-hidden rounded-full bg-[#dbeafe]">
+                          <div
+                            className="h-full rounded-full bg-[#0645ad]"
+                            style={{ width: `${item.value}%` }}
+                          />
+                        </div>
+
+                        <span className="text-right font-medium text-[#0645ad]">
+                          {item.value}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <article
+                      key={`${review.name}-${review.date}`}
+                      className="grid gap-4 rounded-lg bg-background p-5 shadow-[0_1px_4px_rgba(15,23,42,0.07),inset_0_0_0_1px_rgba(148,163,184,0.18)] md:grid-cols-[72px_1fr]"
+                    >
+                      <div className="flex items-center gap-3 md:block">
+                        <div className="grid h-14 w-14 place-items-center rounded-full bg-[#0645ad] text-lg font-semibold text-white">
+                          {review.name}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                          <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                            <Star className="h-4 w-4 fill-primary text-primary" />
+                            {review.rating}
+                          </span>
+
+                          <span className="text-muted-foreground">
+                            {review.date}
+                          </span>
+                        </div>
+
+                        <p className="mt-3 text-sm leading-7 text-foreground">
+                          {review.body}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside className="grid gap-6 md:grid-cols-2">
+            <section className="rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
+              <h2 className="font-semibold text-foreground">
+                Recent activity
+              </h2>
+
+              <div className="mt-4 space-y-4">
+                {recent.map((item) => (
+                  <div key={item.label} className="flex gap-3">
+                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary/40" />
+
+                    <div>
+                      <p className="text-sm text-foreground">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.time}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg bg-amber-50 p-6 shadow-[0_14px_34px_rgba(180,83,9,0.12)]">
+              <div className="flex gap-3">
+                <Sparkles className="mt-0.5 h-5 w-5 text-amber-600" />
+
+                <div>
+                  <h2 className="font-semibold text-foreground">
+                    Recommended next
+                  </h2>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Practise Trace Tables because your algorithm score is below
+                    average.
+                  </p>
+
+                  <Link
+                    href={`/subjects/${subjectId}/learn/algorithms/trace-tables`}
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                  >
+                    Start topic <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </AppShell>
   );
 }

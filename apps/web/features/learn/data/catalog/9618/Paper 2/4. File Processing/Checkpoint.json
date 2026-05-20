@@ -1,0 +1,177 @@
+{
+  "section": "checkpoint",
+  "title": "Checkpoint",
+  "description": "Past-paper file-processing checkpoints with exact question text and marking points.",
+  "questions": [
+    {
+      "id": "fp-checkpoint-1",
+      "type": "checkpoint",
+      "title": "Checkpoint 1 - LastLines Procedure",
+      "paper": "9618/22/M/J/22",
+      "question": "Q4(a)",
+      "marks": 6,
+      "difficulty": "medium",
+      "pattern": "Read all lines and keep the last N values",
+      "task": "4 (a)  A procedure LastLines() will:\n• take the name of a text file as a parameter\n• output the last three lines from that file, in the same order as they appear in the file.\n\nNote:\n• Use local variables LineX, LineY and LineZ to store the three lines from the file.\n• You may assume the file exists and contains at least three lines.\n\nWrite pseudocode for the procedure LastLines().",
+      "expectedThinking": [
+        "Use a procedure header with filename parameter",
+        "Open the file for READ and loop until EOF",
+        "Read one line each iteration",
+        "Shuffle LineX, LineY, LineZ so the newest line is retained",
+        "Close the file",
+        "Output LineX, LineY, LineZ in order"
+      ],
+      "assessment": {
+        "totalMarks": 6,
+        "markScheme": [
+          {
+            "criterion": "Procedure heading (including parameter) and ending",
+            "marks": 1
+          },
+          {
+            "criterion": "Declare local line variables and correctly open/close file",
+            "marks": 1
+          },
+          {
+            "criterion": "Loop to EOF(ThisFile)",
+            "marks": 1
+          },
+          {
+            "criterion": "Read line from file in loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct line shuffle logic (LineX, LineY, LineZ)",
+            "marks": 1
+          },
+          {
+            "criterion": "Output the final three lines in correct sequence",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "PROCEDURE LastLines(ThisFile : STRING)\nDECLARE ThisLine, LineX, LineY, LineZ : STRING\nOPENFILE ThisFile FOR READ\nLineY <- \"\"\nLineZ <- \"\"\nWHILE NOT EOF(ThisFile)\n    READFILE ThisFile, ThisLine\n    LineX <- LineY\n    LineY <- LineZ\n    LineZ <- ThisLine\nENDWHILE\nCLOSEFILE ThisFile\nOUTPUT LineX\nOUTPUT LineY\nOUTPUT LineZ\nENDPROCEDURE",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "fp-checkpoint-2",
+      "type": "checkpoint",
+      "title": "Checkpoint 2 - MakeNewFile Procedure",
+      "paper": "9618/22/O/N/21",
+      "question": "Q5(a)",
+      "marks": 7,
+      "difficulty": "hard",
+      "pattern": "Read grouped records, filter, write to new file, and report counts",
+      "task": "A company has several departments. Each department stores the name, email address and status of each employee in its own text file. Employee details are stored as three separate data strings on three consecutive lines.\n\nModule MakeNewFile() is defined to:\n• take three string parameters (existing file name, new file name, search status value)\n• create a new text file\n• write employee details where status is not equal to the search status\n• count records in source file and records written\n• output a summary.\n\nWrite pseudocode for procedure MakeNewFile().",
+      "expectedThinking": [
+        "Open old file for READ and new file for WRITE",
+        "Read three lines per employee record in a loop",
+        "Count total records read",
+        "Compare status line against search status",
+        "Write all three lines for matching records",
+        "Count copied records and output both counts with file names"
+      ],
+      "assessment": {
+        "totalMarks": 7,
+        "markScheme": [
+          {
+            "criterion": "Procedure heading/ending with three parameters",
+            "marks": 1
+          },
+          {
+            "criterion": "Open OldFile for READ and NewFile for WRITE, then close both",
+            "marks": 1
+          },
+          {
+            "criterion": "Conditional loop to EOF(OldFile)",
+            "marks": 1
+          },
+          {
+            "criterion": "Read three lines per record in loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Compare status and write three lines when status does not match",
+            "marks": 1
+          },
+          {
+            "criterion": "Maintain both counters in loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Final summary output of both counts and file names",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "PROCEDURE MakeNewFile(OldFile, NewFile, Status : STRING)\nDECLARE Line1, Line2, Line3 : STRING\nDECLARE NumCopied, NumRecs : INTEGER\nNumRecs <- 0\nNumCopied <- 0\nOPENFILE OldFile FOR READ\nOPENFILE NewFile FOR WRITE\nWHILE NOT EOF(OldFile)\n    READFILE OldFile, Line1\n    READFILE OldFile, Line2\n    READFILE OldFile, Line3\n    NumRecs <- NumRecs + 1\n    IF Line3 <> Status THEN\n        WRITEFILE NewFile, Line1\n        WRITEFILE NewFile, Line2\n        WRITEFILE NewFile, Line3\n        NumCopied <- NumCopied + 1\n    ENDIF\nENDWHILE\nOUTPUT \"File \", OldFile, \" contained \", NumRecs, \" employee details\"\nOUTPUT NumCopied, \" employee sets of details were written to file \", NewFile\nCLOSEFILE OldFile\nCLOSEFILE NewFile\nENDPROCEDURE",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "fp-checkpoint-3",
+      "type": "checkpoint",
+      "title": "Checkpoint 3 - Save Character Records",
+      "paper": "9618/22/O/N/24",
+      "question": "Q8(b)",
+      "marks": 7,
+      "difficulty": "hard",
+      "pattern": "Convert structured records to delimited lines and write file",
+      "task": "8  A program is being developed to implement a game for up to six players.\n\nDuring the game, each player assembles a team of characters. At the start of the game there are 45 characters available.\n\nEach character has four attributes, as follows:\n\n| Attribute | Examples | Comment |\n|---|---|---|\n| Player | 0, 1, 3 | The player the character is assigned to. |\n| Role | Builder, Teacher, Doctor | The job that the character will perform in the game. |\n| Name | Bill, Lee, Farah, Mo | The name of the character. Several characters may perform the same role, but they will each have a unique name. |\n| Level | 14, 23, 76 | The skill level of the character. An integer in the range 0 to 100 inclusive. |\n\nThe programmer has defined a record type to define each character.\n\nThe record type definition is shown in pseudocode as follows:\n\nTYPE CharacterType\n    DECLARE Player : INTEGER\n    DECLARE Role : STRING\n    DECLARE Name : STRING\n    DECLARE Level : INTEGER\nENDTYPE\n\nThe Player field indicates the player to which the character is assigned (1 to 6). The field value is 0 if the character is not assigned to any player.\n\nThe programmer has defined a global array to store the character data as follows:\n\nDECLARE Character : ARRAY[1:45] OF CharacterType\n\nAt the start of the game all record fields are initialised, and all Player field values are set to 0.\n\nThe programmer has defined a program module as follows:\n\n| Module | Description |\n|---|---|\n| Assign() | * called with two parameters:\\n* an integer representing a player\\n* a string representing a character role\\n* search the Character array for an unassigned character with the required role\\n* If found, assign the character to the given player and output a confirmation message, for example: \"Bill the Builder has been assigned to player 3\"\\n* If no unassigned character with the required role is found, output a suitable message. |\n\nMAIN QUESTION (b)\n\n(b)  A new module will store the contents of the Character array in a text file.\n\nThe module is defined as follows:\n\n| Module | Description |\n|---|---|\n| Save() | * form a string from each record with fields separated by the character \"^\"\\n* write each string to a separate line of the new file named SaveFile.txt |\n\nComplete the pseudocode for module Save().",
+      "expectedThinking": [
+        "Declare local loop/index and line string variables",
+        "Open SaveFile.txt for WRITE",
+        "Loop through all 45 Character records",
+        "Build one line per record with ^ separators",
+        "Convert numeric Player and Level with NUM_TO_STR",
+        "Write each built line then close file"
+      ],
+      "assessment": {
+        "totalMarks": 7,
+        "markScheme": [
+          {
+            "criterion": "Declare local Index (and Line string) variables",
+            "marks": 1
+          },
+          {
+            "criterion": "Open SaveFile.txt in WRITE mode and close it",
+            "marks": 1
+          },
+          {
+            "criterion": "Loop through all 45 elements",
+            "marks": 1
+          },
+          {
+            "criterion": "Attempt to form output line from all four fields",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct NUM_TO_STR usage for Player and Level",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct separator usage between all fields",
+            "marks": 1
+          },
+          {
+            "criterion": "Write each line to file in loop",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "PROCEDURE Save()\nDECLARE Index : INTEGER\nDECLARE Line : STRING\nCONSTANT SEP = \"^\"\nOPENFILE \"SaveFile.txt\" FOR WRITE\nFOR Index <- 1 TO 45\n    Line <- NUM_TO_STR(Character[Index].Player) & SEP\n    Line <- Line & Character[Index].Role & SEP\n    Line <- Line & Character[Index].Name & SEP\n    Line <- Line & NUM_TO_STR(Character[Index].Level)\n    WRITEFILE \"SaveFile.txt\", Line\nNEXT Index\nCLOSEFILE \"SaveFile.txt\"\nENDPROCEDURE",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    }
+  ]
+}

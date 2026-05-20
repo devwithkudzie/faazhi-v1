@@ -1,0 +1,181 @@
+{
+  "section": "practice",
+  "title": "Practice",
+  "description": "Three graded exam-style file handling questions covering advanced file patterns.",
+  "questions": [
+    {
+      "id": "fp-practice-1",
+      "type": "practice",
+      "title": "Practice 1 - Read File into Array",
+      "task": "A file called Scores.txt stores up to 100 integer scores, one per line. Write pseudocode to read all scores into an array called Scores and store the number of scores read in Count.",
+      "marks": 8,
+      "difficulty": "medium",
+      "expectedThinking": [
+        "Use an array to store file values",
+        "Use Count as both record counter and array index",
+        "Use EOF to stop reading",
+        "Read each value into Scores[Count]"
+      ],
+      "assessment": {
+        "totalMarks": 8,
+        "markScheme": [
+          {
+            "criterion": "Correct array declaration",
+            "marks": 1
+          },
+          {
+            "criterion": "DECLARE Count/index variable",
+            "marks": 1
+          },
+          {
+            "criterion": "Initialize Count",
+            "marks": 1
+          },
+          {
+            "criterion": "OPENFILE for READ",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct EOF loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Increment Count correctly",
+            "marks": 1
+          },
+          {
+            "criterion": "READFILE into array element",
+            "marks": 1
+          },
+          {
+            "criterion": "CLOSEFILE used",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE Scores : ARRAY[1:100] OF INTEGER\nDECLARE Count : INTEGER\n\nCount <- 0\n\nOPENFILE \"Scores.txt\" FOR READ\n\nWHILE NOT EOF(\"Scores.txt\")\n    Count <- Count + 1\n    READFILE \"Scores.txt\", Scores[Count]\nENDWHILE\n\nCLOSEFILE \"Scores.txt\"",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "fp-practice-2",
+      "type": "practice",
+      "title": "Practice 2 - Filter and Write File",
+      "task": "A file called Marks.txt stores one mark per line. Write pseudocode to read all marks and write only the marks below 50 to a file called Retake.txt.",
+      "marks": 9,
+      "difficulty": "medium",
+      "expectedThinking": [
+        "Open Marks.txt for reading",
+        "Open Retake.txt for writing",
+        "Use EOF to process all marks",
+        "Use IF to filter marks below 50",
+        "WRITEFILE selected marks to Retake.txt",
+        "Close both files"
+      ],
+      "assessment": {
+        "totalMarks": 9,
+        "markScheme": [
+          {
+            "criterion": "DECLARE mark variable",
+            "marks": 1
+          },
+          {
+            "criterion": "Open input file for READ",
+            "marks": 1
+          },
+          {
+            "criterion": "Open output file for WRITE",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct EOF loop",
+            "marks": 1
+          },
+          {
+            "criterion": "READFILE inside loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct IF condition",
+            "marks": 2
+          },
+          {
+            "criterion": "WRITEFILE selected record",
+            "marks": 1
+          },
+          {
+            "criterion": "Close both files",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE mark : INTEGER\n\nOPENFILE \"Marks.txt\" FOR READ\nOPENFILE \"Retake.txt\" FOR WRITE\n\nWHILE NOT EOF(\"Marks.txt\")\n    READFILE \"Marks.txt\", mark\n\n    IF mark < 50 THEN\n        WRITEFILE \"Retake.txt\", mark\n    ENDIF\nENDWHILE\n\nCLOSEFILE \"Marks.txt\"\nCLOSEFILE \"Retake.txt\"",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "fp-practice-3",
+      "type": "practice",
+      "title": "Practice 3 - Multi-field Records",
+      "task": "A file called Students.txt stores each student's name and mark on each record. Write pseudocode to read all records and output the names of students who scored 80 or more.",
+      "marks": 10,
+      "difficulty": "harder",
+      "expectedThinking": [
+        "Each record contains two fields",
+        "READFILE must read name and mark together",
+        "Use EOF to process all records",
+        "Use IF to check mark >= 80",
+        "Output name only when the condition is true"
+      ],
+      "assessment": {
+        "totalMarks": 10,
+        "markScheme": [
+          {
+            "criterion": "DECLARE name and mark variables",
+            "marks": 1
+          },
+          {
+            "criterion": "OPENFILE for READ",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct EOF loop",
+            "marks": 1
+          },
+          {
+            "criterion": "READFILE reads both fields",
+            "marks": 2
+          },
+          {
+            "criterion": "Correct IF condition",
+            "marks": 2
+          },
+          {
+            "criterion": "OUTPUT correct field (name)",
+            "marks": 1
+          },
+          {
+            "criterion": "CLOSEFILE used",
+            "marks": 1
+          },
+          {
+            "criterion": "Clear structured pseudocode",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE studentName : STRING\nDECLARE mark : INTEGER\n\nOPENFILE \"Students.txt\" FOR READ\n\nWHILE NOT EOF(\"Students.txt\")\n    READFILE \"Students.txt\", studentName, mark\n\n    IF mark >= 80 THEN\n        OUTPUT studentName\n    ENDIF\nENDWHILE\n\nCLOSEFILE \"Students.txt\"",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    }
+  ]
+}

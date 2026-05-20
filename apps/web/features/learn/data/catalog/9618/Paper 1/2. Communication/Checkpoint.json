@@ -1,0 +1,158 @@
+{
+  "id": "communication-checkpoint",
+  "title": "Checkpoint",
+  "description": "Three full past-paper communication questions for exam-readiness.",
+  "notes": "Answer all three in exam style. Focus on explanations and justified choices.",
+  "starterCode": "",
+  "questionPrompt": "Answer all checkpoint questions in exam style.",
+  "marks": 20,
+  "examples": [],
+  "checkpointQuestions": [
+    {
+      "id": "comm-checkpoint-1",
+      "title": "Live Streaming Fundamentals",
+      "paper": "9618/11/M/J/25",
+      "question": "Q2(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/M/J/25 Q2(a)(b)(i): Programmers in a software development company take part in live video conferences. The conferences use real-time bit streaming and video is compressed before transmission. Explain how data is transferred using real-time bit streaming, and explain the reasons why the video is compressed before transmission.",
+      "marks": 8,
+      "objectiveRefs": [
+        "streaming",
+        "compression",
+        "network-performance"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Real-time streaming mechanism explained",
+          "marks": 3
+        },
+        {
+          "criterion": "Compression reasons explained",
+          "marks": 3
+        },
+        {
+          "criterion": "Bandwidth/latency trade-off linked to scenario",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "f1",
+            "label": "Explain real-time bit streaming transfer"
+          },
+          {
+            "id": "f2",
+            "label": "Why compression is used before transmission"
+          },
+          {
+            "id": "f3",
+            "label": "Bandwidth benefit"
+          },
+          {
+            "id": "f4",
+            "label": "Latency/quality trade-off"
+          }
+        ]
+      }
+    },
+    {
+      "id": "comm-checkpoint-2",
+      "title": "LAN Design Decision",
+      "paper": "9618/13/O/N/25",
+      "question": "Q4(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/13/O/N/25 Q4(a)(b): A network engineer is setting up a LAN in an office using wired and wireless connectivity. Give three advantages of a wireless network compared to a wired network, and give one drawback of using a wireless network.",
+      "marks": 6,
+      "objectiveRefs": [
+        "wired-vs-wireless",
+        "lan-design"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Three valid advantages",
+          "marks": 3
+        },
+        {
+          "criterion": "One valid drawback",
+          "marks": 1
+        },
+        {
+          "criterion": "Points are explained in context",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "g1",
+            "label": "Wireless advantage 1"
+          },
+          {
+            "id": "g2",
+            "label": "Wireless advantage 2"
+          },
+          {
+            "id": "g3",
+            "label": "Wireless advantage 3"
+          },
+          {
+            "id": "g4",
+            "label": "One drawback"
+          }
+        ]
+      }
+    },
+    {
+      "id": "comm-checkpoint-3",
+      "title": "Topology and Internet Addressing",
+      "paper": "9618/11/M/J/24",
+      "question": "Q8(a)(b)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/M/J/24 Q8(a)(b): A business is creating a LAN in its office. Identify the correct topology/topologies from given network statements (Bus/Star/Mesh), then answer IP addressing points including public IP reason and IPv4 vs IPv6 differences.",
+      "marks": 6,
+      "objectiveRefs": [
+        "topologies",
+        "ipv4-ipv6",
+        "internet-hardware"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Topology mapping correct",
+          "marks": 3
+        },
+        {
+          "criterion": "Router/public IP explanation valid",
+          "marks": 1
+        },
+        {
+          "criterion": "Two accurate IPv4/IPv6 differences",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "h1",
+            "label": "Topology decision point 1"
+          },
+          {
+            "id": "h2",
+            "label": "Topology decision point 2"
+          },
+          {
+            "id": "h3",
+            "label": "IPv4 vs IPv6 difference 1"
+          },
+          {
+            "id": "h4",
+            "label": "IPv4 vs IPv6 difference 2"
+          }
+        ]
+      }
+    }
+  ]
+}

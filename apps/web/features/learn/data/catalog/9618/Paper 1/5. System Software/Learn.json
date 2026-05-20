@@ -1,0 +1,197 @@
+{
+  "id": "system-software-learn",
+  "title": "Learn",
+  "description": "Objective-based learning for OS management, utilities, translators, and IDE features.",
+  "notes": "Complete each Try It activity to finish System Software.",
+  "starterCode": "",
+  "questionPrompt": "Complete all System Software Try It tasks.",
+  "marks": 12,
+  "examples": [],
+  "lessons": [
+    {
+      "id": "operating-system-management-tasks",
+      "title": "Operating System Management Tasks",
+      "slides": [
+        {
+          "id": "ss-notes-1",
+          "type": "concept",
+          "title": "Operating System Management Tasks",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Memory management allocates/deallocates RAM",
+                "Process management schedules CPU time",
+                "File management controls creation, access and storage",
+                "Security management enforces user access controls"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ss-tryit-1",
+          "type": "tryit",
+          "title": "Try It: OS Task Classification",
+          "task": "Match each task to its OS management category.",
+          "marks": 4,
+          "responseMode": "matching",
+          "responseConfig": {
+            "matchingPairs": [
+              {
+                "id": "m1",
+                "left": "Swapping processes between RAM and secondary storage",
+                "options": [
+                  "Memory management",
+                  "File management",
+                  "Translator management"
+                ],
+                "answer": "Memory management"
+              },
+              {
+                "id": "m2",
+                "left": "Allocating CPU time slices",
+                "options": [
+                  "Process management",
+                  "Backup utility",
+                  "Compression"
+                ],
+                "answer": "Process management"
+              },
+              {
+                "id": "m3",
+                "left": "Controlling read/write file permissions",
+                "options": [
+                  "File/security management",
+                  "Assembler operation",
+                  "Bus control"
+                ],
+                "answer": "File/security management"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "language-translators",
+      "title": "Language Translators",
+      "slides": [
+        {
+          "id": "ss-notes-2",
+          "type": "concept",
+          "title": "Language Translators",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Compilers translate whole programs before execution, while interpreters translate and execute line by line."
+            }
+          ]
+        },
+        {
+          "id": "ss-notes-2__slide-2",
+          "type": "concept",
+          "title": "Language Translators: Key terms",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "keyword",
+              "label": "Exam Tip",
+              "text": "Explain translator choice using development stage and debugging requirements.",
+              "tone": "amber"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "ss-tryit-2",
+          "type": "tryit",
+          "title": "Try It: Compiler vs Interpreter",
+          "task": "Select all correct statements.",
+          "marks": 4,
+          "responseMode": "checkbox",
+          "responseConfig": {
+            "allowMultiple": true,
+            "checkboxOptions": [
+              {
+                "id": "c1",
+                "label": "Interpreters can help locate errors quickly during development.",
+                "isCorrect": true
+              },
+              {
+                "id": "c2",
+                "label": "Compilers produce executable code for distribution.",
+                "isCorrect": true
+              },
+              {
+                "id": "c3",
+                "label": "Interpreters always run faster than compiled executables.",
+                "isCorrect": false
+              },
+              {
+                "id": "c4",
+                "label": "Compilers translate source line-by-line during each run.",
+                "isCorrect": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "ide-and-utility-software",
+      "title": "IDE and Utility Software",
+      "slides": [
+        {
+          "id": "ss-notes-3",
+          "type": "concept",
+          "title": "IDE and Utility Software",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "IDE coding tools: context-sensitive prompts, syntax checks",
+                "IDE debugging tools: breakpoints, single stepping, watch windows",
+                "Utility software: backup, compression, antivirus, defragmentation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ss-tryit-3",
+          "type": "tryit",
+          "title": "Try It: Fill Key Terms",
+          "task": "Complete the system software terms.",
+          "marks": 4,
+          "responseMode": "fill-in",
+          "responseConfig": {
+            "fillInFields": [
+              {
+                "id": "f1",
+                "label": "A ______ translates assembly language into machine code.",
+                "answer": "assembler"
+              },
+              {
+                "id": "f2",
+                "label": "______ stepping is an IDE debugging feature.",
+                "answer": "single"
+              },
+              {
+                "id": "f3",
+                "label": "File ______ software protects against data loss.",
+                "answer": "backup"
+              },
+              {
+                "id": "f4",
+                "label": "An OS task for sharing CPU between tasks is process ______.",
+                "answer": "management"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

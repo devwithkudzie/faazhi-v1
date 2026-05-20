@@ -1,5 +1,9 @@
 {
   "scripts": {
-    "dev:web": "cd apps/web && npm run dev"
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:api": "cd apps/api && npm run dev",
+    "typecheck:api": "cd api && npm run typecheck",
+    "db:seed-json": "cd api && npm run db:seed-json"
   }
 }
+    

@@ -1,0 +1,316 @@
+{
+  "id": "processor-fundamentals-practice",
+  "title": "Practice",
+  "description": "Past-paper practice on CPU architecture, fetch-execute and instruction tracing.",
+  "notes": "Attempt all six and show working for all trace-style parts.",
+  "starterCode": "",
+  "questionPrompt": "Answer the following Processor Fundamentals practice questions.",
+  "marks": 26,
+  "examples": [],
+  "practiceQuestions": [
+    {
+      "id": "pf-practice-1",
+      "title": "Register Purpose Table",
+      "prompt": "9618/12/O/N/24 Q3(a): Describe the purpose of PC, MAR, MDR and IX.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/12/O/N/24",
+      "question": "Q3(a)",
+      "objectiveRefs": [
+        "registers",
+        "von-neumann"
+      ],
+      "markScheme": [
+        {
+          "criterion": "PC role correct",
+          "marks": 1
+        },
+        {
+          "criterion": "MAR role correct",
+          "marks": 1
+        },
+        {
+          "criterion": "MDR role correct",
+          "marks": 1
+        },
+        {
+          "criterion": "IX role correct",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "PC purpose"
+          },
+          {
+            "id": "b",
+            "label": "MAR purpose"
+          },
+          {
+            "id": "c",
+            "label": "MDR purpose"
+          },
+          {
+            "id": "d",
+            "label": "IX purpose"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-practice-2",
+      "title": "HDMI vs VGA",
+      "prompt": "9618/12/O/N/24 Q3(b): Explain why HDMI is better than VGA for a high-resolution monitor with speakers.",
+      "marks": 3,
+      "sourceType": "past-paper",
+      "paper": "9618/12/O/N/24",
+      "question": "Q3(b)",
+      "objectiveRefs": [
+        "ports",
+        "signal-quality"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Digital quality / resolution point",
+          "marks": 1
+        },
+        {
+          "criterion": "Audio carriage point",
+          "marks": 1
+        },
+        {
+          "criterion": "Applied comparison quality",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "HDMI advantage 1 over VGA"
+          },
+          {
+            "id": "b",
+            "label": "HDMI advantage 2 over VGA"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-practice-3",
+      "title": "CPU Performance Factors",
+      "prompt": "9618/11/O/N/24 Q3(a)(b): Explain system clock and CU roles and one additional processor performance factor.",
+      "marks": 5,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/24",
+      "question": "Q3(a)(b)",
+      "objectiveRefs": [
+        "cpu-components",
+        "performance"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Clock role correct",
+          "marks": 1
+        },
+        {
+          "criterion": "CU role correct",
+          "marks": 1
+        },
+        {
+          "criterion": "Valid performance factor",
+          "marks": 1
+        },
+        {
+          "criterion": "Why it affects performance",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "System clock purpose"
+          },
+          {
+            "id": "b",
+            "label": "Control Unit purpose"
+          },
+          {
+            "id": "c",
+            "label": "One other performance factor"
+          },
+          {
+            "id": "d",
+            "label": "Why it affects performance"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-practice-4",
+      "title": "Instruction Trace (ACC/IX)",
+      "prompt": "9618/12/M/J/24 Q5(a): Complete ACC values after each short assembly program.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/12/M/J/24",
+      "question": "Q5(a)",
+      "objectiveRefs": [
+        "assembly-trace",
+        "addressing-modes"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Program 1 ACC correct",
+          "marks": 1
+        },
+        {
+          "criterion": "Program 2 ACC correct",
+          "marks": 1
+        },
+        {
+          "criterion": "Program 3 ACC correct",
+          "marks": 1
+        },
+        {
+          "criterion": "Program 4 ACC correct",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "p1",
+            "label": "Program 1 ACC content"
+          },
+          {
+            "id": "p2",
+            "label": "Program 2 ACC content"
+          },
+          {
+            "id": "p3",
+            "label": "Program 3 ACC content"
+          },
+          {
+            "id": "p4",
+            "label": "Program 4 ACC content"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-practice-5",
+      "title": "Bit Manipulation Trace",
+      "prompt": "9618/13/O/N/25 Q6(a): Complete ACC values after AND/LDM/XOR/CMP instructions.",
+      "marks": 4,
+      "sourceType": "past-paper",
+      "paper": "9618/13/O/N/25",
+      "question": "Q6(a)",
+      "objectiveRefs": [
+        "bitwise-ops",
+        "instruction-trace"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Four ACC outcomes correctly determined",
+          "marks": 4
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "r1",
+            "label": "ACC after instruction 1"
+          },
+          {
+            "id": "r2",
+            "label": "ACC after instruction 2"
+          },
+          {
+            "id": "r3",
+            "label": "ACC after instruction 3"
+          },
+          {
+            "id": "r4",
+            "label": "ACC after instruction 4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-practice-6",
+      "title": "Fetch-Execute Error Spotting",
+      "prompt": "9618/11/O/N/21 Q6(a): Identify two errors in register transfer notation and correct them.",
+      "marks": 6,
+      "sourceType": "past-paper",
+      "paper": "9618/11/O/N/21",
+      "question": "Q6(a)",
+      "objectiveRefs": [
+        "fetch-execute",
+        "register-transfer-notation"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Error line number 1 identified",
+          "marks": 1
+        },
+        {
+          "criterion": "Error description 1",
+          "marks": 1
+        },
+        {
+          "criterion": "Correction 1",
+          "marks": 1
+        },
+        {
+          "criterion": "Error line number 2 identified",
+          "marks": 1
+        },
+        {
+          "criterion": "Error description 2",
+          "marks": 1
+        },
+        {
+          "criterion": "Correction 2",
+          "marks": 1
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Error line number 1"
+          },
+          {
+            "id": "b",
+            "label": "Error description 1"
+          },
+          {
+            "id": "c",
+            "label": "Correct statement 1"
+          },
+          {
+            "id": "d",
+            "label": "Error line number 2"
+          },
+          {
+            "id": "e",
+            "label": "Error description 2"
+          },
+          {
+            "id": "f",
+            "label": "Correct statement 2"
+          }
+        ]
+      }
+    }
+  ]
+}

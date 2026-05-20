@@ -1,0 +1,11 @@
+.section {
+  scroll-margin-top: 92px;
+}
+
+.module summary::-webkit-details-marker {
+  display: none;
+}
+
+.module[open] .chevron {
+  transform: rotate(180deg);
+}

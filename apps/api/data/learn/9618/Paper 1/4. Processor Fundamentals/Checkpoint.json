@@ -1,0 +1,154 @@
+{
+  "id": "processor-fundamentals-checkpoint",
+  "title": "Checkpoint",
+  "description": "Three full past-paper processor fundamentals questions covering architecture, assembly and FE cycle.",
+  "notes": "Answer all questions with clear working and register states.",
+  "starterCode": "",
+  "questionPrompt": "Answer all checkpoint questions in exam style.",
+  "marks": 20,
+  "examples": [],
+  "checkpointQuestions": [
+    {
+      "id": "pf-checkpoint-1",
+      "title": "Von Neumann Register and Port Application",
+      "paper": "9618/12/O/N/24",
+      "question": "Q3",
+      "sourceType": "past-paper",
+      "prompt": "9618/12/O/N/24 Q3: A student has a computer designed using the Von Neumann model. Describe the purpose of PC, MAR, MDR and IX. Then explain the benefits of connecting a 2560 x 1600 monitor with built-in speakers using HDMI instead of VGA.",
+      "marks": 6,
+      "objectiveRefs": [
+        "von-neumann",
+        "registers",
+        "ports"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Register purposes accurate",
+          "marks": 4
+        },
+        {
+          "criterion": "HDMI vs VGA advantages justified",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "PC purpose"
+          },
+          {
+            "id": "b",
+            "label": "MAR purpose"
+          },
+          {
+            "id": "c",
+            "label": "MDR purpose"
+          },
+          {
+            "id": "d",
+            "label": "IX purpose"
+          },
+          {
+            "id": "e",
+            "label": "Why HDMI over VGA in this scenario"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-checkpoint-2",
+      "title": "Assembly and Addressing Mastery",
+      "paper": "9618/12/M/J/24",
+      "question": "Q5",
+      "sourceType": "past-paper",
+      "prompt": "9618/12/M/J/24 Q5: Using the given instruction set and memory/register contents, complete ACC values after each program sequence and apply bit manipulation understanding to instruction outcomes.",
+      "marks": 8,
+      "objectiveRefs": [
+        "assembly",
+        "addressing",
+        "bit-manipulation"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Trace accuracy across addressing modes",
+          "marks": 4
+        },
+        {
+          "criterion": "Bitwise operation outcomes",
+          "marks": 2
+        },
+        {
+          "criterion": "Working clarity and register-state logic",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Trace results (programs/steps)"
+          },
+          {
+            "id": "b",
+            "label": "Addressing-mode reasoning"
+          },
+          {
+            "id": "c",
+            "label": "Bit manipulation outcomes"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pf-checkpoint-3",
+      "title": "Fetch-Execute Error Diagnosis",
+      "paper": "9618/11/O/N/21",
+      "question": "Q6(a)",
+      "sourceType": "past-paper",
+      "prompt": "9618/11/O/N/21 Q6(a): There are two errors in register transfer notation for the fetch-execute cycle. Identify the line number of each error, describe the error, and write the correct statement.",
+      "marks": 6,
+      "objectiveRefs": [
+        "fetch-execute",
+        "rtn"
+      ],
+      "markScheme": [
+        {
+          "criterion": "Both faulty lines identified",
+          "marks": 2
+        },
+        {
+          "criterion": "Error explanations correct",
+          "marks": 2
+        },
+        {
+          "criterion": "Corrected RTN statements valid",
+          "marks": 2
+        }
+      ],
+      "responseMode": "fill-in",
+      "responseConfig": {
+        "fillInFields": [
+          {
+            "id": "a",
+            "label": "Faulty line 1"
+          },
+          {
+            "id": "b",
+            "label": "Correction 1"
+          },
+          {
+            "id": "c",
+            "label": "Faulty line 2"
+          },
+          {
+            "id": "d",
+            "label": "Correction 2"
+          }
+        ]
+      }
+    }
+  ]
+}

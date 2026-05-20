@@ -1,0 +1,100 @@
+{
+  "id": "information-representation-practice",
+  "title": "Practice",
+  "description": "Mixed fluency set: generated variants plus past-paper-style items.",
+  "notes": "Practice completion target: attempt at least 3 and average at least 75%.",
+  "starterCode": "",
+  "questionPrompt": "Answer the following Information Representation practice questions.",
+  "marks": 24,
+  "examples": [],
+  "practiceQuestions": [
+    {
+      "id": "ir-practice-1",
+      "title": "Binary to Hex Conversion",
+      "prompt": "Convert 11101001₂ to hexadecimal and denary. Show your working.",
+      "marks": 4,
+      "sourceType": "generated",
+      "difficulty": "easy",
+      "objectiveRefs": ["number-systems", "conversions"],
+      "markScheme": [
+        { "criterion": "Correct hexadecimal value", "marks": 2 },
+        { "criterion": "Correct denary value", "marks": 2 }
+      ],
+      "expectedAnswer": "Hex: E9, Denary: 233"
+    },
+    {
+      "id": "ir-practice-2",
+      "title": "Binary Addition",
+      "prompt": "Add 01011110₂ and 00110101₂.",
+      "marks": 3,
+      "sourceType": "generated",
+      "difficulty": "easy",
+      "objectiveRefs": ["binary-arithmetic"],
+      "markScheme": [
+        { "criterion": "Correct binary sum", "marks": 3 }
+      ],
+      "expectedAnswer": "10010011₂"
+    },
+    {
+      "id": "ir-practice-3",
+      "title": "Bit Shift Reasoning",
+      "prompt": "State the result of shifting 00110110₂ right by 2 and explain the effect on value.",
+      "marks": 3,
+      "sourceType": "generated",
+      "difficulty": "easy",
+      "objectiveRefs": ["bit-shifts"],
+      "markScheme": [
+        { "criterion": "Correct shifted binary", "marks": 2 },
+        { "criterion": "Correct value effect explained", "marks": 1 }
+      ],
+      "expectedAnswer": "00001101₂, value is divided by 4"
+    },
+    {
+      "id": "ir-practice-4",
+      "title": "Image File Size Factors",
+      "prompt": "Explain two factors that increase image file size and briefly state why.",
+      "marks": 4,
+      "sourceType": "past-paper-style",
+      "difficulty": "medium",
+      "objectiveRefs": ["image-representation"],
+      "markScheme": [
+        { "criterion": "Names valid factor 1", "marks": 1 },
+        { "criterion": "Explains factor 1 effect", "marks": 1 },
+        { "criterion": "Names valid factor 2", "marks": 1 },
+        { "criterion": "Explains factor 2 effect", "marks": 1 }
+      ]
+    },
+    {
+      "id": "ir-practice-5",
+      "title": "Audio Sampling Concepts",
+      "prompt": "Describe how sampling rate and bit depth affect both sound quality and storage requirements.",
+      "marks": 5,
+      "sourceType": "past-paper-style",
+      "difficulty": "medium",
+      "objectiveRefs": ["sound-representation"],
+      "markScheme": [
+        { "criterion": "Sampling rate effect on quality", "marks": 1 },
+        { "criterion": "Sampling rate effect on file size", "marks": 1 },
+        { "criterion": "Bit depth effect on quality", "marks": 1 },
+        { "criterion": "Bit depth effect on file size", "marks": 1 },
+        { "criterion": "Clear use of technical vocabulary", "marks": 1 }
+      ]
+    },
+    {
+      "id": "ir-practice-6",
+      "title": "Data Representation Comparison",
+      "prompt": "A school wants to store icon images and spoken feedback clips. Compare one image setting and one audio setting they can reduce to save storage, with one drawback for each.",
+      "marks": 5,
+      "sourceType": "generated",
+      "difficulty": "hard",
+      "objectiveRefs": ["applied-representation", "evaluation"],
+      "markScheme": [
+        { "criterion": "Valid image setting to reduce", "marks": 1 },
+        { "criterion": "Valid image drawback", "marks": 1 },
+        { "criterion": "Valid audio setting to reduce", "marks": 1 },
+        { "criterion": "Valid audio drawback", "marks": 1 },
+        { "criterion": "Balanced comparison", "marks": 1 }
+      ]
+    }
+  ]
+}

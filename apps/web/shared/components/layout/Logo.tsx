@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 
 type LogoProps = {
@@ -29,24 +30,29 @@ export function Logo({
       : "/faazhi-logo.svg";
 
   const sizeClass = {
-    sm: "h-8",
-    md: "h-12",
-    lg: "h-24",
+    sm: "h-7",
+    md: "h-9",
+    lg: "h-16",
   }[size];
 
   return (
-    <Link href="/" className="group flex items-center gap-2">
+    <Link href="/" className="group flex h-10 items-center">
       {compact ? (
-        <img
+        <Image
           src="/faazhi-favicon.svg"
           alt="Faazhi"
+          width={36}
+          height={36}
           className="h-9 w-9 rounded-md shadow-sm"
         />
       ) : (
-        <img
+        <Image
           src={logoSrc}
           alt="Faazhi"
+          width={300}
+          height={86}
           className={`${sizeClass} w-auto`}
+          priority={size === "lg"}
         />
       )}
     </Link>

@@ -1,0 +1,379 @@
+{
+  "section": "learn",
+  "title": "Learn",
+  "lessons": [
+    {
+      "id": "what-is-pseudocode",
+      "title": "What is Pseudocode?",
+      "slides": [
+        {
+          "id": "l1-notes",
+          "type": "concept",
+          "title": "What is Pseudocode?",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Pseudocode is a way of writing the steps of a program using simple, structured English."
+            },
+            {
+              "type": "paragraph",
+              "text": "It is not a real programming language. It is used to plan a solution before writing actual code."
+            }
+          ]
+        },
+        {
+          "id": "l1-notes__slide-2",
+          "type": "concept",
+          "title": "In Cambridge 9618, pseudocode helps you show:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "In Cambridge 9618, pseudocode helps you show:",
+              "items": [
+                "What data is needed",
+                "What processing happens",
+                "What result is produced"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l1-notes__slide-3",
+          "type": "concept",
+          "title": "A good pseudocode answer should be:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "A good pseudocode answer should be:",
+              "items": [
+                "Clear",
+                "Logical",
+                "Step-by-step",
+                "Easy to follow"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l1-example",
+          "type": "example",
+          "title": "Display the message Welcome",
+          "duration": 12,
+          "problem": "Display the message Welcome.",
+          "code": "OUTPUT \"Welcome\"",
+          "explanation": "This uses OUTPUT because the program only needs to display a message."
+        },
+        {
+          "id": "l1-tryit",
+          "type": "tryit",
+          "title": "Try It",
+          "task": "Write pseudocode to display the message: Hello Student",
+          "marks": 2,
+          "expectedAnswer": "OUTPUT \"Hello Student\"",
+          "markScheme": [
+            {
+              "criterion": "OUTPUT statement used correctly",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct message displayed",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "input-output-and-variables",
+      "title": "Input, Output and Variables",
+      "slides": [
+        {
+          "id": "l2-notes",
+          "type": "concept",
+          "title": "Input, Output and Variables",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Most programs need to receive data, store it, and display results."
+            }
+          ]
+        },
+        {
+          "id": "l2-notes__slide-2",
+          "type": "concept",
+          "title": "Input, Output and Variables: Key terms",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "keyword",
+              "label": "INPUT",
+              "text": "Use when the user enters data."
+            },
+            {
+              "type": "keyword",
+              "label": "OUTPUT",
+              "text": "Use when the program displays a result."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l2-notes__slide-3",
+          "type": "concept",
+          "title": "Input, Output and Variables (3/5)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Use variables to store values."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l2-notes__slide-4",
+          "type": "concept",
+          "title": "Input, Output and Variables: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "DECLARE age : INTEGER\nINPUT age\nOUTPUT age"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l2-notes__slide-5",
+          "type": "concept",
+          "title": "Input, Output and Variables (5/5)",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Here: age stores the value entered by the user."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l2-example",
+          "type": "example",
+          "title": "Input a student's name and display it",
+          "duration": 12,
+          "problem": "Input a student's name and display it.",
+          "code": "DECLARE name : STRING\n\nINPUT name\n\nOUTPUT name",
+          "explanation": "The variable name stores the input. The program then outputs the same value."
+        },
+        {
+          "id": "l2-tryit",
+          "type": "tryit",
+          "title": "Try It",
+          "task": "Write pseudocode to input a student's age and display it.",
+          "marks": 4,
+          "expectedAnswer": "DECLARE age : INTEGER\n\nINPUT age\n\nOUTPUT age",
+          "markScheme": [
+            {
+              "criterion": "DECLARE statement for age",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct data type used",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT statement used",
+              "marks": 1
+            },
+            {
+              "criterion": "OUTPUT statement used",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "the-ipo-thinking-model",
+      "title": "The IPO Thinking Model",
+      "slides": [
+        {
+          "id": "l3-notes",
+          "type": "concept",
+          "title": "The IPO Thinking Model",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Every simple problem can be solved using this model: INPUT -> PROCESS -> OUTPUT."
+            }
+          ]
+        },
+        {
+          "id": "l3-notes__slide-2",
+          "type": "concept",
+          "title": "Ask yourself:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "Ask yourself:",
+              "items": [
+                "What data do I need?",
+                "What must I do with the data?",
+                "What result must I display?"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l3-example",
+          "type": "example",
+          "title": "Input two numbers and output their sum",
+          "duration": 12,
+          "problem": "Input two numbers and output their sum.",
+          "thinking": {
+            "input": [
+              "num1",
+              "num2"
+            ],
+            "process": [
+              "total <- num1 + num2"
+            ],
+            "output": [
+              "total"
+            ]
+          },
+          "code": "DECLARE num1, num2, total : INTEGER\n\nINPUT num1\nINPUT num2\n\ntotal <- num1 + num2\n\nOUTPUT total",
+          "explanation": "This follows the IPO model: the program inputs two numbers, processes them by adding them, then outputs the total."
+        },
+        {
+          "id": "l3-tryit",
+          "type": "tryit",
+          "title": "Try It",
+          "task": "Write pseudocode to input two numbers and output their difference.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE num1, num2, difference : INTEGER\n\nINPUT num1\nINPUT num2\n\ndifference <- num1 - num2\n\nOUTPUT difference",
+          "markScheme": [
+            {
+              "criterion": "DECLARE variables",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT first number",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT second number",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct subtraction process",
+              "marks": 2
+            },
+            {
+              "criterion": "OUTPUT result",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "simple-calculations",
+      "title": "Simple Calculations",
+      "slides": [
+        {
+          "id": "l4-notes",
+          "type": "concept",
+          "title": "Simple Calculations",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Pseudocode can be used to calculate values."
+            }
+          ]
+        },
+        {
+          "id": "l4-notes__slide-2",
+          "type": "concept",
+          "title": "Common operators:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "Common operators:",
+              "items": [
+                "+ add",
+                "- subtract",
+                "* multiply",
+                "/ divide"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "l4-example",
+          "type": "example",
+          "title": "Calculate the area of a rectangle",
+          "duration": 12,
+          "problem": "Input the length and width of a rectangle, calculate the area, and output the area.",
+          "thinking": {
+            "input": [
+              "length",
+              "width"
+            ],
+            "process": [
+              "area <- length * width"
+            ],
+            "output": [
+              "area"
+            ]
+          },
+          "code": "DECLARE length, width, area : REAL\n\nINPUT length\nINPUT width\n\narea <- length * width\n\nOUTPUT area",
+          "explanation": "The formula is applied during the PROCESS stage. The result is then displayed using OUTPUT."
+        },
+        {
+          "id": "l4-tryit",
+          "type": "tryit",
+          "title": "Try It",
+          "task": "Input the price of an item and the quantity bought. Calculate and output the total cost.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE price, quantity, total : REAL\n\nINPUT price\nINPUT quantity\n\ntotal <- price * quantity\n\nOUTPUT total",
+          "markScheme": [
+            {
+              "criterion": "DECLARE price, quantity and total",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT price",
+              "marks": 1
+            },
+            {
+              "criterion": "INPUT quantity",
+              "marks": 1
+            },
+            {
+              "criterion": "Correct calculation total <- price * quantity",
+              "marks": 2
+            },
+            {
+              "criterion": "OUTPUT total",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

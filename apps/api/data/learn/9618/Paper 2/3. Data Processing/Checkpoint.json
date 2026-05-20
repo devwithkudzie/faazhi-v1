@@ -1,0 +1,118 @@
+{
+  "section": "checkpoint",
+  "title": "Checkpoint",
+  "description": "Past-paper data processing checkpoints using extracted question prompts and marking points.",
+  "questions": [
+    {
+      "id": "dp-checkpoint-1",
+      "type": "checkpoint",
+      "title": "Checkpoint 1 - Largest and Average Excluding Largest",
+      "paper": "9618/21/M/J/21",
+      "question": "Q2(c)",
+      "marks": 6,
+      "difficulty": "medium",
+      "pattern": "Largest value plus adjusted average",
+      "context": "A program will:\n- input 50 unique integer values\n- output the largest value\n- output the average of the values excluding the largest value.",
+      "task": "Draw a program flowchart to represent the algorithm.\nVariable declarations are not required.\nIt is not necessary to check that each input value is unique.",
+      "expectedThinking": [
+        "Initialise MAX to the first value input",
+        "Set Total to zero before accumulation",
+        "Input 50 values in total",
+        "Accumulate the running total",
+        "Update MAX when a larger value is found",
+        "Calculate average excluding MAX and output results"
+      ],
+      "assessment": {
+        "totalMarks": 6,
+        "markScheme": [
+          { "criterion": "Initialise MAX from an input value", "marks": 1 },
+          { "criterion": "Initialise Total correctly", "marks": 1 },
+          { "criterion": "Input 50 values in total", "marks": 1 },
+          { "criterion": "Sum all input values", "marks": 1 },
+          { "criterion": "Update MAX when input > MAX in loop", "marks": 1 },
+          { "criterion": "Exclude largest from average and output", "marks": 1 }
+        ],
+        "expectedAnswer": "DECLARE Value, MAX, Total : INTEGER\nDECLARE Average : REAL\nDECLARE Index : INTEGER\n\nTotal <- 0\nINPUT Value\nMAX <- Value\nTotal <- Total + Value\n\nFOR Index <- 2 TO 50\n    INPUT Value\n    Total <- Total + Value\n    IF Value > MAX THEN\n        MAX <- Value\n    ENDIF\nNEXT Index\n\nAverage <- (Total - MAX) / 49\nOUTPUT MAX\nOUTPUT Average",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "dp-checkpoint-2",
+      "type": "checkpoint",
+      "title": "Checkpoint 2 - Odd/Even Indexed Totals in Array",
+      "paper": "9618/21/M/J/24",
+      "question": "Q4",
+      "marks": 6,
+      "difficulty": "medium",
+      "pattern": "Array traversal and comparative totals",
+      "context": "A global 1D array Data contains 100 elements of type integer.\nA function Check() will:\n- total the element values in odd index locations (1, 3, 5 ... 97, 99)\n- total the element values in even index locations (2, 4, 6 ... 98, 100)\n- return one of three strings \"Odd\", \"Even\" or \"Same\" to indicate which total is greater, or whether the totals are the same.",
+      "task": "Write pseudocode for the function Check().",
+      "expectedThinking": [
+        "Declare integer totals for odd and even index groups",
+        "Loop through all 100 index positions",
+        "Use MOD 2 to identify odd or even index",
+        "Accumulate into the correct running total",
+        "Compare totals and return the correct string"
+      ],
+      "assessment": {
+        "totalMarks": 6,
+        "markScheme": [
+          { "criterion": "Function heading/ending and return type", "marks": 1 },
+          { "criterion": "Declare local variables Odd, Even, Index", "marks": 1 },
+          { "criterion": "Initialise Odd and Even totals", "marks": 1 },
+          { "criterion": "Loop through 100 elements", "marks": 1 },
+          { "criterion": "Correct odd/even accumulation in loop", "marks": 1 },
+          { "criterion": "Compare totals and return Odd/Even/Same", "marks": 1 }
+        ],
+        "expectedAnswer": "FUNCTION Check() RETURNS STRING\nDECLARE Odd, Even, Index : INTEGER\nOdd <- 0\nEven <- 0\n\nFOR Index <- 1 TO 100\n    IF Index MOD 2 = 0 THEN\n        Even <- Even + Data[Index]\n    ELSE\n        Odd <- Odd + Data[Index]\n    ENDIF\nNEXT Index\n\nIF Odd > Even THEN\n    RETURN \"Odd\"\nELSE\n    IF Even > Odd THEN\n        RETURN \"Even\"\n    ELSE\n        RETURN \"Same\"\n    ENDIF\nENDIF\nENDFUNCTION",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "dp-checkpoint-3",
+      "type": "checkpoint",
+      "title": "Checkpoint 3 - Loyalty Points Reporting",
+      "paper": "9618/22/M/J/25",
+      "question": "Q7(b)",
+      "marks": 7,
+      "difficulty": "hard",
+      "pattern": "2D array scan with condition and aggregate",
+      "context": "A program is being developed to implement a customer loyalty scheme for a coffee shop.\n\nEach customer has a unique customer ID starting at 10001, increasing by one each time a new customer joins the loyalty scheme.\n\nThe loyalty scheme is limited to 1000 customers.\n\nA customer is awarded a loyalty point every time they buy a coffee.\n\nA global 2D array Loyalty of type INTEGER is used.\nLoyalty has 1000 rows and 2 columns.\nEach row relates to one customer:\n- column 1 stores the unique customer ID\n- column 2 stores the number of customer loyalty points\n\nRows in the Loyalty array that are not currently being used have column 1 set to 99999.\n\nThe array is sorted in ascending order by customer ID.\n\n| Module | Description |\n| --- | --- |\n| FindCustomer() | - called with an INTEGER parameter representing a customer ID\\n- searches the Loyalty array for this customer ID\\n- the search stops as soon as the customer ID is found\\n- efficiently handles when the customer ID is not stored\\n- returns loyalty points if found, otherwise returns -1 |",
+      "task": "A customer can claim a free coffee for every 11 loyalty points.\n\n| Module | Description |\n| --- | --- |\n| PointsReport() | - output the customer ID for each customer who has 11 or more loyalty points\\n- output the average loyalty points for all customers in the Loyalty array with an appropriate message |\n\nWrite efficient pseudocode for module PointsReport().\nAssume the array contains the data for at least one customer.",
+      "expectedThinking": [
+        "Create procedure and local counters/accumulators",
+        "Iterate through valid rows in Loyalty",
+        "Stop at sentinel value 99999 in column 1 (or row limit)",
+        "Output customer IDs where points >= 11",
+        "Accumulate total points and customer count",
+        "Calculate and output average with a message"
+      ],
+      "assessment": {
+        "totalMarks": 7,
+        "markScheme": [
+          { "criterion": "Create procedure header and ending", "marks": 1 },
+          { "criterion": "Declare and initialise Index, Sum, Count", "marks": 1 },
+          { "criterion": "Loop through Loyalty records", "marks": 1 },
+          { "criterion": "Terminate loop at 99999 (or equivalent bound-safe stop)", "marks": 1 },
+          { "criterion": "Check points >= 11 and output customer ID", "marks": 1 },
+          { "criterion": "Accumulate Sum and increment Count", "marks": 1 },
+          { "criterion": "Calculate and output average with message", "marks": 1 }
+        ],
+        "expectedAnswer": "PROCEDURE PointsReport()\nDECLARE Count : INTEGER\nDECLARE Index : INTEGER\nDECLARE Sum : INTEGER\nDECLARE Average : REAL\n\nIndex <- 1\nCount <- 0\nSum <- 0\n\nWHILE Loyalty[Index, 1] <> 99999 AND Index <= 1000\n    IF Loyalty[Index, 2] >= 11 THEN\n        OUTPUT Loyalty[Index, 1]\n    ENDIF\n\n    Count <- Count + 1\n    Sum <- Sum + Loyalty[Index, 2]\n    Index <- Index + 1\nENDWHILE\n\nAverage <- Sum / Count\nOUTPUT \"The average points of all the customers is \", Average\nENDPROCEDURE",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    }
+  ]
+}

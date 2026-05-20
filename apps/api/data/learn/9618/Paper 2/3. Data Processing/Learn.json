@@ -1,0 +1,182 @@
+{
+  "section": "learn",
+  "title": "Learn",
+  "description": "Core Data Processing learning flow for Cambridge 9618 Paper 2.",
+  "lessons": [
+    {
+      "id": "ipo-thinking-for-data-processing",
+      "title": "IPO Thinking for Data Processing",
+      "slides": [
+        {
+          "id": "dp-learn-1-notes",
+          "type": "concept",
+          "title": "IPO Thinking for Data Processing",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Data processing means taking input data, performing useful processing, and producing output."
+            },
+            {
+              "type": "definition",
+              "label": "IPO",
+              "text": "Input → Process → Output"
+            }
+          ]
+        },
+        {
+          "id": "dp-learn-1-notes__slide-2",
+          "type": "concept",
+          "title": "Before writing pseudocode, ask:",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "list",
+              "title": "Before writing pseudocode, ask:",
+              "items": [
+                "What data is given or input?",
+                "What result must be produced?",
+                "What processing is needed?",
+                "Do I need a loop?",
+                "Do I need an IF condition?",
+                "Do I need a counter, total, highest or lowest variable?"
+              ]
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-learn-1-example",
+          "type": "example",
+          "title": "Total of Five Numbers",
+          "duration": 12,
+          "problem": "Input five numbers and output their total.",
+          "code": "DECLARE num, total, i : INTEGER\n\ntotal <- 0\n\nFOR i <- 1 TO 5\n    INPUT num\n    total <- total + num\nNEXT i\n\nOUTPUT total",
+          "explanation": "Input: five numbers. Process: add each number to total. Output: final total."
+        },
+        {
+          "id": "dp-learn-1-tryit",
+          "type": "tryit",
+          "title": "Try It - IPO",
+          "task": "Write pseudocode to input six numbers and output their total.",
+          "marks": 6,
+          "expectedAnswer": "DECLARE num, total, i : INTEGER\n\ntotal <- 0\n\nFOR i <- 1 TO 6\n    INPUT num\n    total <- total + num\nNEXT i\n\nOUTPUT total",
+          "markScheme": [
+            {
+              "criterion": "DECLARE required variables",
+              "marks": 1
+            },
+            {
+              "criterion": "Initialize total",
+              "marks": 1
+            },
+            {
+              "criterion": "Use a loop for six values",
+              "marks": 2
+            },
+            {
+              "criterion": "Correct accumulation",
+              "marks": 1
+            },
+            {
+              "criterion": "OUTPUT total",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loops-counters-and-accumulators",
+      "title": "Loops, Counters and Accumulators",
+      "slides": [
+        {
+          "id": "dp-learn-2-notes",
+          "type": "concept",
+          "title": "Loops, Counters and Accumulators",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Most data processing questions involve several values. A loop is used to process each value."
+            }
+          ]
+        },
+        {
+          "id": "dp-learn-2-notes__slide-2",
+          "type": "concept",
+          "title": "Loops, Counters and Accumulators: Key terms",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "keyword",
+              "label": "Counter",
+              "text": "A variable that increases by 1 when something is counted."
+            },
+            {
+              "type": "keyword",
+              "label": "Accumulator",
+              "text": "A variable that builds a running total."
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-learn-2-notes__slide-3",
+          "type": "concept",
+          "title": "Loops, Counters and Accumulators: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "count <- count + 1\ntotal <- total + value"
+            }
+          ],
+          "startsBlock": false
+        },
+        {
+          "id": "dp-learn-2-example",
+          "type": "example",
+          "title": "Count Values Greater Than 50",
+          "duration": 12,
+          "problem": "Input ten numbers and count how many are greater than 50.",
+          "code": "DECLARE num, count, i : INTEGER\n\ncount <- 0\n\nFOR i <- 1 TO 10\n    INPUT num\n\n    IF num > 50 THEN\n        count <- count + 1\n    ENDIF\nNEXT i\n\nOUTPUT count",
+          "explanation": "The loop processes each number. The IF checks the condition. The counter tracks how many numbers match."
+        }
+      ]
+    },
+    {
+      "id": "arrays-for-data-processing",
+      "title": "Arrays for Data Processing",
+      "slides": [
+        {
+          "id": "dp-learn-3-notes",
+          "type": "concept",
+          "title": "Arrays for Data Processing",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Arrays store many related values under one identifier. In data processing questions, arrays let you process many values using an index."
+            }
+          ]
+        },
+        {
+          "id": "dp-learn-3-notes__slide-2",
+          "type": "concept",
+          "title": "Arrays for Data Processing: Code pattern",
+          "duration": 12,
+          "blocks": [
+            {
+              "type": "code",
+              "language": "pseudocode",
+              "text": "DECLARE Number : ARRAY[1:100] OF INTEGER\n\nFOR i <- 1 TO 100\n    INPUT Number[i]\nNEXT i"
+            }
+          ],
+          "startsBlock": false
+        }
+      ]
+    }
+  ]
+}

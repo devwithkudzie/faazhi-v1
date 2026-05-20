@@ -1,37 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 378 84" role="img" aria-labelledby="title desc">
-  <title id="title">Faazhi</title>
-  <desc id="desc">Faazhi primary logo with open book icon and Learn, Practice, Excel tagline.</desc>
-  <defs>
-    <linearGradient id="faazhiBlue" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#16486d"/>
-      <stop offset="1" stop-color="#0a3154"/>
-    </linearGradient>
-  </defs>
-  <g fill="none" stroke="url(#faazhiBlue)" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 20c18 0 34 5 47 17v31c-13-10-29-15-47-15V20Z" stroke-width="6"/>
-    <path d="M63 37c13-12 29-17 47-17v33c-18 0-34 5-47 15V37Z" stroke-width="6"/>
-    <path d="M26 30v15c11 1 21 4 31 9" stroke-width="5"/>
-    <path d="M100 30v15c-11 1-21 4-31 9" stroke-width="5"/>
-    <path d="M63 38v30" stroke-width="6"/>
-  </g>
-  <rect x="47" y="44" width="12" height="10" rx="1.5" fill="#123d61"/>
-  <path d="M73 45c5-10 14-17 27-20" fill="none" stroke="#123d61" stroke-width="5" stroke-linecap="round"/>
+<svg width="300" height="86" viewBox="0 0 300 86" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Faazhi wordmark</title>
+  <desc id="desc">Lowercase faazhi wordmark in a bold modern blue style.</desc>
   <text
-    x="136"
-    y="43"
-    fill="#123d61"
+    x="0"
+    y="65"
     font-family="Inter, Arial, Helvetica, sans-serif"
-    font-size="33"
+    font-size="72"
     font-weight="800"
-    letter-spacing="2"
-  >FAAZHI</text>
-  <text
-    x="138"
-    y="66"
-    fill="#123d61"
-    font-family="Inter, Arial, Helvetica, sans-serif"
-    font-size="13"
-    font-weight="600"
-    letter-spacing="1.6"
-  >LEARN, PRACTICE, EXCEL</text>
+    letter-spacing="-3.8"
+    fill="#0056D6"
+  >faazhi</text>
 </svg>

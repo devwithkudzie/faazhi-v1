@@ -1,0 +1,180 @@
+{
+  "section": "practice",
+  "title": "Practice",
+  "description": "Hybrid practice set: Easy and Medium are generated to build controlled mastery; Hard uses a real past-paper reference for exam exposure.",
+  "questions": [
+    {
+      "id": "dp-practice-1-easy",
+      "type": "practice",
+      "title": "Practice 1 - Count Values Greater Than 50",
+      "marks": 6,
+      "difficulty": "easy",
+      "pattern": "Count with condition",
+      "sourceType": "generated",
+      "task": "Input 10 integer values. Count how many values are greater than 50. Output the count.",
+      "expectedThinking": [
+        "There are 10 values, so a FOR loop is suitable",
+        "A counter is needed to store how many values match",
+        "The counter must start at 0",
+        "Each value must be checked using IF",
+        "The counter increases only when the value is greater than 50"
+      ],
+      "assessment": {
+        "totalMarks": 6,
+        "markScheme": [
+          {
+            "criterion": "DECLARE required variables",
+            "marks": 1
+          },
+          {
+            "criterion": "Initialize count to 0",
+            "marks": 1
+          },
+          {
+            "criterion": "Use a loop for 10 values",
+            "marks": 1
+          },
+          {
+            "criterion": "INPUT each value inside the loop",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct condition value > 50",
+            "marks": 1
+          },
+          {
+            "criterion": "OUTPUT count after the loop",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE value, count, i : INTEGER\n\ncount <- 0\n\nFOR i <- 1 TO 10\n    INPUT value\n\n    IF value > 50 THEN\n        count <- count + 1\n    ENDIF\nNEXT i\n\nOUTPUT count",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "dp-practice-2-medium",
+      "type": "practice",
+      "title": "Practice 2 - Array Totals and Counts",
+      "marks": 9,
+      "difficulty": "medium",
+      "pattern": "Array traversal + total + count + condition",
+      "sourceType": "generated_exam_style",
+      "task": "Input 20 integer values into a 1D array called Numbers. Output the total of all values greater than 50. Also output the number of values less than 20.",
+      "expectedThinking": [
+        "The values must be stored, so an array is needed",
+        "Use one loop to input the 20 values",
+        "Use a total variable for values greater than 50",
+        "Use a count variable for values less than 20",
+        "Use IF statements to check each condition",
+        "Output both final results after processing"
+      ],
+      "assessment": {
+        "totalMarks": 9,
+        "markScheme": [
+          {
+            "criterion": "Correct 1D array declaration",
+            "marks": 1
+          },
+          {
+            "criterion": "DECLARE index, total and count variables",
+            "marks": 1
+          },
+          {
+            "criterion": "Initialize total and count correctly",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct loop for 20 array elements",
+            "marks": 1
+          },
+          {
+            "criterion": "INPUT values into the array",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct condition and total for values greater than 50",
+            "marks": 2
+          },
+          {
+            "criterion": "Correct condition and count for values less than 20",
+            "marks": 1
+          },
+          {
+            "criterion": "OUTPUT both results",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE Numbers : ARRAY[1:20] OF INTEGER\nDECLARE i, totalGreater, countLess : INTEGER\n\ntotalGreater <- 0\ncountLess <- 0\n\nFOR i <- 1 TO 20\n    INPUT Numbers[i]\n\n    IF Numbers[i] > 50 THEN\n        totalGreater <- totalGreater + Numbers[i]\n    ENDIF\n\n    IF Numbers[i] < 20 THEN\n        countLess <- countLess + 1\n    ENDIF\nNEXT i\n\nOUTPUT totalGreater\nOUTPUT countLess",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    },
+    {
+      "id": "dp-practice-3-hard",
+      "type": "practice",
+      "title": "Practice 3 - Past Paper Challenge",
+      "paper": "9618/22/M/J/21",
+      "question": "Q5(a)(i)",
+      "marks": 6,
+      "difficulty": "hard",
+      "pattern": "Generate + array + count with condition",
+      "sourceType": "past_paper",
+      "task": "Paste the exact question text from 9618/22/M/J/21 Q5(a)(i) here. This is the RNum question: declare a 1D array, generate random values from 1 to 200, count values between 66 and 173 inclusive, and output the count.",
+      "expectedThinking": [
+        "Declare the 1D array RNum",
+        "Use a loop for 100 array elements",
+        "Generate a random number for each element",
+        "Store the generated value in the array",
+        "Use an inclusive range check",
+        "Count matching values",
+        "Output the count"
+      ],
+      "assessment": {
+        "totalMarks": 6,
+        "markScheme": [
+          {
+            "criterion": "Correct 1D array declaration",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct loop for 100 elements",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct random generation in range 1 to 200",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct inclusive range condition",
+            "marks": 1
+          },
+          {
+            "criterion": "Correct count increment",
+            "marks": 1
+          },
+          {
+            "criterion": "OUTPUT count",
+            "marks": 1
+          }
+        ],
+        "expectedAnswer": "DECLARE RNum : ARRAY[1:100] OF INTEGER\nDECLARE i, count : INTEGER\n\ncount <- 0\n\nFOR i <- 1 TO 100\n    RNum[i] <- RANDOM(1, 200)\n\n    IF RNum[i] >= 66 AND RNum[i] <= 173 THEN\n        count <- count + 1\n    ENDIF\nNEXT i\n\nOUTPUT count",
+        "unlock": {
+          "markScheme": "after_submit",
+          "expectedAnswer": "after_submit",
+          "expectedThinking": "after_submit"
+        }
+      }
+    }
+  ],
+  "unlockRule": {
+    "checkpointUnlockedWhen": "practice_average >= 75",
+    "recommendedAttempts": 2
+  }
+}
