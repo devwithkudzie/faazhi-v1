@@ -31,7 +31,9 @@ export function VoiceoverTool({
     );
   }
 
-  const voiceover: AdminVoiceoverDraft = scene.voiceover ?? {
+const activeScene = scene;
+
+const voiceover: AdminVoiceoverDraft = activeScene.voiceover ?? {
     script: defaultScript,
     voiceId: "browser-default",
     speed: 1,
@@ -39,7 +41,7 @@ export function VoiceoverTool({
   };
 
   function updateVoiceover(updates: Partial<AdminVoiceoverDraft>) {
-    onUpdateScene(scene.id, {
+    onUpdateScene(activeScene.id, {
       voiceover: {
         ...voiceover,
         ...updates,

@@ -6,22 +6,20 @@ import type {
 } from "@/features/admin/papers/types/paper-workspace.types";
 import { CurriculumTool } from "@/features/admin/studio/components/tools/CurriculumTool";
 import { JsonTool } from "@/features/admin/studio/components/tools/JsonTool";
-import { SceneTool } from "@/features/admin/studio/components/tools/SceneTool";
+import { ContentTool } from "@/features/admin/studio/components/tools/ContentTool";
 import { VoiceoverTool } from "@/features/admin/studio/components/tools/VoiceoverTool";
 import type { StudioTool } from "@/features/admin/studio/components/layout/StudioToolRail";
 
 type MoveDirection = "up" | "down";
 
 const toolTitles: Record<StudioTool, string> = {
-  "lesson-tree": "Lesson tree",
-  scenes: "Scenes",
-  blocks: "Scene blocks",
-  interactions: "Interactions",
-  assessments: "Assessments",
-  voiceover: "Voiceover",
+  structure: "Structure",
+  content: "Content",
+  design: "Design",
+  interaction: "Interaction",
+  narration: "Narration",
   media: "Media",
-  templates: "Templates",
-  json: "JSON",
+  animation: "Animation",
   preview: "Preview",
 };
 
@@ -36,6 +34,7 @@ export function StudioToolSidebar({
   onSelectLesson,
   onSelectScene,
   onUpdateScene,
+  onAddBlock,
   scene,
   scenes,
   storageKey,
@@ -55,6 +54,7 @@ export function StudioToolSidebar({
   onSelectLesson: (lesson: AdminLessonDraft) => void;
   onSelectScene: (sceneId: string) => void;
   onUpdateScene: (sceneId: string, updates: Partial<AdminSceneDraft>) => void;
+  onAddBlock: (sceneId: string, blockType: string) => void;
   scene?: AdminSceneDraft;
   scenes: AdminSceneDraft[];
   storageKey: string;
@@ -71,7 +71,7 @@ export function StudioToolSidebar({
       </p>
 
       <div className="mt-5">
-        {tool === "lesson-tree" ? (
+        {tool === "structure" ? (
           <CurriculumTool
             activeLessonId={activeLessonId}
             draft={draft}
@@ -83,24 +83,47 @@ export function StudioToolSidebar({
           />
         ) : null}
 
-        {tool === "scenes" ||
-        tool === "blocks" ||
-        tool === "interactions" ||
-        tool === "assessments" ? (
-          <SceneTool onCreateScene={onCreateScene} scene={scene} />
+        {tool === "content" ? (
+          <ContentTool 
+          scene={scene}
+          onCreateScene={onCreateScene} 
+          onUpdateScene={onUpdateScene}
+          onAddBlock={onAddBlock}
+        />
         ) : null}
 
-        {tool === "json" ? (
-          <JsonTool draft={draft} storageKey={storageKey} />
-        ) : null}
-
-        {tool === "voiceover" ? (
+        {tool === "narration" ? (
           <VoiceoverTool
             scene={scene}
             scenes={scenes}
             onSelectScene={onSelectScene}
             onUpdateScene={onUpdateScene}
           />
+        ) : null}
+
+        {tool === "design" ? (
+          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
+            Design controls coming next: background, colors, typography,
+            spacing, cards, and scene theme.
+          </div>
+        ) : null}
+
+        {tool === "media" ? (
+          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
+            Media controls coming next: images, diagrams, icons, video, and
+            audio uploads.
+          </div>
+        ) : null}
+
+        {tool === "animation" ? (
+          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
+            Animation controls coming next: reveal timing, fade, slide, graph
+            drawing, and block sequencing.
+          </div>
+        ) : null}
+
+        {tool === "preview" ? (
+          <JsonTool draft={draft} storageKey={storageKey} />
         ) : null}
       </div>
     </aside>

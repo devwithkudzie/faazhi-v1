@@ -2,40 +2,39 @@
 
 import {
   AudioLines,
-  Blocks,
-  Braces,
-  ClipboardCheck,
-  Film,
   Images,
+  LayoutPanelLeft,
   MousePointerClick,
+  Palette,
   Play,
   Sparkles,
+  Type,
 } from "lucide-react";
 
 export type StudioTool =
-  | "lesson-tree"
-  | "scenes"
-  | "blocks"
-  | "interactions"
-  | "assessments"
-  | "voiceover"
+  | "structure"
+  | "content"
+  | "design"
+  | "interaction"
+  | "narration"
   | "media"
-  | "templates"
-  | "json"
+  | "animation"
   | "preview";
 
 const tools = [
-  { id: "lesson-tree", label: "Tree", icon: Film },
-  { id: "scenes", label: "Scenes", icon: Film },
-  { id: "blocks", label: "Blocks", icon: Blocks },
-  { id: "interactions", label: "Interact", icon: MousePointerClick },
-  { id: "assessments", label: "Assess", icon: ClipboardCheck },
-  { id: "voiceover", label: "Voice", icon: AudioLines },
+  { id: "structure", label: "Structure", icon: LayoutPanelLeft },
+  { id: "content", label: "Content", icon: Type },
+  { id: "design", label: "Design", icon: Palette },
+  { id: "interaction", label: "Interact", icon: MousePointerClick },
+  { id: "narration", label: "Narrate", icon: AudioLines },
   { id: "media", label: "Media", icon: Images },
-  { id: "templates", label: "Templates", icon: Sparkles },
-  { id: "json", label: "JSON", icon: Braces },
+  { id: "animation", label: "Animate", icon: Sparkles },
   { id: "preview", label: "Preview", icon: Play },
-] satisfies Array<{ id: StudioTool; label: string; icon: React.ComponentType<{ className?: string }> }>;
+] satisfies Array<{
+  id: StudioTool;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}>;
 
 export function StudioToolRail({
   activeTool,
@@ -45,7 +44,7 @@ export function StudioToolRail({
   onSelectTool: (tool: StudioTool) => void;
 }) {
   return (
-    <aside className="flex w-[82px] shrink-0 flex-col items-center gap-1 border-r border-slate-200 bg-white px-2 py-3">
+    <aside className="flex w-[86px] shrink-0 flex-col items-center gap-1 border-r border-slate-200 bg-white px-2 py-3">
       {tools.map((tool) => {
         const Icon = tool.icon;
         const active = activeTool === tool.id;
