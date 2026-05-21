@@ -15,12 +15,12 @@ export function LessonWorkspaceFooter({
   previousLesson: LessonNode | null;
 }) {
   return (
-    <footer className="relative z-10 flex h-16 shrink-0 items-center justify-between gap-3 bg-white px-5 shadow-[0_-8px_24px_rgba(15,23,42,0.07)] lg:px-7">
+    <footer className="relative z-10 flex h-16 shrink-0 items-center justify-between gap-3 bg-white/45 px-5 shadow-[0_-1px_0_rgba(15,23,42,0.04)] backdrop-blur lg:px-7">
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => onOpenDrawer("transcript")}
-          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-white/70 hover:text-[#1557c0]"
         >
           <BookText className="h-4 w-4" />
           Transcript
@@ -28,7 +28,7 @@ export function LessonWorkspaceFooter({
         <button
           type="button"
           onClick={() => onOpenDrawer("notes")}
-          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-white/70 hover:text-[#1557c0]"
         >
           <NotebookText className="h-4 w-4" />
           Notes
@@ -36,7 +36,7 @@ export function LessonWorkspaceFooter({
         <button
           type="button"
           onClick={() => onOpenDrawer("takeaways")}
-          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition hover:bg-white/70 hover:text-[#1557c0]"
         >
           <Sparkles className="h-4 w-4" />
           Key takeaways
@@ -48,7 +48,7 @@ export function LessonWorkspaceFooter({
           type="button"
           disabled={!previousLesson}
           onClick={() => previousLesson && onSelectLesson(previousLesson.id)}
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold transition hover:bg-[#eaf2ff] hover:text-[#1557c0] disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200/80 bg-white/55 px-4 text-sm font-semibold transition hover:bg-white hover:text-[#1557c0] disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" />
           Previous item

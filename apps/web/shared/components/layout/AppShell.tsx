@@ -10,7 +10,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-[linear-gradient(180deg,#f6f8fc_0%,#edf3f8_100%)]">
       <AppHeader />
       <Breadcrumbs />
 

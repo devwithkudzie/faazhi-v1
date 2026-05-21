@@ -31,12 +31,21 @@ export type PaperMarkSchemeItem = {
   marks: number;
 };
 
+export type PaperQuestionPart = {
+  id: string;
+  label: string;
+  prompt: string;
+  marks: number;
+  answerFields?: PaperAnswerField[];
+};
+
 export type PaperQuestion = {
   paperRef: string;
   questionRef: string;
   marks: number;
   prompt: string;
   answerFields: PaperAnswerField[];
+  parts?: PaperQuestionPart[];
   markScheme?: PaperMarkSchemeItem[];
 };
 

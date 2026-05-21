@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { Bookmark, CircleHelp, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import type { LearnCurriculum } from "../../types";
 
 export function LessonWorkspaceHeader({
@@ -10,7 +18,8 @@ export function LessonWorkspaceHeader({
 }: {
   curriculum: LearnCurriculum;
 }) {
-  const { user } = useAuth();
+  const { signOut, user } = useAuth();
+  const router = useRouter();
   const initials =
     user?.name
       ?.split(" ")
@@ -19,7 +28,7 @@ export function LessonWorkspaceHeader({
       .join("") ?? "U";
 
   return (
-    <header className="relative z-20 flex h-16 shrink-0 items-center justify-between bg-white px-5 shadow-[0_8px_24px_rgba(15,23,42,0.08)] lg:px-8">
+    <header className="relative z-20 flex h-16 shrink-0 items-center justify-between bg-[#f6f8fc]/95 px-5 lg:px-8">
       <div className="flex min-w-0 items-center gap-4">
         <div className="text-2xl font-extrabold tracking-[-0.06em] text-[#0056d6]">
           faazhi
@@ -60,9 +69,53 @@ export function LessonWorkspaceHeader({
         >
           <CircleHelp className="h-4 w-4" />
         </button>
-        <div className="grid h-9 w-9 place-items-center rounded-full bg-[#1557c0] text-xs font-semibold text-white">
-          {initials}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="grid h-9 w-9 place-items-center rounded-full bg-[#1557c0] text-xs font-semibold text-white transition hover:bg-[#0f49a7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1557c0]/30"
+              aria-label="Open user menu"
+            >
+              {initials}
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            sideOffset={10}
+            className="z-[9999] min-w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+          >
+            <div className="px-3 py-2">
+              <p className="text-sm font-semibold text-slate-950">
+                {user?.name ?? "User"}
+              </p>
+              <p className="text-xs capitalize text-muted-foreground">
+                {user?.role ?? "student"}
+              </p>
+            </div>
+
+            <DropdownMenuSeparator className="my-1 h-px bg-border" />
+
+            <DropdownMenuItem
+              onClick={() => router.push("/subjects")}
+              className="cursor-pointer rounded-md px-3 py-2 text-sm outline-none hover:bg-[#eaf2ff]"
+            >
+              My Learning
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="my-1 h-px bg-border" />
+
+            <DropdownMenuItem
+              onClick={() => {
+                signOut();
+                router.push("/signin");
+              }}
+              className="cursor-pointer rounded-md px-3 py-2 text-sm text-destructive outline-none hover:bg-muted"
+            >
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

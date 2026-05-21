@@ -5,10 +5,12 @@ import { LessonItem } from "./LessonItem";
 
 export function TopicGroup({
   activeLessonId,
+  onSelectAssessment,
   onSelectLesson,
   topic,
 }: {
   activeLessonId: string;
+  onSelectAssessment?: (topicId: string) => void;
   onSelectLesson: (lessonId: string) => void;
   topic: TopicNode;
 }) {
@@ -52,6 +54,7 @@ export function TopicGroup({
 
           <button
             type="button"
+            onClick={() => onSelectAssessment?.(topic.id)}
             className="grid w-full grid-cols-[28px_1fr] gap-3 rounded-xl px-3 py-3 text-left text-[#7a5600] transition hover:bg-[#fff7df]"
           >
             <span className="grid h-6 w-6 place-items-center rounded-md border border-[#b7791f]">
