@@ -2,7 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Check, Database, FileQuestion, Plus, Sparkles } from "lucide-react";
 
 import type {
-  AdminPaperDraft,
+  AdminLessonDraft,
   AdminSceneDraft,
   AdminSceneType,
   CreateSceneInput,
@@ -18,12 +18,12 @@ const sceneTypes: AdminSceneType[] = [
 ];
 
 export function PaperCreationPanel({
-  draft,
+  activeLesson,
   onCreateScene,
   scene,
   storageKey,
 }: {
-  draft: AdminPaperDraft;
+  activeLesson?: AdminLessonDraft;
   onCreateScene: (input: CreateSceneInput) => void;
   scene?: AdminSceneDraft;
   storageKey: string;
@@ -31,15 +31,22 @@ export function PaperCreationPanel({
   const [title, setTitle] = useState("");
   const [type, setType] = useState<AdminSceneType>("concept");
   const [summary, setSummary] = useState("");
-  const sceneCount =
-    draft.topics[0]?.subtopics[0]?.lessons[0]?.scenes.length ?? 0;
+  const [durationMinutes, setDurationMinutes] = useState(3);
+  const sceneCount = activeLesson?.scenes.length ?? 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onCreateScene({ title, type, summary });
+    onCreateScene({
+      title,
+      type,
+      summary,
+      lessonId: activeLesson?.id,
+      durationMinutes,
+    });
     setTitle("");
     setType("concept");
     setSummary("");
+    setDurationMinutes(3);
   }
 
   return (
@@ -65,6 +72,9 @@ export function PaperCreationPanel({
           <h3 className="text-sm font-semibold text-slate-950">
             Add scene to lesson
           </h3>
+          <p className="mt-1 text-xs font-semibold text-slate-500">
+            Target: {activeLesson?.title ?? "Select or create a lesson"}
+          </p>
 
           <label className="mt-4 block space-y-2">
             <span className="text-xs font-semibold text-slate-500">
@@ -74,6 +84,21 @@ export function PaperCreationPanel({
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Convert denary to binary"
+              className="h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+            />
+          </label>
+
+          <label className="mt-4 block space-y-2">
+            <span className="text-xs font-semibold text-slate-500">
+              Duration
+            </span>
+            <input
+              type="number"
+              min={1}
+              value={durationMinutes}
+              onChange={(event) =>
+                setDurationMinutes(Number(event.target.value))
+              }
               className="h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
             />
           </label>
@@ -108,7 +133,10 @@ export function PaperCreationPanel({
             />
           </label>
 
-          <button className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#1557c0] px-4 text-sm font-semibold text-white transition hover:bg-[#124cad]">
+          <button
+            disabled={!activeLesson}
+            className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#1557c0] px-4 text-sm font-semibold text-white transition hover:bg-[#124cad] disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Plus className="h-4 w-4" />
             Create scene
           </button>

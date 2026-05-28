@@ -1,42 +1,37 @@
-import {
-  Activity,
-  Clock3,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Activity, BookOpenCheck, UserPlus, Users } from "lucide-react";
 
 import type { AdminDashboardData } from "@/features/admin/dashboard/types/dashboard.types";
 
 export function getAdminDashboardData(): AdminDashboardData {
   return {
-    platformStats: [
+    studentStats: [
       {
-        label: "Total users",
+        label: "Total students",
         value: "2,846",
         change: "+126 this month",
         tone: "blue",
         icon: Users,
       },
       {
-        label: "Active today",
-        value: "418",
-        change: "14.7% of users",
-        tone: "green",
-        icon: Activity,
-      },
-      {
-        label: "Active this week",
-        value: "1,204",
-        change: "+8.2% vs last week",
-        tone: "slate",
-        icon: Clock3,
-      },
-      {
-        label: "New signups",
+        label: "New students",
         value: "73",
         change: "+19 in 7 days",
         tone: "amber",
         icon: UserPlus,
+      },
+      {
+        label: "Active this week",
+        value: "1,204",
+        change: "42.3% of students",
+        tone: "green",
+        icon: Activity,
+      },
+      {
+        label: "Lessons completed",
+        value: "3,918",
+        change: "+8.2% this week",
+        tone: "slate",
+        icon: BookOpenCheck,
       },
     ],
     recentActivity: [

@@ -36,6 +36,6 @@ export interface QuickAction {
 }
 
 export interface AdminDashboardData {
-  platformStats: AdminMetric[];
+  studentStats: AdminMetric[];
   recentActivity: ActivityItem[];
 }

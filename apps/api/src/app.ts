@@ -1,34 +1,67 @@
-import cors from "@fastify/cors";
-import Fastify from "fastify";
-import { config } from "./config.js";
-import { errorHandler } from "./middleware/error-handler.js";
-import { lessonRoutes } from "./modules/lessons/lesson.routes.js";
-import { paperRoutes } from "./modules/papers/paper.routes.js";
-import { subjectRoutes } from "./modules/subjects/subject.routes.js";
-import { topicRoutes } from "./modules/topics/topic.routes.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
-export async function buildApp() {
-  const app = Fastify({
-    logger: config.NODE_ENV !== "test",
-  });
+import { applyCors } from "./http/cors.js";
+import { HttpError, json } from "./http/respond.js";
+import { handleAuth } from "./modules/auth/auth.routes.js";
+import { handleDashboard } from "./modules/dashboard/dashboard.routes.js";
+import { handleLessons } from "./modules/lessons/lessons.routes.js";
+import { handleNarration } from "./modules/narration/narration.routes.js";
+import { handleProgress } from "./modules/progress/progress.routes.js";
+import { handleSubjects } from "./modules/subjects/subjects.routes.js";
+import { handleUsers } from "./modules/users/users.routes.js";
+import { serveUpload } from "./static/uploads.js";
 
-  await app.register(cors, {
-    origin: config.WEB_ORIGIN,
-    credentials: true,
-  });
+type RouteHandler = (
+  request: IncomingMessage,
+  response: ServerResponse,
+  path: string,
+) => Promise<boolean>;
 
-  app.setErrorHandler(errorHandler);
+const handlers: RouteHandler[] = [
+  handleAuth,
+  handleUsers,
+  handleSubjects,
+  handleLessons,
+  handleProgress,
+  handleNarration,
+  handleDashboard,
+];
 
-  app.get("/health", async () => ({
-    data: {
-      status: "ok",
-    },
-  }));
+export async function app(request: IncomingMessage, response: ServerResponse) {
+  applyCors(request, response);
 
-  await app.register(subjectRoutes, { prefix: "/api" });
-  await app.register(paperRoutes, { prefix: "/api" });
-  await app.register(topicRoutes, { prefix: "/api" });
-  await app.register(lessonRoutes, { prefix: "/api" });
+  if (request.method === "OPTIONS") {
+    response.writeHead(204);
+    response.end();
+    return;
+  }
 
-  return app;
+  try {
+    const url = new URL(request.url ?? "/", "http://localhost");
+    const routePath = url.pathname;
+
+    if (request.method === "GET" && routePath === "/health") {
+      json(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.method === "GET" && routePath.startsWith("/uploads/")) {
+      await serveUpload(response, routePath);
+      return;
+    }
+
+    for (const handler of handlers) {
+      if (await handler(request, response, routePath)) return;
+    }
+
+    json(response, 404, { error: "Route was not found." });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      json(response, error.status, { error: error.message });
+      return;
+    }
+
+    console.error(error);
+    json(response, 500, { error: "Unexpected server error." });
+  }
 }

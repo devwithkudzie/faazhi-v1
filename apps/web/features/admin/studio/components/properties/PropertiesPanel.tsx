@@ -1,15 +1,39 @@
 import type {
+  AdminPaperDraft,
   AdminLessonDraft,
   AdminSceneDraft,
 } from "@/features/admin/papers/types/paper-workspace.types";
 
 export function PropertiesPanel({
+  draft,
   lesson,
+  onUpdatePaperMeta,
+  onUpdateSubjectMeta,
   scene,
 }: {
+  draft: AdminPaperDraft;
   lesson?: AdminLessonDraft;
+  onUpdatePaperMeta: (updates: NonNullable<AdminPaperDraft["paperMeta"]>) => void;
+  onUpdateSubjectMeta: (updates: NonNullable<AdminPaperDraft["subjectMeta"]>) => void;
   scene?: AdminSceneDraft;
 }) {
+  const paperMeta = draft.paperMeta ?? {
+    title: "Paper",
+    description: "",
+    learningOutcomes: [],
+    skills: [],
+    estimatedMinutes: 0,
+    status: "draft" as const,
+  };
+  const subjectMeta = draft.subjectMeta ?? {
+    title: "Subject",
+    code: draft.subjectId,
+    description: "",
+    learningOutcomes: [],
+    skills: [],
+    status: "draft" as const,
+  };
+
   return (
     <aside className="hidden w-[300px] shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4 2xl:block">
       <h2 className="text-lg font-semibold text-slate-950">Properties</h2>
@@ -18,6 +42,90 @@ export function PropertiesPanel({
       </p>
 
       <div className="mt-5 space-y-4">
+        <section className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            Subject information
+          </p>
+          <label className="mt-3 block space-y-1">
+            <span className="text-xs font-semibold text-slate-500">
+              Description
+            </span>
+            <textarea
+              value={subjectMeta.description}
+              onChange={(event) =>
+                onUpdateSubjectMeta({
+                  ...subjectMeta,
+                  description: event.target.value,
+                })
+              }
+              rows={3}
+              className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1557c0]"
+            />
+          </label>
+          <label className="mt-3 block space-y-1">
+            <span className="text-xs font-semibold text-slate-500">
+              What students will learn
+            </span>
+            <textarea
+              value={subjectMeta.learningOutcomes.join("\n")}
+              onChange={(event) =>
+                onUpdateSubjectMeta({
+                  ...subjectMeta,
+                  learningOutcomes: event.target.value
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean),
+                })
+              }
+              rows={4}
+              className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1557c0]"
+            />
+          </label>
+          <label className="mt-3 block space-y-1">
+            <span className="text-xs font-semibold text-slate-500">
+              Skills gained
+            </span>
+            <textarea
+              value={subjectMeta.skills.join("\n")}
+              onChange={(event) =>
+                onUpdateSubjectMeta({
+                  ...subjectMeta,
+                  skills: event.target.value
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean),
+                })
+              }
+              rows={3}
+              className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1557c0]"
+            />
+          </label>
+        </section>
+
+        <section className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            Paper metadata
+          </p>
+          <input
+            value={paperMeta.title}
+            onChange={(event) =>
+              onUpdatePaperMeta({ ...paperMeta, title: event.target.value })
+            }
+            className="mt-3 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#1557c0]"
+          />
+          <textarea
+            value={paperMeta.description}
+            onChange={(event) =>
+              onUpdatePaperMeta({
+                ...paperMeta,
+                description: event.target.value,
+              })
+            }
+            rows={3}
+            className="mt-3 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1557c0]"
+          />
+        </section>
+
         <section className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
             Lesson

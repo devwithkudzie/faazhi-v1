@@ -14,6 +14,17 @@ const labelMap: Record<string, string> = {
   "9618": "Computer Science 9618",
 };
 
+function labelForSegment(segment: string) {
+  if (labelMap[segment]) return labelMap[segment];
+
+  const paperMatch = segment.match(/^paper-[^-]+-(\d+)$/);
+  if (paperMatch) return `Paper ${paperMatch[1]}`;
+
+  if (segment.startsWith("paper-")) return "Paper";
+
+  return decodeURIComponent(segment);
+}
+
 export function Breadcrumbs() {
   const pathname = usePathname();
 
@@ -23,7 +34,7 @@ export function Breadcrumbs() {
 
   const crumbs = segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
-    const label = labelMap[segment] ?? decodeURIComponent(segment);
+    const label = labelForSegment(segment);
 
     return { href, label };
   });

@@ -399,7 +399,7 @@ export function TopicalAssessmentWorkspace({
             type="button"
             disabled={
               submissionState === "marking" ||
-              (Boolean(markingResult) && markingResult.passed) ||
+              Boolean(markingResult?.passed) ||
               attemptsLeft <= 0
             }
             onClick={submitAssessment}

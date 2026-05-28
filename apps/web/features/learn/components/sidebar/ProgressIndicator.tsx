@@ -1,11 +1,11 @@
-import { Check, Circle, Lock } from "lucide-react";
+import { Circle, Lock } from "lucide-react";
 import type { LessonState } from "../../types";
 
 export function ProgressIndicator({ state }: { state: LessonState }) {
   if (state === "completed") {
     return (
-      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#1557c0] text-white">
-        <Check className="h-3.5 w-3.5" />
+      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#1557c0] bg-white">
+        <span className="h-3.5 w-3.5 rounded-full bg-[#1557c0]" />
       </span>
     );
   }

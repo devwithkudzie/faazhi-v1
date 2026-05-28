@@ -13,6 +13,7 @@ export function LessonWorkspaceShell({
   onOpenDrawer,
   onOpenSidebar,
   onSelectLesson,
+  previewMode = false,
   previousLesson,
   sidebar,
 }: {
@@ -24,12 +25,13 @@ export function LessonWorkspaceShell({
   onOpenDrawer: (tab: DrawerTab) => void;
   onOpenSidebar?: () => void;
   onSelectLesson: (lessonId: string) => void;
+  previewMode?: boolean;
   previousLesson: LessonNode | null;
   sidebar: ReactNode;
 }) {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[linear-gradient(180deg,#f6f8fc_0%,#edf3f8_100%)]">
-      <LessonWorkspaceHeader curriculum={curriculum} />
+      <LessonWorkspaceHeader curriculum={curriculum} previewMode={previewMode} />
 
       <div className="flex min-h-0 flex-1 gap-5 overflow-hidden p-5">
         {sidebar}

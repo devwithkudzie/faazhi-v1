@@ -1,16 +1,17 @@
-export type UserRole = "student" | "teacher" | "admin";
+export type UserRole = "student" | "admin";
 
 export interface User {
   id: string;
   email: string;
-  password: string;
+  password?: string;
   name: string;
   role: UserRole;
   avatarColor: string;
   centreNumber?: string;
   candidateNumber?: string;
-  // Subject IDs the student is enrolled in. Admins/teachers ignore this and see all subjects.
+  // Subject IDs the student is enrolled in. Admins ignore this and see all subjects.
   enrolledSubjects?: string[];
+  enrolledSubjectIds?: string[];
 }
 
 export type AnswerKind =

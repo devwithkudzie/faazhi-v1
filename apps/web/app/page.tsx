@@ -1,5 +1,5 @@
-import LandingPage from "@/features/landing/LandingPage";
+import SignInPage from "@/features/auth/SignInPage";
 
 export default function Page() {
-  return <LandingPage />;
+  return <SignInPage />;
 }

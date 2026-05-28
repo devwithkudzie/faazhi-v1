@@ -5,11 +5,13 @@ import { LessonItem } from "./LessonItem";
 
 export function TopicGroup({
   activeLessonId,
+  completedLessonIds = [],
   onSelectAssessment,
   onSelectLesson,
   topic,
 }: {
   activeLessonId: string;
+  completedLessonIds?: string[];
   onSelectAssessment?: (topicId: string) => void;
   onSelectLesson: (lessonId: string) => void;
   topic: TopicNode;
@@ -48,6 +50,7 @@ export function TopicGroup({
               key={lesson.id}
               lesson={lesson}
               isActive={lesson.id === activeLessonId}
+              isCompleted={completedLessonIds.includes(lesson.id)}
               onSelect={() => onSelectLesson(lesson.id)}
             />
           ))}

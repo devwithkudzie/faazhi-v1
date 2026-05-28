@@ -18,6 +18,43 @@ export type CaptionSegment = {
   text: string;
 };
 
+export type SceneVoiceover = {
+  mode: "uploaded" | "recorded" | "generated";
+  script: string;
+  speed?: number;
+  audioUrl?: string;
+  durationSeconds?: number;
+  provider?: "browser" | "elevenlabs" | "openai";
+  voiceId?: string;
+  captionsEnabled?: boolean;
+  originalAudioUrl?: string;
+  cleanedAudioUrl?: string;
+  processingStatus?: "idle" | "processing" | "completed";
+  captions?: {
+    start: number;
+    end: number;
+    text: string;
+  }[];
+};
+
+export type SceneVisualBlock = {
+  id: string;
+  type:
+    | "paragraph"
+    | "list"
+    | "numbered-list"
+    | "code"
+    | "callout"
+    | "quote"
+    | "heading"
+    | "caption";
+  text: string;
+  items?: string[];
+  stepIndex?: number;
+  startTime?: number;
+  duration?: number;
+};
+
 export type PaperAnswerField = {
   id: string;
   label: string;
@@ -58,6 +95,7 @@ export type Scene = {
   narration: string;
   captions: CaptionSegment[];
   blocks?: string[];
+  visualBlocks?: SceneVisualBlock[];
   diagram?: {
     bits: Array<{
       bit: 0 | 1;
@@ -72,4 +110,9 @@ export type Scene = {
   answer?: string;
   paperQuestion?: PaperQuestion;
   examinerInsight?: string;
+  voiceover?: SceneVoiceover;
+  layout?: {
+    horizontalAlign?: "left" | "center" | "right";
+    verticalAlign?: "top" | "center" | "bottom";
+  };
 };

@@ -1,22 +1,63 @@
+"use client";
+
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { DraftSubjectsPanel } from "@/features/admin/dashboard/components/DraftSubjectsPanel";
 import { PublishedSubjectsPanel } from "@/features/admin/dashboard/components/PublishedSubjectsPanel";
 import { AdminShell } from "@/features/admin/shared/components/AdminShell";
 import {
-  getDraftSubjects,
-  getPublishedSubjects,
-} from "@/features/admin/subjects/services/subject.service";
+  mapApiSubject,
+  type ApiSubject,
+} from "@/features/admin/subjects/services/api-subjects";
+import { apiRequest } from "@/shared/api/client";
+import { useAuth } from "@/shared/providers/AuthProvider";
 
 export default function SubjectListPage() {
-  const draftSubjects = getDraftSubjects();
-  const publishedSubjects = getPublishedSubjects();
+  const { token } = useAuth();
+  const [subjects, setSubjects] = useState<ApiSubject[]>([]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let cancelled = false;
+
+    apiRequest<{ subjects: ApiSubject[] }>("/api/subjects", { token })
+      .then((result) => {
+        if (!cancelled) setSubjects(result.subjects);
+      })
+      .catch(() => {
+        if (!cancelled) setSubjects([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  async function updateSubjectStatus(subjectId: string, status: "draft" | "published") {
+    if (!token) return;
+
+    await apiRequest(`/api/subjects/${subjectId}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({ status }),
+    });
+    const result = await apiRequest<{ subjects: ApiSubject[] }>("/api/subjects", {
+      token,
+    });
+    setSubjects(result.subjects);
+  }
+
+  const adminSubjects = subjects.map(mapApiSubject);
+  const draftSubjects = adminSubjects.filter((subject) => subject.status === "draft");
+  const publishedSubjects = adminSubjects.filter((subject) => subject.status === "published");
 
   return (
     <AdminShell>
       <main className="space-y-6 pb-8">
-        <section className="rounded-[32px] bg-white/88 p-6 shadow-[0_24px_75px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
+        <section className="bg-white/88 p-6 shadow-[0_24px_75px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold text-[#1557c0]">
@@ -33,7 +74,7 @@ export default function SubjectListPage() {
 
             <Link
               href="/admin/subjects/new"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#1557c0] px-5 text-sm font-semibold text-white no-underline transition hover:bg-[#124cad]"
+              className="inline-flex h-12 items-center justify-center gap-2 bg-[#1557c0] px-5 text-sm font-semibold text-white no-underline transition hover:bg-[#124cad]"
             >
               <Plus className="h-5 w-5" />
               Create Subject
@@ -41,9 +82,19 @@ export default function SubjectListPage() {
           </div>
         </section>
 
-        <div className="grid items-start gap-6 xl:grid-cols-2">
-          <DraftSubjectsPanel subjects={draftSubjects} />
-          <PublishedSubjectsPanel subjects={publishedSubjects} />
+        <div className="space-y-6">
+          <DraftSubjectsPanel
+            subjects={draftSubjects}
+            onStatusChange={(subject) =>
+              void updateSubjectStatus(subject.id, "published")
+            }
+          />
+          <PublishedSubjectsPanel
+            subjects={publishedSubjects}
+            onStatusChange={(subject) =>
+              void updateSubjectStatus(subject.id, "draft")
+            }
+          />
         </div>
       </main>
     </AdminShell>

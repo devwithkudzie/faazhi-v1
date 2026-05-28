@@ -1,3 +1,8 @@
+"use client";
+
+import { Activity, BookOpenCheck, UserPlus, Users } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
 import { CreateSubjectCard } from "@/features/admin/dashboard/components/CreateSubjectCard";
 import { DraftSubjectsPanel } from "@/features/admin/dashboard/components/DraftSubjectsPanel";
 import { PlatformStats } from "@/features/admin/dashboard/components/PlatformStats";
@@ -6,91 +11,142 @@ import { RecentActivity } from "@/features/admin/dashboard/components/RecentActi
 import { getAdminDashboardData } from "@/features/admin/dashboard/services/dashboard.service";
 import { AdminShell } from "@/features/admin/shared/components/AdminShell";
 import {
-  getDraftSubjects,
-  getPublishedSubjects,
-} from "@/features/admin/subjects/services/subject.service";
+  mapApiSubject,
+  type ApiSubject,
+} from "@/features/admin/subjects/services/api-subjects";
+import { apiRequest } from "@/shared/api/client";
+import { useAuth } from "@/shared/providers/AuthProvider";
+
+interface DashboardResponse {
+  stats: {
+    students: number;
+    subjects: number;
+    publishedLessons: number;
+    draftLessons: number;
+    narrationFiles: number;
+  };
+  recentStudents: Array<{
+    name: string;
+  }>;
+}
 
 export default function AdminDashboardPage() {
-  const data = getAdminDashboardData();
-  const draftSubjects = getDraftSubjects();
-  const publishedSubjects = getPublishedSubjects();
+  const { token } = useAuth();
+  const fallbackData = getAdminDashboardData();
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [subjects, setSubjects] = useState<ApiSubject[]>([]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let cancelled = false;
+
+    Promise.all([
+      apiRequest<DashboardResponse>("/api/admin/dashboard", { token }),
+      apiRequest<{ subjects: ApiSubject[] }>("/api/subjects", { token }),
+    ])
+      .then(([dashboardResult, subjectResult]) => {
+        if (cancelled) return;
+        setDashboard(dashboardResult);
+        setSubjects(subjectResult.subjects);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  async function updateSubjectStatus(subjectId: string, status: "draft" | "published") {
+    if (!token) return;
+
+    await apiRequest(`/api/subjects/${subjectId}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({ status }),
+    });
+
+    const result = await apiRequest<{ subjects: ApiSubject[] }>("/api/subjects", {
+      token,
+    });
+    setSubjects(result.subjects);
+  }
+
+  const metrics = useMemo(() => {
+    if (!dashboard) return fallbackData.studentStats;
+
+    return [
+      {
+        label: "Total students",
+        value: dashboard.stats.students.toString(),
+        change: "Signed up students",
+        tone: "blue" as const,
+        icon: Users,
+      },
+      {
+        label: "Available subjects",
+        value: dashboard.stats.subjects.toString(),
+        change: `${publishedSubjectsFrom(subjects).length} published`,
+        tone: "amber" as const,
+        icon: BookOpenCheck,
+      },
+      {
+        label: "Published lessons",
+        value: dashboard.stats.publishedLessons.toString(),
+        change: `${dashboard.stats.draftLessons} drafts`,
+        tone: "green" as const,
+        icon: Activity,
+      },
+      {
+        label: "Narration files",
+        value: dashboard.stats.narrationFiles.toString(),
+        change: "Audio ready for lessons",
+        tone: "slate" as const,
+        icon: UserPlus,
+      },
+    ];
+  }, [dashboard, fallbackData.studentStats, subjects]);
+
+  const adminSubjects = subjects.map(mapApiSubject);
+  const draftSubjects = adminSubjects.filter((subject) => subject.status === "draft");
+  const publishedSubjects = adminSubjects.filter((subject) => subject.status === "published");
+  const recentActivity = dashboard
+    ? dashboard.recentStudents.map((student) => ({
+        actor: student.name,
+        action: "joined",
+        target: "Faazhi",
+        time: "recently",
+      }))
+    : fallbackData.recentActivity;
 
   return (
     <AdminShell>
       <main className="space-y-6 pb-8">
-        <section className="rounded-[32px] bg-white/88 p-6 shadow-[0_24px_75px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold text-[#1557c0]">
-                Overview
-              </p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-                Manage platform performance and subject publishing
-              </h2>
-              <p className="mt-3 text-base leading-7 text-slate-600">
-                Create draft subjects from a starter template, review content
-                status, and keep an eye on the platform signals that matter.
-              </p>
-            </div>
-
-            <div className="grid min-w-[260px] grid-cols-2 gap-3 rounded-3xl bg-[#edf5ff] p-3">
-              <div className="rounded-2xl bg-white p-3">
-                <p className="text-xs font-semibold text-slate-500">
-                  Completion rate
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-[#1557c0]">
-                  64%
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white p-3">
-                <p className="text-xs font-semibold text-slate-500">
-                  Most active
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-950">
-                  CS 9618 · Paper 1
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <PlatformStats metrics={data.platformStats} />
+        <PlatformStats metrics={metrics} />
 
         <CreateSubjectCard />
 
-        <div className="grid items-start gap-6 xl:grid-cols-2">
-          <DraftSubjectsPanel subjects={draftSubjects} />
-          <PublishedSubjectsPanel subjects={publishedSubjects} />
+        <div className="space-y-6">
+          <DraftSubjectsPanel
+            subjects={draftSubjects}
+            onStatusChange={(subject) =>
+              void updateSubjectStatus(subject.id, "published")
+            }
+          />
+          <PublishedSubjectsPanel
+            subjects={publishedSubjects}
+            onStatusChange={(subject) =>
+              void updateSubjectStatus(subject.id, "draft")
+            }
+          />
         </div>
 
-        <div className="grid items-start gap-6 xl:grid-cols-[1fr_380px]">
-          <section className="rounded-[28px] bg-white/90 p-5 shadow-[0_22px_65px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
-            <h2 className="text-lg font-semibold text-slate-950">
-              Content management flow
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Create the subject first. Papers, topics, subtopics, scenes, and
-              assessments are managed inside each subject workspace.
-            </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-4">
-              {["Subject", "Paper", "Topic", "Scene"].map((item, index) => (
-                <div
-                  key={item}
-                  className="rounded-2xl bg-[#f5f9ff] p-4 ring-1 ring-blue-100"
-                >
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-[#1557c0] text-sm font-bold text-white">
-                    {index + 1}
-                  </span>
-                  <p className="mt-3 text-sm font-semibold text-slate-950">
-                    {item}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-          <RecentActivity items={data.recentActivity} />
-        </div>
+        <RecentActivity items={recentActivity} />
       </main>
     </AdminShell>
   );
+}
+
+function publishedSubjectsFrom(subjects: ApiSubject[]) {
+  return subjects.filter((subject) => subject.status === "published");
 }

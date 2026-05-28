@@ -15,8 +15,10 @@ import type { LearnCurriculum } from "../../types";
 
 export function LessonWorkspaceHeader({
   curriculum,
+  previewMode = false,
 }: {
   curriculum: LearnCurriculum;
+  previewMode?: boolean;
 }) {
   const { signOut, user } = useAuth();
   const router = useRouter();
@@ -45,26 +47,42 @@ export function LessonWorkspaceHeader({
         <span className="hidden rounded-full bg-[#eaf2ff] px-3 py-1 text-xs font-semibold text-[#1557c0] sm:inline-flex">
           {curriculum.progress}% complete
         </span>
-        <Link
-          href={`/subjects/${curriculum.subjectId}`}
-          className="group relative grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0] focus-visible:bg-[#eaf2ff] focus-visible:text-[#1557c0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1557c0]/30"
-          aria-label="Exit workspace"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="pointer-events-none absolute right-0 top-11 z-30 whitespace-nowrap rounded-md bg-[#0f172a] px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
-            Exit workspace
-          </span>
-        </Link>
+        {previewMode ? (
+          <button
+            type="button"
+            disabled
+            className="group relative grid h-9 w-9 cursor-not-allowed place-items-center rounded-lg text-slate-300"
+            aria-label="Exit workspace disabled in preview"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="pointer-events-none absolute right-0 top-11 z-30 whitespace-nowrap rounded-md bg-[#0f172a] px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+              Disabled in preview
+            </span>
+          </button>
+        ) : (
+          <Link
+            href={`/subjects/${curriculum.subjectId}`}
+            className="group relative grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0] focus-visible:bg-[#eaf2ff] focus-visible:text-[#1557c0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1557c0]/30"
+            aria-label="Exit workspace"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="pointer-events-none absolute right-0 top-11 z-30 whitespace-nowrap rounded-md bg-[#0f172a] px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
+              Exit workspace
+            </span>
+          </Link>
+        )}
         <button
           type="button"
-          className="grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+          disabled={previewMode}
+          className="grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0] disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
           aria-label="Bookmark lesson"
         >
           <Bookmark className="h-4 w-4" />
         </button>
         <button
           type="button"
-          className="grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+          disabled={previewMode}
+          className="grid h-9 w-9 place-items-center rounded-lg transition hover:bg-[#eaf2ff] hover:text-[#1557c0] disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
           aria-label="Help"
         >
           <CircleHelp className="h-4 w-4" />
@@ -73,7 +91,8 @@ export function LessonWorkspaceHeader({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="grid h-9 w-9 place-items-center rounded-full bg-[#1557c0] text-xs font-semibold text-white transition hover:bg-[#0f49a7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1557c0]/30"
+              disabled={previewMode}
+              className="grid h-9 w-9 place-items-center rounded-full bg-[#1557c0] text-xs font-semibold text-white transition hover:bg-[#0f49a7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1557c0]/30 disabled:cursor-not-allowed disabled:bg-slate-300"
               aria-label="Open user menu"
             >
               {initials}

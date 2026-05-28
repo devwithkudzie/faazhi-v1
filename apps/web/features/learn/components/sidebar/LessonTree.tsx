@@ -4,6 +4,7 @@ import { TopicGroup } from "./TopicGroup";
 
 export function LessonTree({
   activeLessonId,
+  completedLessonIds = [],
   curriculum,
   onClose,
   onSelectModuleAssessment,
@@ -11,6 +12,7 @@ export function LessonTree({
   onSelectLesson,
 }: {
   activeLessonId: string;
+  completedLessonIds?: string[];
   curriculum: LearnCurriculum;
   onClose?: () => void;
   onSelectModuleAssessment?: () => void;
@@ -47,6 +49,7 @@ export function LessonTree({
             key={topic.id}
             topic={topic}
             activeLessonId={activeLessonId}
+            completedLessonIds={completedLessonIds}
             onSelectAssessment={onSelectAssessment}
             onSelectLesson={onSelectLesson}
           />

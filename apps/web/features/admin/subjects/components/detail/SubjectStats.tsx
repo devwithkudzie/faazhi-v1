@@ -34,9 +34,9 @@ export function SubjectStats({ subject }: { subject: AdminSubject }) {
         return (
           <article
             key={stat.label}
-            className="rounded-[26px] bg-white/90 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.07)] ring-1 ring-slate-200/70"
+            className="bg-white/90 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.07)] ring-1 ring-slate-200/70"
           >
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#eaf2ff] text-[#1557c0]">
+            <div className="grid h-11 w-11 place-items-center bg-[#eaf2ff] text-[#1557c0]">
               <Icon className="h-5 w-5" />
             </div>
             <p className="mt-4 text-sm font-medium text-slate-500">

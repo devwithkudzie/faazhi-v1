@@ -2,11 +2,13 @@ import type { ActivityItem } from "@/features/admin/dashboard/types/dashboard.ty
 
 export function RecentActivity({ items }: { items: ActivityItem[] }) {
   return (
-    <section className="rounded-[28px] bg-white/90 p-5 shadow-[0_22px_65px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
+    <section className="bg-white/90 p-5 shadow-[0_22px_65px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-slate-950">User activity</h2>
+        <h2 className="text-lg font-semibold text-slate-950">
+          Student activity
+        </h2>
         <p className="mt-1 text-sm text-slate-500">
-          Recent learning and platform events.
+          Recent signups, starts, submissions, and completions.
         </p>
       </div>
 
@@ -14,7 +16,7 @@ export function RecentActivity({ items }: { items: ActivityItem[] }) {
         {items.map((item, index) => (
           <div key={`${item.actor}-${item.time}`} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#eaf2ff] text-xs font-bold text-[#1557c0]">
+              <span className="grid h-9 w-9 place-items-center bg-[#eaf2ff] text-xs font-bold text-[#1557c0]">
                 {item.actor
                   .split(" ")
                   .map((part) => part[0])

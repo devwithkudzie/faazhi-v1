@@ -1,12 +1,22 @@
 import type {
   AdminLessonDraft,
   AdminPaperDraft,
+  AdminSceneBlock,
   AdminSceneDraft,
   AdminSceneType,
 } from "@/features/admin/papers/types/paper-workspace.types";
+import type { PublishStatus } from "@/features/admin/subjects/types/subject.types";
+import {
+  ContentTool,
+  type ContentTab,
+} from "@/features/admin/studio/components/tools/ContentTool";
 import { CurriculumTool } from "@/features/admin/studio/components/tools/CurriculumTool";
+import { AnimateTool } from "@/features/admin/studio/components/tools/AnimateTool";
+import { DesignTool } from "@/features/admin/studio/components/tools/DesignTool";
+import { InteractTool } from "@/features/admin/studio/components/tools/InteractTool";
 import { JsonTool } from "@/features/admin/studio/components/tools/JsonTool";
-import { ContentTool } from "@/features/admin/studio/components/tools/ContentTool";
+import { MediaTool } from "@/features/admin/studio/components/tools/MediaTool";
+import { TextTool } from "@/features/admin/studio/components/tools/TextTool";
 import { VoiceoverTool } from "@/features/admin/studio/components/tools/VoiceoverTool";
 import type { StudioTool } from "@/features/admin/studio/components/layout/StudioToolRail";
 
@@ -14,7 +24,8 @@ type MoveDirection = "up" | "down";
 
 const toolTitles: Record<StudioTool, string> = {
   structure: "Structure",
-  content: "Content",
+  content: "Scene flow",
+  text: "Text",
   design: "Design",
   interaction: "Interaction",
   narration: "Narration",
@@ -25,71 +36,147 @@ const toolTitles: Record<StudioTool, string> = {
 
 export function StudioToolSidebar({
   activeLessonId,
+  activeContentTab,
   draft,
+  expandedTopicIds,
   onCreateScene,
   onCreateTopic,
   onCreateLesson,
+  onDeleteLesson,
+  onDeleteTopic,
   onMoveTopic,
   onMoveLesson,
+  onRenameLesson,
+  onRenameTopic,
+  onUpdateTopicStatus,
   onSelectLesson,
+  onSelectBlock,
   onSelectScene,
   onUpdateScene,
   onAddBlock,
+  onActiveContentTabChange,
+  onUpdateBlock,
+  onDeleteBlock,
+  onDuplicateBlock,
+  onMoveBlock,
+  onToggleTopic,
   scene,
+  selectedBlockId,
   scenes,
   storageKey,
   tool,
 }: {
   activeLessonId?: string;
+  activeContentTab: ContentTab;
   draft: AdminPaperDraft;
+  expandedTopicIds: string[];
   onCreateScene: (type: AdminSceneType) => void;
   onCreateTopic: (title: string) => void;
   onCreateLesson: (subtopicId: string, title: string) => void;
+  onDeleteLesson: (lessonId: string) => void;
+  onDeleteTopic: (topicId: string) => void;
   onMoveTopic: (topicId: string, direction: MoveDirection) => void;
   onMoveLesson: (
     subtopicId: string,
     lessonId: string,
     direction: MoveDirection,
   ) => void;
+  onRenameLesson: (lessonId: string, title: string) => void;
+  onRenameTopic: (topicId: string, title: string) => void;
+  onUpdateTopicStatus: (topicId: string, status: PublishStatus) => void;
   onSelectLesson: (lesson: AdminLessonDraft) => void;
+  onSelectBlock: (blockId: string) => void;
   onSelectScene: (sceneId: string) => void;
   onUpdateScene: (sceneId: string, updates: Partial<AdminSceneDraft>) => void;
   onAddBlock: (sceneId: string, blockType: string) => void;
+  onActiveContentTabChange: (tab: ContentTab) => void;
+  onUpdateBlock: (
+    sceneId: string,
+    blockId: string,
+    updates: Partial<AdminSceneBlock>,
+  ) => void;
+  onDeleteBlock: (sceneId: string, blockId: string) => void;
+  onDuplicateBlock: (sceneId: string, blockId: string) => void;
+  onMoveBlock: (
+    sceneId: string,
+    blockId: string,
+    direction: MoveDirection,
+  ) => void;
+  onToggleTopic: (topicId: string) => void;
   scene?: AdminSceneDraft;
+  selectedBlockFocusKey: number;
+  selectedBlockId: string | null;
   scenes: AdminSceneDraft[];
   storageKey: string;
   tool: StudioTool;
 }) {
+  const compact = tool === "text";
+
   return (
-    <aside className="w-[320px] shrink-0 overflow-y-auto border-r border-slate-200 bg-[#fbfcfe] p-4">
-      <h2 className="text-lg font-semibold text-slate-950">
+    <aside
+      className={[
+        "w-[320px] shrink-0 border-r border-slate-200 bg-[#fbfcfe]",
+        compact ? "overflow-hidden p-3" : "overflow-y-auto p-4",
+      ].join(" ")}
+    >
+      <h2
+        className={[
+          "font-semibold text-slate-950",
+          compact ? "text-base" : "text-lg",
+        ].join(" ")}
+      >
         {toolTitles[tool]}
       </h2>
 
-      <p className="mt-1 text-sm text-slate-500">
-        Build structured learning scenes, not free-form designs.
-      </p>
+      {compact ? null : (
+        <p className="mt-1 text-sm text-slate-500">
+          Build structured learning scenes, not free-form designs.
+        </p>
+      )}
 
-      <div className="mt-5">
+      <div className={compact ? "mt-3" : "mt-5"}>
         {tool === "structure" ? (
           <CurriculumTool
             activeLessonId={activeLessonId}
             draft={draft}
+            expandedTopicIds={expandedTopicIds}
             onSelectLesson={onSelectLesson}
             onCreateTopic={onCreateTopic}
             onCreateLesson={onCreateLesson}
+            onDeleteLesson={onDeleteLesson}
+            onDeleteTopic={onDeleteTopic}
             onMoveTopic={onMoveTopic}
             onMoveLesson={onMoveLesson}
+            onRenameLesson={onRenameLesson}
+            onRenameTopic={onRenameTopic}
+            onUpdateTopicStatus={onUpdateTopicStatus}
+            onToggleTopic={onToggleTopic}
           />
         ) : null}
 
         {tool === "content" ? (
-          <ContentTool 
-          scene={scene}
-          onCreateScene={onCreateScene} 
-          onUpdateScene={onUpdateScene}
-          onAddBlock={onAddBlock}
-        />
+          <ContentTool
+            activeTab={activeContentTab}
+            scene={scene}
+            onActiveTabChange={onActiveContentTabChange}
+            onCreateScene={onCreateScene}
+            onUpdateScene={onUpdateScene}
+            onUpdateBlock={onUpdateBlock}
+            onDeleteBlock={onDeleteBlock}
+            onDuplicateBlock={onDuplicateBlock}
+            onMoveBlock={onMoveBlock}
+            onSelectBlock={onSelectBlock}
+          />
+        ) : null}
+
+        {tool === "text" ? (
+          <TextTool
+            onUpdateScene={onUpdateScene}
+            scene={scene}
+            selectedBlockId={selectedBlockId}
+            onAddBlock={onAddBlock}
+            onUpdateBlock={onUpdateBlock}
+          />
         ) : null}
 
         {tool === "narration" ? (
@@ -102,24 +189,24 @@ export function StudioToolSidebar({
         ) : null}
 
         {tool === "design" ? (
-          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
-            Design controls coming next: background, colors, typography,
-            spacing, cards, and scene theme.
-          </div>
+          <DesignTool onUpdateScene={onUpdateScene} scene={scene} />
         ) : null}
 
-        {tool === "media" ? (
-          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
-            Media controls coming next: images, diagrams, icons, video, and
-            audio uploads.
-          </div>
+        {tool === "interaction" ? (
+          <InteractTool onAddBlock={onAddBlock} scene={scene} />
         ) : null}
 
         {tool === "animation" ? (
-          <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600 ring-1 ring-slate-200">
-            Animation controls coming next: reveal timing, fade, slide, graph
-            drawing, and block sequencing.
-          </div>
+          <AnimateTool
+            onUpdateBlock={onUpdateBlock}
+            onUpdateScene={onUpdateScene}
+            scene={scene}
+            selectedBlockId={selectedBlockId}
+          />
+        ) : null}
+
+        {tool === "media" ? (
+          <MediaTool />
         ) : null}
 
         {tool === "preview" ? (

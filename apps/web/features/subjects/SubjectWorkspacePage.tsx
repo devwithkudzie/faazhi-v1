@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BarChart3,
@@ -21,7 +22,11 @@ import {
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/shared/components/layout/AppShell";
+import { apiRequest } from "@/shared/api/client";
+import { useAuth } from "@/shared/providers/AuthProvider";
 import styles from "./subject-workspace.module.css";
+import type { AdminPaperDraft } from "@/features/admin/papers/types/paper-workspace.types";
+import { getPaperDurationMinutes } from "@/features/admin/papers/services/paper-workspace.service";
 
 const tools = [
   { label: "Pseudocode Runner", href: "playground?tool=pseudocode", icon: Code2 },
@@ -29,81 +34,6 @@ const tools = [
   { label: "Logic Gate Simulator", href: "playground?tool=logic-gates", icon: CircuitBoard },
   { label: "Trace Table Builder", href: "playground?tool=trace-table", icon: Table2 },
   { label: "Progress", href: "progress", icon: BarChart3 },
-];
-
-const modules = [
-  {
-    name: "Paper 1",
-    title: "Theory Fundamentals",
-    href: "paper-1",
-    progress: 68,
-    lessons: 22,
-    completed: 15,
-    estimatedTime: "18-22 hours",
-    focus: "Information representation, hardware, networking, and databases.",
-    topics: [
-      "Information representation",
-      "Communication and internet technologies",
-      "Hardware and virtual machines",
-      "Processor fundamentals",
-      "System software",
-      "Security, privacy, and data integrity",
-    ],
-  },
-  {
-    name: "Paper 2",
-    title: "Problem Solving & Programming",
-    href: "paper-2",
-    progress: 45,
-    lessons: 20,
-    completed: 9,
-    estimatedTime: "16-20 hours",
-    focus: "Pseudocode, algorithms, trace tables, testing, and file handling.",
-    topics: [
-      "Algorithm design and problem solving",
-      "Pseudocode and flowcharts",
-      "Data types and structures",
-      "Programming constructs",
-      "Testing, validation, and verification",
-      "File handling",
-    ],
-  },
-  {
-    name: "Paper 3",
-    title: "Advanced Theory",
-    href: "paper-3",
-    progress: 28,
-    lessons: 18,
-    completed: 5,
-    estimatedTime: "14-18 hours",
-    focus: "Advanced networks, databases, operating systems, and security.",
-    topics: [
-      "Data representation and compression",
-      "Communication and networking",
-      "Database modelling and normalisation",
-      "Operating systems",
-      "Floating-point arithmetic",
-      "Logic gates and Boolean algebra",
-    ],
-  },
-  {
-    name: "Paper 4",
-    title: "Practical Programming",
-    href: "paper-4",
-    progress: 0,
-    lessons: 16,
-    completed: 0,
-    estimatedTime: "12-16 hours",
-    focus: "Hands-on programming tasks with independent project-style practice.",
-    topics: [
-      "Programming techniques",
-      "Object-oriented programming",
-      "Abstract data types",
-      "Recursion",
-      "Searching and sorting",
-      "Practical debugging and refinement",
-    ],
-  },
 ];
 
 const topics = [
@@ -130,12 +60,6 @@ const pageNav = [
   { label: "Testimonials", href: "#testimonials", id: "testimonials" },
 ];
 
-const activeModules = modules
-  .filter((module) => module.completed > 0 && module.completed < module.lessons)
-  .sort((a, b) => b.progress - a.progress);
-
-const primaryActiveModule = activeModules[0] ?? modules[0];
-
 const syllabusObjectives = [
   "Understand the core principles of computer systems, data, networks, software, and security.",
   "Apply computational thinking to break complex problems into structured solutions.",
@@ -150,12 +74,6 @@ const skillsGained = [
   "Database and network analysis",
   "Exam technique",
   "Independent revision planning",
-];
-
-const relevantDetails = [
-  { label: "Qualification", value: "Cambridge International AS & A Level" },
-  { label: "Syllabus", value: "Computer Science 9618" },
-  { label: "Assessment", value: "Four papers split across theory and practical pathways" },
 ];
 
 const testimonials = [
@@ -222,12 +140,176 @@ const ratingBreakdown = [
   { label: "1 star", value: 0.4 },
 ];
 
+interface ExploreSubject {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  level: "igcse" | "a-level";
+  isFree: boolean;
+  access: {
+    status: string;
+    hasAccess: boolean;
+    label: string;
+  };
+}
+
+interface ApiPaper {
+  id: string;
+  title: string;
+  description: string;
+  estimatedTime: string;
+  status: "draft" | "published" | "archived";
+  order: number;
+}
+
+interface ApiLesson {
+  id: string;
+  title: string;
+  description: string;
+  status: "draft" | "published";
+  estimatedMinutes: number;
+}
+
+function readSavedPaperDraft(subjectId: string, paperId: string) {
+  if (typeof window === "undefined") return null;
+
+  const saved =
+    window.localStorage.getItem(`faazhi.workspace.${subjectId}.${paperId}`) ??
+    window.localStorage.getItem(
+      `faazhi.admin.paper-draft.${subjectId}.${paperId}`,
+    );
+  if (!saved) return null;
+
+  try {
+    const parsed = JSON.parse(saved) as { draft?: AdminPaperDraft } | AdminPaperDraft;
+    if ("draft" in parsed && parsed.draft) return parsed.draft;
+    return "subjectId" in parsed ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getDraftContactMinutes(draft: AdminPaperDraft | null) {
+  return draft ? getPaperDurationMinutes(draft) : 0;
+}
+
+function formatContactTime(minutes: number) {
+  if (minutes <= 0) return "To be planned";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (!hours) return `${mins}m`;
+  return `${hours}h ${mins}m`;
+}
+
 export default function SubjectWorkspacePage({
   subjectId,
 }: {
   subjectId: string;
 }) {
+  const { token } = useAuth();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState(pageNav[0].id);
+  const [subject, setSubject] = useState<ExploreSubject | null>(null);
+  const [papers, setPapers] = useState<ApiPaper[]>([]);
+  const [lessonsByPaper, setLessonsByPaper] = useState<Record<string, ApiLesson[]>>({});
+  const [workspacesByPaper, setWorkspacesByPaper] = useState<Record<string, AdminPaperDraft>>({});
+  const [accessBusy, setAccessBusy] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let cancelled = false;
+
+    apiRequest<{ subjects: ExploreSubject[] }>("/api/explore/subjects", {
+      token,
+    })
+      .then((result) => {
+        if (!cancelled) {
+          setSubject(
+            result.subjects.find((item) => item.id === subjectId) ?? null,
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSubject(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectId, token]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let cancelled = false;
+
+    async function loadPapers() {
+      const paperResult = await apiRequest<{ papers: ApiPaper[] }>(
+        `/api/subjects/${subjectId}/papers`,
+        { token },
+      );
+      const lessonEntries = await Promise.all(
+        paperResult.papers.map(async (paper) => {
+          const lessonResult = await apiRequest<{ lessons: ApiLesson[] }>(
+            `/api/papers/${paper.id}/lessons`,
+            { token },
+          );
+          return [paper.id, lessonResult.lessons] as const;
+        }),
+      );
+      const workspaceEntries = await Promise.all(
+        paperResult.papers.map(async (paper) => {
+          const workspaceResult = await apiRequest<{
+            workspace: AdminPaperDraft | null;
+          }>(`/api/papers/${paper.id}/workspace`, { token });
+          return [paper.id, workspaceResult.workspace] as const;
+        }),
+      );
+
+      if (!cancelled) {
+        setPapers(paperResult.papers);
+        setLessonsByPaper(Object.fromEntries(lessonEntries));
+        setWorkspacesByPaper(
+          Object.fromEntries(
+            workspaceEntries.filter(
+              (entry): entry is [string, AdminPaperDraft] =>
+                Boolean(entry[1]),
+            ),
+          ),
+        );
+      }
+    }
+
+    loadPapers().catch(() => {
+      if (!cancelled) {
+        setPapers([]);
+        setLessonsByPaper({});
+        setWorkspacesByPaper({});
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [subjectId, token]);
+
+  async function unsubscribe() {
+    if (!token || !subject || subject.isFree) return;
+
+    setAccessBusy(true);
+
+    try {
+      await apiRequest(`/api/subjects/${subject.id}/unsubscribe`, {
+        method: "POST",
+        token,
+      });
+      router.push("/subjects");
+    } finally {
+      setAccessBusy(false);
+    }
+  }
 
   useEffect(() => {
     const sections = pageNav
@@ -255,6 +337,58 @@ export default function SubjectWorkspacePage({
     return () => observer.disconnect();
   }, []);
 
+  const subjectLevel =
+    subject?.level === "igcse" ? "Cambridge IGCSE" : "Cambridge A Level";
+  const paperModules = papers
+  .filter((paper) => paper.status === "published")
+  .map((paper) => {
+    const lessons = lessonsByPaper[paper.id] ?? [];
+    const savedDraft =
+      workspacesByPaper[paper.id] ?? readSavedPaperDraft(subjectId, paper.id);
+    const savedContactMinutes = getDraftContactMinutes(savedDraft);
+    const contactMinutes = savedContactMinutes
+      ? savedContactMinutes
+      : lessons.reduce((total, lesson) => total + lesson.estimatedMinutes, 0);
+
+    return {
+      id: paper.id,
+      name: savedDraft?.paperMeta?.title ?? paper.title,
+      title: savedDraft?.paperMeta?.description ?? paper.description ?? "Paper outline",
+      progress: 0,
+      completed: 0,
+      estimatedTime: formatContactTime(contactMinutes),
+      focus:
+        savedDraft?.paperMeta?.description ||
+        paper.description ||
+        "This paper is ready for lessons and subject-specific details.",
+      learningOutcomes:
+        savedDraft?.paperMeta?.learningOutcomes ??
+        savedDraft?.subjectMeta?.learningOutcomes ??
+        syllabusObjectives,
+      skills:
+        savedDraft?.paperMeta?.skills ??
+        savedDraft?.subjectMeta?.skills ??
+        skillsGained,
+      topics: savedDraft?.topics.length
+        ? savedDraft.topics
+            .filter((topic) => (topic.status ?? "draft") === "published")
+            .map((topic) => topic.title)
+        : lessons.map((lesson) => lesson.title),
+    };
+  });
+  const subjectOutcomes =
+    paperModules[0]?.learningOutcomes ?? syllabusObjectives;
+  const subjectSkills = paperModules[0]?.skills ?? skillsGained;
+  const primaryPaper = paperModules[0];
+  const usefulDetails = [
+    { label: "Qualification", value: subjectLevel },
+    { label: "Syllabus", value: subject ? `${subject.name} ${subject.code}` : subjectId },
+    {
+      label: "Assessment",
+      value: `${paperModules.length} paper${paperModules.length === 1 ? "" : "s"} available`,
+    },
+  ];
+
   return (
     <AppShell>
       <section className="bg-background">
@@ -265,18 +399,35 @@ export default function SubjectWorkspacePage({
             <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
               <div>
                 <span className="inline-flex rounded-full border border-primary/15 bg-white px-3 py-1 text-xs font-medium text-primary">
-                  Cambridge A Level · {subjectId}
+                  {subjectLevel} · {subject?.code ?? subjectId}
                 </span>
 
                 <h1 className="mt-4 font-serif-paper text-4xl font-semibold tracking-tight text-foreground">
-                  Computer Science 9618
+                  {subject ? `${subject.name} ${subject.code}` : "Subject"}
                 </h1>
 
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Master algorithms, programming, databases, networking, and
-                  exam techniques through guided learning, practice, and
-                  PaperLab.
+                  {subject?.description ??
+                    "Explore guided lessons, practice, and exam-ready study tools."}
                 </p>
+
+                {subject ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <span className="bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#1557c0] ring-1 ring-blue-100">
+                      {subject.access.label}
+                    </span>
+                    {!subject.isFree && subject.access.hasAccess ? (
+                      <button
+                        type="button"
+                        onClick={() => void unsubscribe()}
+                        disabled={accessBusy}
+                        className="bg-white px-3 py-1 text-xs font-bold text-rose-700 ring-1 ring-rose-100 transition hover:bg-rose-50 disabled:opacity-60"
+                      >
+                        {accessBusy ? "Cancelling..." : "Unsubscribe"}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div className="mt-6 flex flex-wrap gap-6 text-sm text-muted-foreground">
                   <span className="flex items-center gap-2">
@@ -308,37 +459,31 @@ export default function SubjectWorkspacePage({
               </div>
 
               <Link
-                href={`/subjects/${subjectId}/${primaryActiveModule.href}`}
+                href={
+                  primaryPaper
+                    ? `/subjects/${subjectId}/learn/${primaryPaper.id}`
+                    : `/subjects/${subjectId}`
+                }
                 className="rounded-2xl border border-primary/10 bg-white p-5 text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:shadow-md"
               >
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Continue your active module
+                  Continue your paper
                 </p>
 
                 <h2 className="mt-2 text-lg font-semibold">
-                  {primaryActiveModule.name}: {primaryActiveModule.title}
+                  {primaryPaper
+                    ? `${primaryPaper.name}: ${primaryPaper.title}`
+                    : "No papers yet"}
                 </h2>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {primaryActiveModule.completed} of {primaryActiveModule.lessons} lessons
-                  complete · {primaryActiveModule.estimatedTime} total
+                  {primaryPaper
+                    ? `${primaryPaper.topics.length} main topics · ${primaryPaper.estimatedTime} contact time`
+                    : "Your lessons will appear here once an admin adds papers."}
                 </p>
 
-                {activeModules.length > 1 && (
-                  <div className="mt-4 space-y-2">
-                    {activeModules.slice(1, 3).map((module) => (
-                      <span
-                        key={module.name}
-                        className="block rounded-md bg-[#eef5ff] px-3 py-2 text-sm font-medium text-[#0645ad]"
-                      >
-                        Also active: {module.name} · {module.progress}%
-                      </span>
-                    ))}
-                  </div>
-                )}
-
                 <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#0645ad] px-3 py-2 text-sm font-semibold text-white">
-                  Continue module <ArrowRight className="h-4 w-4" />
+                  Open paper <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
             </div>
@@ -353,7 +498,7 @@ export default function SubjectWorkspacePage({
               href="#about"
               className="hidden min-w-60 shrink-0 py-5 text-base font-semibold text-foreground md:block"
             >
-              Computer Science 9618
+              {subject ? `${subject.name} ${subject.code}` : subjectId}
             </Link>
 
             <div className="grid min-w-0 flex-1 auto-cols-[minmax(150px,1fr)] grid-flow-col gap-4 overflow-x-auto lg:auto-cols-fr lg:gap-6">
@@ -387,11 +532,11 @@ export default function SubjectWorkspacePage({
               <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
                 <div className="rounded-lg bg-background p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Syllabus objectives
+                    What you will learn
                   </h3>
 
                   <div className="mt-4 space-y-3">
-                    {syllabusObjectives.map((objective) => (
+                    {subjectOutcomes.map((objective) => (
                       <div key={objective} className="flex gap-3">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                         <p className="text-sm leading-6 text-foreground">
@@ -409,7 +554,7 @@ export default function SubjectWorkspacePage({
                     </h3>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {skillsGained.map((skill) => (
+                      {subjectSkills.map((skill) => (
                         <span
                           key={skill}
                           className="rounded-full bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-[inset_0_0_0_1px_rgba(148,163,184,0.18)]"
@@ -426,7 +571,7 @@ export default function SubjectWorkspacePage({
                     </h3>
 
                     <dl className="mt-4 space-y-3">
-                      {relevantDetails.map((detail) => (
+                      {usefulDetails.map((detail) => (
                         <div key={detail.label}>
                           <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             {detail.label}
@@ -446,7 +591,9 @@ export default function SubjectWorkspacePage({
               id="modules"
               className={`${styles.section} rounded-lg bg-card p-6 shadow-[0_14px_34px_rgba(15,23,42,0.07)]`}
             >
-              <h2 className="font-semibold text-foreground">4 modules</h2>
+              <h2 className="font-semibold text-foreground">
+                {paperModules.length} paper{paperModules.length === 1 ? "" : "s"}
+              </h2>
 
               <p className="mt-1 text-sm text-muted-foreground">
                 Each paper pathway can be completed independently, with its own
@@ -454,9 +601,9 @@ export default function SubjectWorkspacePage({
               </p>
 
               <div className="mt-5 space-y-3">
-                {modules.map((module) => (
+                {paperModules.map((module) => (
                   <details
-                    key={module.name}
+                    key={module.id}
                     className={`${styles.module} rounded-lg bg-background shadow-[0_1px_4px_rgba(15,23,42,0.07)] transition hover:bg-[#f5f9ff] hover:shadow-[0_8px_24px_rgba(6,69,173,0.12)]`}
                   >
                     <summary className="flex cursor-pointer list-none items-center gap-4 p-4">
@@ -466,11 +613,11 @@ export default function SubjectWorkspacePage({
                         </p>
 
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {module.completed} of {module.lessons} lessons complete
+                          {module.topics.length} main topics
                         </p>
 
                         <p className="mt-1 text-sm font-medium text-[#0645ad]">
-                          Estimated completion: {module.estimatedTime}
+                          Estimated contact time: {module.estimatedTime}
                         </p>
                       </div>
 
@@ -531,10 +678,10 @@ export default function SubjectWorkspacePage({
                       </div>
 
                       <Link
-                        href={`/subjects/${subjectId}/learn/${module.href}`}
+                        href={`/subjects/${subjectId}/learn/${module.id}`}
                         className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#0645ad] px-3 py-2 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(6,69,173,0.18)] transition hover:bg-[#053a91]"
                       >
-                        {module.completed > 0 ? "Continue module" : "Start module"}
+                        Open paper
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>

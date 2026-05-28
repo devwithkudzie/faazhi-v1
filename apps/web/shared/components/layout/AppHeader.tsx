@@ -19,14 +19,14 @@ import {
 
 const navItems = [
   {
+    label: "Explore",
+    href: "/explore",
+    isActive: (pathname: string) => pathname === "/explore",
+  },
+  {
     label: "My Learning",
     href: "/subjects",
     isActive: (pathname: string) => pathname.startsWith("/subjects"),
-  },
-  {
-    label: "Explore",
-    href: "/",
-    isActive: (pathname: string) => pathname === "/",
   },
 ];
 

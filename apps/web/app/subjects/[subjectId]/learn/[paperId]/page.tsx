@@ -5,7 +5,7 @@ export default async function Page({
 }: {
   params: Promise<{ subjectId: string; paperId: string }>;
 }) {
-  await params;
+  const { subjectId, paperId } = await params;
 
-  return <LearnWorkspacePage />;
+  return <LearnWorkspacePage subjectId={subjectId} paperId={paperId} />;
 }

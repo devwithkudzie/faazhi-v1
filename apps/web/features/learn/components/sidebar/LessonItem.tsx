@@ -3,10 +3,12 @@ import { ProgressIndicator } from "./ProgressIndicator";
 
 export function LessonItem({
   isActive,
+  isCompleted = false,
   lesson,
   onSelect,
 }: {
   isActive: boolean;
+  isCompleted?: boolean;
   lesson: LessonNode;
   onSelect: () => void;
 }) {
@@ -21,7 +23,9 @@ export function LessonItem({
           : "hover:bg-[#f4f8ff] text-foreground",
       ].join(" ")}
     >
-      <ProgressIndicator state={isActive ? "current" : lesson.state} />
+      <ProgressIndicator
+        state={isCompleted ? "completed" : isActive ? "current" : lesson.state}
+      />
 
       <span>
         <span className="block text-sm font-semibold leading-5">

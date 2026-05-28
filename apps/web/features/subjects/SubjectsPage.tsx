@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,36 +14,42 @@ import {
 import { Button } from "@/shared/ui/button";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AppShell } from "@/shared/components/layout/AppShell";
+import { apiRequest } from "@/shared/api/client";
 
-const subjects = [
-  {
-    id: "9618",
-    name: "Computer Science",
-    code: "9618",
-    level: "Cambridge A Level",
-    progress: 42,
-    lastActivity: "Data Representation",
-  },
-  {
-    id: "9709",
-    name: "Mathematics",
-    code: "9709",
-    level: "Cambridge A Level",
-    progress: 0,
-    lastActivity: "Coming soon",
-  },
-  {
-    id: "9702",
-    name: "Physics",
-    code: "9702",
-    level: "Cambridge A Level",
-    progress: 0,
-    lastActivity: "Coming soon",
-  },
-];
+interface ApiSubject {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+}
 
 export default function SubjectsPage() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
+  const [subjects, setSubjects] = useState<ApiSubject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let cancelled = false;
+
+    apiRequest<{ subjects: ApiSubject[] }>("/api/subjects", { token })
+      .then((result) => {
+        if (!cancelled) setSubjects(result.subjects);
+      })
+      .catch(() => {
+        if (!cancelled) setSubjects([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  const primarySubject = useMemo(() => subjects[0], [subjects]);
 
   return (
     <AppShell>
@@ -54,24 +61,25 @@ export default function SubjectsPage() {
                 Welcome back{user?.name ? `, ${user.name}` : ""}
               </p>
               <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-                Your learning workspace
+                My Learning
               </h1>
             </div>
 
             <div className="rounded-2xl bg-[#eaf2ff] px-4 py-3 text-sm font-semibold text-[#1557c0]">
-              Cambridge mastery plan
+              Active subjects
             </div>
           </div>
 
           <div className="mt-7 grid gap-4 md:grid-cols-4">
-            <StatCard icon={GraduationCap} label="Subjects" value="3" />
-            <StatCard icon={BookOpen} label="Topics completed" value="8" />
-            <StatCard icon={TrendingUp} label="Average score" value="72%" />
-            <StatCard icon={Clock} label="Study streak" value="4 days" />
+            <StatCard icon={GraduationCap} label="Subjects" value={loading ? "..." : subjects.length.toString()} />
+            <StatCard icon={BookOpen} label="Topics completed" value="0" />
+            <StatCard icon={TrendingUp} label="Average score" value="-" />
+            <StatCard icon={Clock} label="Study streak" value="-" />
           </div>
         </div>
 
-        <section className="mt-6 overflow-hidden rounded-[28px] bg-white/88 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
+        {primarySubject ? (
+          <section className="mt-6 overflow-hidden rounded-[28px] bg-white/88 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/70">
           <div className="flex flex-wrap items-center justify-between gap-5 p-6">
             <div className="flex items-start gap-4">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eaf2ff] text-[#1557c0]">
@@ -82,7 +90,7 @@ export default function SubjectsPage() {
                   Continue learning
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Computer Science · Data Representation
+                  {primarySubject.name} · {primarySubject.description}
                 </p>
               </div>
             </div>
@@ -90,18 +98,19 @@ export default function SubjectsPage() {
               asChild
               className="bg-[#1557c0] text-white hover:bg-[#0f49a7]"
             >
-              <Link href="/subjects/9618/learn">
+              <Link href={`/subjects/${primarySubject.id}/learn`}>
                 Continue <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
         </section>
+        ) : null}
 
         <section className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-950">My subjects</h2>
             <p className="text-sm text-muted-foreground">
-              Pick up where you left off
+              Free, trial, and subscribed subjects
             </p>
           </div>
 
@@ -120,30 +129,30 @@ export default function SubjectsPage() {
                       {subject.name}
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {subject.level}
+                      Cambridge A Level
                     </p>
                   </div>
 
                   <span className="rounded-full bg-[#eaf2ff] px-3 py-1 text-sm font-semibold text-[#1557c0]">
-                    {subject.progress}%
+                    0%
                   </span>
                 </div>
 
                 <div className="mt-8">
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>Progress</span>
-                    <span className="font-semibold">{subject.progress}%</span>
+                    <span className="font-semibold">0%</span>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
                     <div
                       className="h-full rounded-full bg-[#1557c0]"
-                      style={{ width: `${subject.progress}%` }}
+                      style={{ width: "0%" }}
                     />
                   </div>
                 </div>
 
                 <p className="mt-6 text-sm text-muted-foreground">
-                  Last activity: {subject.lastActivity}
+                  {subject.description}
                 </p>
 
                 <div className="mt-7 flex flex-wrap gap-2">
@@ -153,7 +162,7 @@ export default function SubjectsPage() {
                     className="bg-[#1557c0] text-white hover:bg-[#0f49a7]"
                   >
                     <Link href={`/subjects/${subject.id}`}>
-                      {subject.progress > 0 ? "Continue" : "Open subject"}
+                      Open subject
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -165,13 +174,22 @@ export default function SubjectsPage() {
                     className="border-[#bfdbfe] text-[#1557c0] hover:bg-[#dbeafe] hover:text-[#1557c0]"
                   >
                     <Link href={`/subjects/${subject.id}/learn`}>
-                      Example
+                      Lessons
                     </Link>
                   </Button>
                 </div>
               </article>
             ))}
           </div>
+
+          {!loading && subjects.length === 0 ? (
+            <div className="mt-4 bg-white/90 p-6 text-sm text-muted-foreground ring-1 ring-slate-200">
+              No enrolled subjects yet.
+              <Link href="/explore" className="ml-2 font-semibold text-[#1557c0]">
+                Explore subjects
+              </Link>
+            </div>
+          ) : null}
         </section>
       </section>
     </AppShell>

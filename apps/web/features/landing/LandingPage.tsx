@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 import {
   PenLine, ScanLine, Sparkles, ShieldCheck, ArrowRight, GraduationCap, UserCog,
-  CheckCircle2, BookOpenCheck, ClipboardCheck, BarChart3,
+  CheckCircle2, ClipboardCheck, BarChart3,
 } from "lucide-react";
 import { Logo } from "@/shared/components/layout/Logo";
 import { ThemeToggle } from "@/shared/components/layout/ThemeToggle";
@@ -15,8 +15,8 @@ const Index = () => {
   const { loginAs, user } = useAuth();
   const router = useRouter();
 
-  const enterAs = (id: string, dest: string) => {
-    loginAs(id);
+  const enterAs = async (id: string, dest: string) => {
+    await loginAs(id);
     router.push(dest);
   };
 
@@ -35,7 +35,7 @@ const Index = () => {
             <ThemeToggle />
             {user ? (
               <Button asChild size="sm">
-                <Link href={user.role === "student" ? "/student" : "/admin"}>
+                <Link href={user.role === "student" ? "/subjects" : "/admin"}>
                   Open dashboard <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
@@ -67,10 +67,10 @@ const Index = () => {
               guided by the mark scheme and AI-assisted suggestions.
             </p>
             <div className="mt-8 flex flex-wrap gap-3" id="demo">
-              <Button size="lg" onClick={() => enterAs("u-student-1", "/student")} className="gap-2">
+              <Button size="lg" onClick={() => void enterAs("u-student-1", "/subjects")} className="gap-2">
                 <GraduationCap className="h-5 w-5" /> Enter as Student
               </Button>
-              <Button size="lg" variant="outline" onClick={() => enterAs("u-admin", "/admin")} className="gap-2">
+              <Button size="lg" variant="outline" onClick={() => void enterAs("u-admin", "/admin")} className="gap-2">
                 <UserCog className="h-5 w-5" /> Enter as Admin
               </Button>
               <Button size="lg" variant="ghost" asChild>

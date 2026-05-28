@@ -15,6 +15,7 @@ export function ScenePlayer({
   onTogglePlay,
   onVoiceVolumeChange,
   scene,
+  sceneTime,
   setSpeed,
   speed,
   voiceVolume,
@@ -30,6 +31,7 @@ export function ScenePlayer({
   onTogglePlay: () => void;
   onVoiceVolumeChange: (volume: number) => void;
   scene: Scene;
+  sceneTime: number;
   setSpeed: (speed: number) => void;
   speed: number;
   voiceVolume: number;
@@ -56,7 +58,11 @@ export function ScenePlayer({
             </div>
           </div>
           <div className="absolute inset-0 z-20">
-            <SceneRenderer onContinueScene={onContinueScene} scene={scene} />
+            <SceneRenderer
+              onContinueScene={onContinueScene}
+              scene={scene}
+              sceneTime={sceneTime}
+            />
           </div>
         </>
       ) : (
@@ -66,6 +72,7 @@ export function ScenePlayer({
             captionsEnabled={captionsEnabled}
             onContinueScene={onContinueScene}
             scene={scene}
+            sceneTime={sceneTime}
           />
           <SceneControls
             captionsEnabled={captionsEnabled}

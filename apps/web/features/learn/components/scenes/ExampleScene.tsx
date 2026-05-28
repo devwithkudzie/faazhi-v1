@@ -1,18 +1,32 @@
 import type { Scene } from "../../types";
 
-export function ExampleScene({ scene }: { scene: Scene }) {
+export function ExampleScene({
+  scene,
+  sceneTime = 0,
+}: {
+  scene: Scene;
+  sceneTime?: number;
+}) {
+  const visibleBlocks = scene.visualBlocks?.length
+    ? scene.visualBlocks
+        .filter((block) => sceneTime >= (block.startTime ?? 0))
+        .map((block) => block.text)
+    : scene.blocks;
+
   return (
     <div className="flex h-full items-center justify-center bg-[#f7f9fd] p-10">
       <div className="grid w-full max-w-5xl gap-8 lg:grid-cols-[1fr_1.1fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1557c0]">
-            {scene.eyebrow ?? "Worked example"}
-          </p>
+          {scene.eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1557c0]">
+              {scene.eyebrow}
+            </p>
+          ) : null}
           <h2 className="mt-4 font-serif-paper text-4xl font-semibold text-foreground">
             {scene.title}
           </h2>
           <div className="mt-6 space-y-3">
-            {scene.blocks?.map((block) => (
+            {visibleBlocks?.map((block) => (
               <p
                 key={block}
                 className="rounded-xl border border-border bg-white p-4 text-sm leading-6 text-muted-foreground shadow-sm"
