@@ -2,6 +2,7 @@
 
 import {
   AudioLines,
+  ClipboardList,
   FileText,
   Images,
   LayoutPanelLeft,
@@ -14,6 +15,7 @@ import {
 
 export type StudioTool =
   | "structure"
+  | "assessment"
   | "content"
   | "text"
   | "design"
@@ -25,6 +27,7 @@ export type StudioTool =
 
 const tools = [
   { id: "structure", label: "Structure", icon: LayoutPanelLeft },
+  { id: "assessment", label: "Assess", icon: ClipboardList },
   { id: "content", label: "Scene flow", icon: FileText },
   { id: "text", label: "Text", icon: Type },
   { id: "design", label: "Design", icon: Palette },
@@ -41,6 +44,7 @@ const tools = [
 
 const launchTools = new Set<StudioTool>([
   "structure",
+  "assessment",
   "content",
   "text",
   "narration",

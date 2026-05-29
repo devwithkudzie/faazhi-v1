@@ -57,17 +57,22 @@ export default function LessonCreatorPage({
   subjectId: string;
   paperId?: string;
 }) {
-  const { token } = useAuth();
+  const { hydrated, token } = useAuth();
   const [subject, setSubject] = useState<AdminSubject | null>(null);
   const [paper, setPaper] = useState<SubjectPaperSummary | null>(null);
   const [draft, setDraft] = useState<AdminPaperDraft | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!hydrated) return;
+
     if (!token) return;
 
     let cancelled = false;
 
     async function loadWorkspace() {
+      setError(null);
+
       const [subjectResult, paperResult] = await Promise.all([
         apiRequest<{ subject: ApiSubject }>(`/api/subjects/${subjectId}`, {
           token,
@@ -80,6 +85,10 @@ export default function LessonCreatorPage({
         paperResult.papers.find((item) => item.id === paperId) ??
         paperResult.papers[0] ??
         null;
+
+      if (!selectedPaper) {
+        throw new Error("No paper exists for this subject yet.");
+      }
 
       const lessonResult = selectedPaper
         ? await apiRequest<{ lessons: ApiLesson[] }>(
@@ -105,6 +114,11 @@ export default function LessonCreatorPage({
             subject: subjectResult.subject,
           })
         : null;
+
+      if (!apiDraft) {
+        throw new Error("Could not build this paper workspace.");
+      }
+
       const savedWorkspace =
         workspaceResult.workspace?.paperId === selectedPaper?.id &&
         workspaceResult.workspace?.subjectId === subjectId
@@ -118,18 +132,48 @@ export default function LessonCreatorPage({
       }
     }
 
-    loadWorkspace().catch(() => {
+    loadWorkspace().catch((loadError) => {
       if (!cancelled) {
         setSubject(null);
         setPaper(null);
         setDraft(null);
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Could not load this paper workspace.",
+        );
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [paperId, subjectId, token]);
+  }, [hydrated, paperId, subjectId, token]);
+
+  const visibleError =
+    error ?? (hydrated && !token ? "Sign in to load this paper workspace." : null);
+
+  if (visibleError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+        <div className="max-w-md rounded-2xl border border-rose-100 bg-white p-5 text-center shadow-sm">
+          <p className="text-sm font-semibold text-rose-700">
+            Could not load paper workspace
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {visibleError}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-xl bg-[#1557c0] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#124cad]"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!subject || !paper || !draft) {
     return (

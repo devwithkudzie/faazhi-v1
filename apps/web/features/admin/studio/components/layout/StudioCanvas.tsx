@@ -1,20 +1,31 @@
 import {
+  ClipboardList,
   Code2,
+  CopyPlus,
   FileText,
+  Heading1,
   Image,
+  Layers3,
   List,
+  ListChecks,
   MessageSquareText,
   MousePointerClick,
-  MoreHorizontal,
+  MoreVertical,
+  Plus,
+  ScanText,
   Sigma,
   Trash2,
   Type,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type { Editor } from "@tiptap/react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type {
+  AdminAnswerKind,
+  AdminAnswerSlotDraft,
+  AdminAssessmentDraft,
+  AdminAssessmentPartDraft,
   AdminSceneBlock,
   AdminSceneDraft,
 } from "@/features/admin/papers/types/paper-workspace.types";
@@ -44,6 +55,277 @@ const blockIcons: Record<string, typeof Type> = {
 };
 
 const canvasMenuItems = ["Lesson tree", "Notes", "Timer", "JSON"];
+
+type AssessmentCanvasTool = "source" | "inputs" | "marking" | "import";
+type PartPath = string[];
+
+const answerKindLabels: Record<AdminAnswerKind, string> = {
+  short: "Short Answer",
+  long: "Long Answer",
+  gap: "Gap Fill",
+  working: "Working Space",
+  code: "Code Editor",
+  table: "Table Completion",
+  label: "Diagram Label",
+  tick: "Tick Box",
+  multi_tick: "Multiple Tick",
+  true_false: "True / False",
+  match: "Matching",
+  order: "Ordering",
+  classify: "Classification",
+  diagram: "Diagram Response",
+};
+
+function uniqueCanvasId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function createCanvasAnswerSlot(
+  kind: AdminAnswerKind = "long",
+): AdminAnswerSlotDraft {
+  const placeholders: Partial<Record<AdminAnswerKind, string>> = {
+    code: "Write Cambridge pseudocode here...",
+    long: "Explain your answer using exam wording...",
+    short: "e.g. RAM",
+    working: "Show each calculation step clearly...",
+  };
+
+  return {
+    id: uniqueCanvasId("answer"),
+    kind,
+    label: answerKindLabels[kind],
+    lines: kind === "short" ? 1 : 4,
+    placeholder: placeholders[kind],
+    options:
+      kind === "tick" || kind === "multi_tick" || kind === "true_false"
+        ? ["Cache memory", "Virtual memory", "Secondary storage"]
+        : [],
+    columns: kind === "table" ? ["Field", "Purpose"] : [],
+    rows: kind === "table" ? 3 : undefined,
+    leftItems: kind === "match" ? ["Protocol", "IP address"] : [],
+    rightItems: kind === "match" ? ["Rules for communication", "Unique network location"] : [],
+    items: kind === "order" || kind === "classify" ? ["Fetch", "Decode", "Execute"] : [],
+    categories: kind === "classify" ? ["Input device", "Output device"] : [],
+  };
+}
+
+function createCanvasMarkPoint() {
+  return {
+    id: uniqueCanvasId("mark-point"),
+    text: "Award one mark for...",
+    marks: 1,
+    keywords: [],
+    acceptedAlternatives: [],
+    requiresEvidence: true,
+  };
+}
+
+function createCanvasPart(label: string): AdminAssessmentPartDraft {
+  return {
+    id: uniqueCanvasId("part"),
+    label,
+    prompt: "State one advantage of using a database instead of a flat file.",
+    marks: 1,
+    answerSlots: [],
+    markScheme: [],
+    expectedAnswer: "",
+    guidance: "",
+    subparts: [],
+    tags: [],
+  };
+}
+
+function createCanvasQuestion(number: number) {
+  return {
+    id: uniqueCanvasId("question"),
+    number,
+    title: "Database design scenario",
+    source: {
+      paper: "9618/12",
+      session: "May/June 2024",
+      questionRef: `Q${number}`,
+    },
+    context:
+      "A school stores student records, subject choices and examination entries in a database.",
+    difficulty: "medium" as const,
+    tags: ["databases", "data modelling"],
+    parts: [createCanvasPart("(a)")],
+  };
+}
+
+function partLabel(index: number) {
+  return `(${String.fromCharCode(97 + index)})`;
+}
+
+function subpartLabel(index: number) {
+  const numerals = ["i", "ii", "iii", "iv", "v", "vi"];
+  return `(${numerals[index] ?? index + 1})`;
+}
+
+function updatePartTree(
+  parts: AdminAssessmentPartDraft[],
+  path: PartPath,
+  updater: (part: AdminAssessmentPartDraft) => AdminAssessmentPartDraft,
+): AdminAssessmentPartDraft[] {
+  const [currentId, ...rest] = path;
+
+  return parts.map((part) => {
+    if (part.id !== currentId) return part;
+    if (rest.length === 0) return updater(part);
+
+    return {
+      ...part,
+      subparts: updatePartTree(part.subparts ?? [], rest, updater),
+    };
+  });
+}
+
+function deletePartTree(
+  parts: AdminAssessmentPartDraft[],
+  path: PartPath,
+): AdminAssessmentPartDraft[] {
+  const [currentId, ...rest] = path;
+
+  if (rest.length === 0) {
+    return parts.filter((part) => part.id !== currentId);
+  }
+
+  return parts.map((part) =>
+    part.id === currentId
+      ? { ...part, subparts: deletePartTree(part.subparts ?? [], rest) }
+      : part,
+  );
+}
+
+function movePartTree(
+  parts: AdminAssessmentPartDraft[],
+  path: PartPath,
+  direction: "up" | "down",
+): AdminAssessmentPartDraft[] {
+  const [currentId, ...rest] = path;
+
+  if (rest.length === 0) {
+    const index = parts.findIndex((part) => part.id === currentId);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (index < 0 || targetIndex < 0 || targetIndex >= parts.length) return parts;
+    const next = [...parts];
+    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    return next;
+  }
+
+  return parts.map((part) =>
+    part.id === currentId
+      ? { ...part, subparts: movePartTree(part.subparts ?? [], rest, direction) }
+      : part,
+  );
+}
+
+function findPartInTree(
+  parts: AdminAssessmentPartDraft[],
+  path: PartPath,
+): AdminAssessmentPartDraft | undefined {
+  const [currentId, ...rest] = path;
+  const part = parts.find((candidate) => candidate.id === currentId);
+  if (!part || rest.length === 0) return part;
+  return findPartInTree(part.subparts ?? [], rest);
+}
+
+function totalPartMarks(parts: AdminAssessmentPartDraft[]): number {
+  return parts.reduce(
+    (total, part) =>
+      total + part.marks + totalPartMarks(part.subparts ?? []),
+    0,
+  );
+}
+
+function EditableSceneTitle({
+  onRename,
+  title,
+}: {
+  onRename: (title: string) => void;
+  title: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(title);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const skipNextBlurRef = useRef(false);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  function commitEdit() {
+    const nextTitle = draftTitle.trim();
+
+    if (nextTitle && nextTitle !== title) {
+      onRename(nextTitle);
+    }
+
+    setIsEditing(false);
+  }
+
+  function cancelEdit() {
+    skipNextBlurRef.current = true;
+    setDraftTitle(title);
+    setIsEditing(false);
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        aria-label="Scene title"
+        value={draftTitle}
+        onBlur={() => {
+          if (skipNextBlurRef.current) {
+            skipNextBlurRef.current = false;
+            return;
+          }
+
+          commitEdit();
+        }}
+        onChange={(event) => setDraftTitle(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            cancelEdit();
+          }
+        }}
+        className="w-full rounded-lg border border-blue-200 bg-white/80 px-2 py-1 font-serif-paper text-5xl font-semibold text-foreground outline-none transition placeholder:text-slate-300 focus:border-[#1557c0] focus:ring-4 focus:ring-[#1557c0]/10"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label="Edit scene title"
+      onClick={(event) => {
+        event.stopPropagation();
+        setDraftTitle(title);
+        setIsEditing(true);
+      }}
+      className="group max-w-full rounded-lg px-1 py-0.5 text-inherit transition hover:bg-white/55"
+    >
+      <span>{title}</span>
+      <span
+        aria-hidden="true"
+        className="ml-2 text-slate-400 opacity-0 transition group-hover:opacity-100"
+      >
+        |
+      </span>
+    </button>
+  );
+}
 
 function getHorizontalLayout(scene?: AdminSceneDraft) {
   switch (scene?.design?.horizontalAlign) {
@@ -444,18 +726,1239 @@ function StudioBlock({
   );
 }
 
+function AnswerSlotPreview({ slot }: { slot: AdminAnswerSlotDraft }) {
+  if (slot.kind === "table") {
+    const columns = slot.columns?.length ? slot.columns : ["Column 1", "Column 2"];
+    const rows = Array.from({ length: Math.max(1, slot.rows ?? 3) });
+
+    return (
+      <div className="mt-3 overflow-hidden rounded-lg border border-slate-300">
+        <div
+          className="grid bg-slate-100 text-[11px] font-semibold text-slate-600"
+          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+        >
+          {columns.map((column) => (
+            <div key={column} className="border-r border-slate-300 px-2 py-1 last:border-r-0">
+              {column}
+            </div>
+          ))}
+        </div>
+        {rows.map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="grid border-t border-slate-300"
+            style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
+          >
+            {columns.map((column) => (
+              <div key={`${rowIndex}-${column}`} className="h-9 border-r border-slate-300 last:border-r-0" />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (["tick", "multi_tick", "true_false"].includes(slot.kind)) {
+    const options = slot.options?.length ? slot.options : ["Option"];
+
+    return (
+      <div className="mt-3 space-y-2">
+        {options.map((option) => (
+          <div key={option} className="flex items-center gap-2 text-sm text-slate-800">
+            <span className="grid h-4 w-4 place-items-center border border-slate-400 bg-white" />
+            <span>{option}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (slot.kind === "code") {
+    return (
+      <div className="mt-3 rounded-lg border border-slate-300 bg-slate-950 p-3 font-mono text-xs leading-6 text-slate-400">
+        {Array.from({ length: Math.max(4, slot.lines ?? 6) }).map((_, index) => (
+          <div key={index} className="border-b border-white/10 py-0.5">
+            &nbsp;
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (slot.kind === "diagram") {
+    return (
+      <div className="mt-3 grid h-36 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-xs font-semibold text-slate-400">
+        Diagram answer space
+      </div>
+    );
+  }
+
+  if (slot.kind === "match") {
+    const left = slot.leftItems?.length ? slot.leftItems : ["Item A", "Item B"];
+    const right = slot.rightItems?.length ? slot.rightItems : ["Match 1", "Match 2"];
+
+    return (
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="space-y-2">
+          {left.map((item) => (
+            <div key={item} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              {item}
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2">
+          {right.map((item) => (
+            <div key={item} className="rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm">
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (slot.kind === "order") {
+    const items = slot.items?.length ? slot.items : ["Step 1", "Step 2", "Step 3"];
+
+    return (
+      <ol className="mt-3 space-y-2">
+        {items.map((item, index) => (
+          <li key={item} className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-slate-100 text-xs font-bold">
+              {index + 1}
+            </span>
+            {item}
+          </li>
+        ))}
+      </ol>
+    );
+  }
+
+  if (slot.kind === "classify") {
+    const categories = slot.categories?.length ? slot.categories : ["Category A", "Category B"];
+    const items = slot.items?.length ? slot.items : ["Item 1", "Item 2"];
+
+    return (
+      <div className="mt-3">
+        <div className="mb-2 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <span key={item} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {categories.map((category) => (
+            <div key={category} className="min-h-20 rounded-lg border border-dashed border-slate-300 p-2 text-xs font-semibold text-slate-500">
+              {category}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {Array.from({ length: Math.max(1, slot.lines ?? 3) }).map((_, index) => (
+        <div key={index} className="h-7 border-b border-slate-300" />
+      ))}
+    </div>
+  );
+}
+
+function AssessmentFloatingToolbar({
+  assessment,
+  onAssessmentChange,
+  part,
+  partPath,
+  questionId,
+}: {
+  assessment: AdminAssessmentDraft;
+  onAssessmentChange?: (assessment: AdminAssessmentDraft) => void;
+  part?: AdminAssessmentPartDraft;
+  partPath?: PartPath;
+  questionId?: string;
+}) {
+  const [tool, setTool] = useState<AssessmentCanvasTool | null>(null);
+  const [pasteText, setPasteText] = useState("");
+  const [markingOpen, setMarkingOpen] = useState(false);
+  const canEdit = Boolean(onAssessmentChange && part && questionId && partPath);
+
+  function updatePart(updater: (part: AdminAssessmentPartDraft) => AdminAssessmentPartDraft) {
+    if (!onAssessmentChange || !part || !questionId || !partPath) return;
+
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              parts: updatePartTree(question.parts, partPath, updater),
+            }
+          : question,
+      ),
+    });
+  }
+
+  function updateAssessment(updates: Partial<AdminAssessmentDraft>) {
+    onAssessmentChange?.({ ...assessment, ...updates });
+  }
+
+  function importPrompt() {
+    const prompt = pasteText.trim();
+    if (!prompt || !canEdit) return;
+
+    const marksMatch = prompt.match(/\[(\d+)\]|\((\d+)\s*marks?\)/i);
+    const marks = Number(marksMatch?.[1] ?? marksMatch?.[2] ?? part?.marks ?? 1);
+
+    updatePart((current) => ({
+      ...current,
+      prompt,
+      marks: Number.isFinite(marks) && marks > 0 ? marks : current.marks,
+      answerSlots:
+        current.answerSlots.length > 0
+          ? current.answerSlots
+          : [createCanvasAnswerSlot(prompt.match(/pseudocode|code/i) ? "code" : "long")],
+      markScheme:
+        current.markScheme.length > 0
+          ? current.markScheme
+          : Array.from({ length: Math.max(1, Math.min(marks || 1, 8)) }).map(
+              () => createCanvasMarkPoint(),
+            ),
+    }));
+    setPasteText("");
+    setTool(null);
+  }
+
+  const toolItems = [
+    { id: "source" as const, label: "Source", icon: ClipboardList },
+    { id: "inputs" as const, label: "Inputs", icon: CopyPlus },
+    { id: "marking" as const, label: "Marking", icon: ListChecks },
+    { id: "import" as const, label: "Import", icon: ScanText },
+  ];
+
+  return (
+    <>
+      <aside className="absolute right-4 top-24 z-20 flex flex-col items-center gap-2 rounded-2xl bg-white/95 p-2 shadow-[0_18px_45px_rgba(15,23,42,0.18)] ring-1 ring-slate-200 backdrop-blur">
+        {toolItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                if (item.id === "marking") {
+                  setMarkingOpen(true);
+                  setTool(null);
+                  return;
+                }
+
+                setTool((current) => (current === item.id ? null : item.id));
+              }}
+              className={[
+                "grid h-14 w-14 place-items-center rounded-xl text-[10px] font-bold transition",
+                tool === item.id
+                  ? "bg-[#1557c0] text-white"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-900",
+              ].join(" ")}
+              title={item.label}
+              aria-label={item.label}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </aside>
+
+      {tool ? (
+        <div className="absolute right-24 top-24 z-20 w-72 rounded-2xl bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
+        {tool === "source" ? (
+          <div className="space-y-2">
+            <label className="block">
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                Assessment title
+              </span>
+              <input
+                value={assessment.title}
+                onChange={(event) => updateAssessment({ title: event.target.value })}
+                className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                Selected part
+              </span>
+              <div className="rounded-lg bg-slate-50 p-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                {part ? `${part.label} · ${part.marks} marks` : "Click a prompt"}
+              </div>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                Marks
+              </span>
+              <input
+                value={part?.marks ?? ""}
+                disabled={!canEdit}
+                onChange={(event) =>
+                  updatePart((current) => ({
+                    ...current,
+                    marks: Number(event.target.value) || 1,
+                  }))
+                }
+                className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
+              />
+            </label>
+          </div>
+        ) : null}
+
+        {tool === "inputs" ? (
+          <div className="space-y-2">
+            <div className="grid max-h-60 grid-cols-1 gap-2 overflow-auto">
+              {(Object.keys(answerKindLabels) as AdminAnswerKind[]).map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() =>
+                    updatePart((current) => ({
+                      ...current,
+                      answerSlots: [...current.answerSlots, createCanvasAnswerSlot(kind)],
+                    }))
+                  }
+                  className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-slate-100 text-xs font-bold capitalize text-slate-700 transition hover:bg-[#eaf2ff] hover:text-[#1557c0] disabled:opacity-40"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {answerKindLabels[kind]}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1">
+              {(part?.answerSlots ?? []).map((slot) => (
+                <div
+                  key={slot.id}
+                  className="flex items-center justify-between rounded-lg bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"
+                >
+                  <span className="capitalize">{slot.kind.replace("_", " ")}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updatePart((current) => ({
+                        ...current,
+                        answerSlots: current.answerSlots.filter(
+                          (candidate) => candidate.id !== slot.id,
+                        ),
+                      }))
+                    }
+                    className="text-slate-400 hover:text-rose-600"
+                    aria-label="Remove answer input"
+                    title="Remove answer input"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {tool === "marking" ? (
+          null
+        ) : null}
+
+        {tool === "import" ? (
+          <div className="space-y-2">
+            <textarea
+              value={pasteText}
+              rows={7}
+              onChange={(event) => setPasteText(event.target.value)}
+              placeholder="Paste a question-paper extract. It will replace the selected part prompt."
+              className="w-full resize-none rounded-lg border border-slate-200 px-2 py-2 text-xs leading-5 outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+            />
+            <button
+              type="button"
+              disabled={!canEdit || !pasteText.trim()}
+              onClick={importPrompt}
+              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-[#1557c0] text-xs font-bold text-white transition hover:bg-[#124cad] disabled:opacity-40"
+            >
+              <ScanText className="h-3.5 w-3.5" />
+              Extract into prompt
+            </button>
+          </div>
+        ) : null}
+        </div>
+      ) : null}
+
+      {markingOpen ? (
+        <div className="absolute inset-0 z-30 grid place-items-center bg-slate-950/35 px-6">
+          <div className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#1557c0]">
+                  Marking scheme
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-slate-950">
+                  {part ? `${part.label} · ${part.marks} marks` : "Select a part"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMarkingOpen(false)}
+                className="rounded-lg px-3 py-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="max-h-[62vh] space-y-3 overflow-auto p-5">
+              <button
+                type="button"
+                disabled={!canEdit}
+                onClick={() =>
+                  updatePart((current) => ({
+                    ...current,
+                    markScheme: [...current.markScheme, createCanvasMarkPoint()],
+                  }))
+                }
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1557c0] px-4 text-sm font-bold text-white transition hover:bg-[#124cad] disabled:opacity-40"
+              >
+                <Plus className="h-4 w-4" />
+                Add mark point
+              </button>
+
+              {(part?.markScheme ?? []).map((markPoint, index) => (
+                <div
+                  key={markPoint.id}
+                  className="grid gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                      Point {index + 1}
+                    </span>
+                    <input
+                      value={markPoint.marks}
+                      onChange={(event) =>
+                        updatePart((current) => ({
+                          ...current,
+                          markScheme: current.markScheme.map((candidate) =>
+                            candidate.id === markPoint.id
+                              ? {
+                                  ...candidate,
+                                  marks: Number(event.target.value) || 1,
+                                }
+                              : candidate,
+                          ),
+                        }))
+                      }
+                      className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                  <textarea
+                    value={markPoint.text}
+                    rows={3}
+                    onChange={(event) =>
+                      updatePart((current) => ({
+                        ...current,
+                        markScheme: current.markScheme.map((candidate) =>
+                          candidate.id === markPoint.id
+                            ? { ...candidate, text: event.target.value }
+                            : candidate,
+                        ),
+                      }))
+                    }
+                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                  />
+                  <input
+                    value={(markPoint.keywords ?? []).join(", ")}
+                    placeholder="Keywords, comma separated"
+                    onChange={(event) =>
+                      updatePart((current) => ({
+                        ...current,
+                        markScheme: current.markScheme.map((candidate) =>
+                          candidate.id === markPoint.id
+                            ? {
+                                ...candidate,
+                                keywords: event.target.value
+                                  .split(",")
+                                  .map((keyword) => keyword.trim())
+                                  .filter(Boolean),
+                              }
+                            : candidate,
+                        ),
+                      }))
+                    }
+                    className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function AssessmentCanvasPreview({
+  assessment,
+  label,
+  onAssessmentChange,
+}: {
+  assessment?: AdminAssessmentDraft;
+  label?: string;
+  onAssessmentChange?: (assessment: AdminAssessmentDraft) => void;
+}) {
+  const [selectedPartKey, setSelectedPartKey] = useState<string | null>(null);
+  const totalMarks =
+    assessment?.questions.reduce(
+      (total, question) => total + totalPartMarks(question.parts),
+      0,
+    ) ?? 0;
+  const firstQuestion = assessment?.questions[0];
+  const firstPart = firstQuestion?.parts[0];
+  const selectedQuestionId = selectedPartKey?.split(":")[0];
+  const selectedPath = selectedPartKey?.split(":")[1]?.split("/").filter(Boolean) ?? [];
+  const selectedQuestion =
+    assessment?.questions.find((question) => question.id === selectedQuestionId) ??
+    firstQuestion;
+  const selectedPart = selectedQuestion
+    ? findPartInTree(selectedQuestion.parts, selectedPath) ?? firstPart
+    : firstPart;
+
+  function selectPart(questionId: string, path: PartPath) {
+    setSelectedPartKey(`${questionId}:${path.join("/")}`);
+  }
+
+  function updatePartPrompt(
+    questionId: string,
+    path: PartPath,
+    prompt: string,
+  ) {
+    if (!assessment || !onAssessmentChange) return;
+
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              parts: updatePartTree(question.parts, path, (part) => ({
+                ...part,
+                prompt,
+              })),
+            }
+          : question,
+      ),
+    });
+  }
+
+  function updateQuestionText(
+    questionId: string,
+    updates: {
+      context?: string;
+      title?: string;
+    },
+  ) {
+    if (!assessment || !onAssessmentChange) return;
+
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId ? { ...question, ...updates } : question,
+      ),
+    });
+  }
+
+  function updatePart(
+    questionId: string,
+    path: PartPath,
+    updater: (part: AdminAssessmentPartDraft) => AdminAssessmentPartDraft,
+  ) {
+    if (!assessment || !onAssessmentChange) return;
+
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId
+          ? {
+              ...question,
+              parts: updatePartTree(question.parts, path, updater),
+            }
+          : question,
+      ),
+    });
+  }
+
+  function addQuestion() {
+    if (!assessment || !onAssessmentChange) return;
+    const question = createCanvasQuestion(assessment.questions.length + 1);
+    onAssessmentChange({
+      ...assessment,
+      questions: [...assessment.questions, question],
+    });
+    selectPart(question.id, [question.parts[0].id]);
+  }
+
+  function moveQuestion(questionId: string, direction: "up" | "down") {
+    if (!assessment || !onAssessmentChange) return;
+    const index = assessment.questions.findIndex((question) => question.id === questionId);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (index < 0 || targetIndex < 0 || targetIndex >= assessment.questions.length) return;
+    const questions = [...assessment.questions];
+    [questions[index], questions[targetIndex]] = [questions[targetIndex], questions[index]];
+    onAssessmentChange({
+      ...assessment,
+      questions: questions.map((question, questionIndex) => ({
+        ...question,
+        number: questionIndex + 1,
+      })),
+    });
+  }
+
+  function deleteQuestion(questionId: string) {
+    if (!assessment || !onAssessmentChange) return;
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions
+        .filter((question) => question.id !== questionId)
+        .map((question, index) => ({ ...question, number: index + 1 })),
+    });
+  }
+
+  function addPart(questionId: string) {
+    if (!assessment || !onAssessmentChange) return;
+    const question = assessment.questions.find((item) => item.id === questionId);
+    if (!question) return;
+    const part = createCanvasPart(partLabel(question.parts.length));
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((item) =>
+        item.id === questionId
+          ? { ...item, parts: [...item.parts, part] }
+          : item,
+      ),
+    });
+    selectPart(questionId, [part.id]);
+  }
+
+  function addSubpart(questionId: string, path: PartPath) {
+    const parent = selectedQuestion
+      ? findPartInTree(selectedQuestion.parts, path)
+      : undefined;
+    const subpart = createCanvasPart(subpartLabel(parent?.subparts?.length ?? 0));
+    updatePart(questionId, path, (part) => ({
+      ...part,
+      subparts: [...(part.subparts ?? []), subpart],
+    }));
+    selectPart(questionId, [...path, subpart.id]);
+  }
+
+  function movePart(questionId: string, path: PartPath, direction: "up" | "down") {
+    if (!assessment || !onAssessmentChange) return;
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId
+          ? { ...question, parts: movePartTree(question.parts, path, direction) }
+          : question,
+      ),
+    });
+  }
+
+  function deletePart(questionId: string, path: PartPath) {
+    if (!assessment || !onAssessmentChange) return;
+    onAssessmentChange({
+      ...assessment,
+      questions: assessment.questions.map((question) =>
+        question.id === questionId
+          ? { ...question, parts: deletePartTree(question.parts, path) }
+          : question,
+      ),
+    });
+  }
+
+  function renderPart(
+    questionId: string,
+    part: AdminAssessmentPartDraft,
+    path: PartPath,
+    depth = 0,
+  ): ReactNode {
+    const selected = `${questionId}:${path.join("/")}` === selectedPartKey;
+
+    return (
+      <div key={part.id} className="space-y-3" style={{ marginLeft: depth * 28 }}>
+        <div
+          onClick={() => selectPart(questionId, path)}
+          className={[
+            "grid grid-cols-[64px_1fr_64px] gap-3 rounded-lg p-2 transition",
+            selected ? "bg-blue-50 ring-2 ring-[#1557c0]/20" : "hover:bg-slate-50",
+          ].join(" ")}
+        >
+          <div>
+            <span className="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-slate-100 text-slate-500">
+              <Layers3 className="h-4 w-4" />
+            </span>
+            <input
+              value={part.label}
+              onChange={(event) =>
+                updatePart(questionId, path, (current) => ({
+                  ...current,
+                  label: event.target.value,
+                }))
+              }
+              className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm font-bold text-slate-900 outline-none hover:border-blue-100 hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-[#1557c0]/10"
+              aria-label={`Edit part label ${part.label}`}
+            />
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                <MessageSquareText className="h-3.5 w-3.5" />
+                {depth === 0 ? "Part prompt" : "Sub-part prompt"}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-300">
+                {part.topic || "No topic"}
+              </span>
+            </div>
+            <textarea
+              value={part.prompt}
+              rows={Math.max(2, part.prompt.split("\n").length)}
+              onFocus={() => selectPart(questionId, path)}
+              onChange={(event) =>
+                updatePartPrompt(questionId, path, event.target.value)
+              }
+              className="w-full resize-y rounded-md border border-transparent bg-transparent px-2 py-1 text-sm leading-6 text-slate-950 outline-none transition hover:border-blue-100 hover:bg-blue-50/35 focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+              aria-label={`Edit prompt ${part.label}`}
+            />
+
+            {part.answerSlots.map((slot) => (
+              <div key={slot.id} className="group relative">
+                {slot.label ? (
+                  <p className="mt-4 text-xs font-semibold text-slate-500">
+                    {slot.label}
+                  </p>
+                ) : null}
+                <AnswerSlotPreview slot={slot} />
+                {selected ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updatePart(questionId, path, (current) => ({
+                        ...current,
+                        answerSlots: current.answerSlots.filter(
+                          (candidate) => candidate.id !== slot.id,
+                        ),
+                      }))
+                    }
+                    className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white text-slate-400 opacity-0 shadow ring-1 ring-slate-200 transition hover:text-rose-600 group-hover:opacity-100"
+                    aria-label="Delete answer input"
+                    title="Delete answer input"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
+            ))}
+
+            {selected ? (
+              <div className="mt-4 space-y-3 rounded-lg bg-slate-50 p-2 ring-1 ring-slate-200">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    <CopyPlus className="h-3.5 w-3.5" />
+                    Add input
+                  </span>
+                  {(Object.keys(answerKindLabels) as AdminAnswerKind[]).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      onClick={() =>
+                        updatePart(questionId, path, (current) => ({
+                          ...current,
+                          answerSlots: [
+                            ...current.answerSlots,
+                            createCanvasAnswerSlot(kind),
+                          ],
+                        }))
+                      }
+                      className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
+                    >
+                      {answerKindLabels[kind]}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    value={part.topic ?? ""}
+                    placeholder="Topic, e.g. Normalisation"
+                    onChange={(event) =>
+                      updatePart(questionId, path, (current) => ({
+                        ...current,
+                        topic: event.target.value,
+                      }))
+                    }
+                    className="h-8 min-w-40 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                  />
+                  <input
+                    value={(part.tags ?? []).join(", ")}
+                    placeholder="Tags"
+                    onChange={(event) =>
+                      updatePart(questionId, path, (current) => ({
+                        ...current,
+                        tags: event.target.value
+                          .split(",")
+                          .map((tag) => tag.trim())
+                          .filter(Boolean),
+                      }))
+                    }
+                    className="h-8 min-w-32 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addSubpart(questionId, path)}
+                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
+                  >
+                    Add sub-part
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePart(questionId, path, "up")}
+                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
+                  >
+                    Move up
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePart(questionId, path, "down")}
+                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
+                  >
+                    Move down
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deletePart(questionId, path)}
+                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-rose-600 ring-1 ring-rose-100 hover:bg-rose-50"
+                  >
+                    Delete part
+                  </button>
+                </div>
+                <textarea
+                  value={part.expectedAnswer ?? ""}
+                  placeholder="Expected answer, e.g. The candidate should explain that primary keys uniquely identify records..."
+                  onChange={(event) =>
+                    updatePart(questionId, path, (current) => ({
+                      ...current,
+                      expectedAnswer: event.target.value,
+                    }))
+                  }
+                  className="min-h-20 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-xs leading-5 outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
+            ) : null}
+          </div>
+
+          <div>
+            <input
+              value={part.marks}
+              onChange={(event) =>
+                updatePart(questionId, path, (current) => ({
+                  ...current,
+                  marks: Number(event.target.value) || 0,
+                }))
+              }
+              className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-right text-sm font-bold text-slate-500 outline-none hover:border-blue-100 hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-[#1557c0]/10"
+              aria-label={`Edit marks for ${part.label}`}
+            />
+            <p className="mt-1 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-slate-300">
+              marks
+            </p>
+          </div>
+        </div>
+
+        {(part.subparts ?? []).length > 0 ? (
+          <div className="space-y-3 border-l border-slate-200 pl-3">
+            {(part.subparts ?? []).map((subpart) =>
+              renderPart(questionId, subpart, [...path, subpart.id], depth + 1),
+            )}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#f4f7fb]">
+      {assessment ? (
+        <AssessmentFloatingToolbar
+          assessment={assessment}
+          onAssessmentChange={onAssessmentChange}
+          part={selectedPart}
+          partPath={selectedPath}
+          questionId={selectedQuestion?.id}
+        />
+      ) : null}
+
+      <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            Assessment canvas
+          </div>
+          <div className="mt-1 truncate text-sm font-semibold text-slate-950">
+            {label ?? assessment?.title ?? "Assessment"}
+          </div>
+        </div>
+        <div className="rounded-full bg-[#eaf2ff] px-3 py-1 text-xs font-bold text-[#1557c0]">
+          {totalMarks} marks
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto p-6">
+        <div className="mx-auto max-w-4xl bg-white px-12 py-10 shadow-[0_20px_70px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
+          {assessment ? (
+            <>
+              <div className="border-b border-slate-200 pb-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  {assessment.scope === "module" ? "Module assessment" : "Topical assessment"}
+                </p>
+                <h1 className="mt-2 text-2xl font-bold text-slate-950">
+                  {assessment.title}
+                </h1>
+                <p className="mt-2 text-sm font-semibold text-slate-500">
+                  {assessment.durationMinutes ?? 20} minutes · {totalMarks} marks
+                </p>
+              </div>
+
+              <div className="mt-8 space-y-10">
+                {assessment.questions.map((question) => (
+                  <section
+                    key={question.id}
+                    className="break-inside-avoid rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-3">
+                          <span className="mt-1 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#eaf2ff] text-[#1557c0]">
+                            <Heading1 className="h-4 w-4" />
+                          </span>
+                          <label className="min-w-0 flex-1">
+                            <span className="block text-xl font-bold text-slate-950">
+                              Question {question.number}
+                            </span>
+                            <input
+                              value={question.title}
+                              onChange={(event) =>
+                                updateQuestionText(question.id, {
+                                  title: event.target.value,
+                                })
+                              }
+                              placeholder="Short internal title, e.g. Database design scenario"
+                              className="mt-1 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:border-blue-100 hover:bg-blue-50/35 focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+                              aria-label={`Edit question ${question.number} title`}
+                            />
+                          </label>
+                        </div>
+                        <div className="ml-10 mt-2 grid gap-2 sm:grid-cols-4">
+                          <input
+                            value={question.source?.paper ?? ""}
+                            placeholder="9618/12"
+                            onChange={(event) =>
+                              onAssessmentChange?.({
+                                ...assessment,
+                                questions: assessment.questions.map((item) =>
+                                  item.id === question.id
+                                    ? {
+                                        ...item,
+                                        source: {
+                                          ...item.source,
+                                          paper: event.target.value,
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              })
+                            }
+                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                          />
+                          <input
+                            value={question.source?.session ?? ""}
+                            placeholder="May/June 2024"
+                            onChange={(event) =>
+                              onAssessmentChange?.({
+                                ...assessment,
+                                questions: assessment.questions.map((item) =>
+                                  item.id === question.id
+                                    ? {
+                                        ...item,
+                                        source: {
+                                          ...item.source,
+                                          session: event.target.value,
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              })
+                            }
+                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                          />
+                          <input
+                            value={question.source?.questionRef ?? ""}
+                            placeholder="Q4(b)"
+                            onChange={(event) =>
+                              onAssessmentChange?.({
+                                ...assessment,
+                                questions: assessment.questions.map((item) =>
+                                  item.id === question.id
+                                    ? {
+                                        ...item,
+                                        source: {
+                                          ...item.source,
+                                          questionRef: event.target.value,
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              })
+                            }
+                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                          />
+                          <input
+                            value={(question.tags ?? []).join(", ")}
+                            placeholder="databases, SQL"
+                            onChange={(event) =>
+                              onAssessmentChange?.({
+                                ...assessment,
+                                questions: assessment.questions.map((item) =>
+                                  item.id === question.id
+                                    ? {
+                                        ...item,
+                                        tags: event.target.value
+                                          .split(",")
+                                          .map((tag) => tag.trim())
+                                          .filter(Boolean),
+                                      }
+                                    : item,
+                                ),
+                              })
+                            }
+                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveQuestion(question.id, "up")}
+                          className="rounded-md bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 hover:text-[#1557c0]"
+                        >
+                          Up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveQuestion(question.id, "down")}
+                          className="rounded-md bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 hover:text-[#1557c0]"
+                        >
+                          Down
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteQuestion(question.id)}
+                          className="rounded-md bg-rose-50 px-2 py-1 text-[11px] font-bold text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-start gap-3">
+                      <span className="mt-2 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
+                        <FileText className="h-4 w-4" />
+                      </span>
+                      <textarea
+                        value={question.context ?? ""}
+                        rows={Math.max(2, (question.context ?? "").split("\n").length)}
+                        placeholder="Add the main question prompt, scenario, stem, or source extract here..."
+                        onChange={(event) =>
+                          updateQuestionText(question.id, {
+                            context: event.target.value,
+                          })
+                        }
+                        className="min-h-20 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+                        aria-label={`Edit question ${question.number} main prompt`}
+                      />
+                    </div>
+
+                    <div className="mt-5 space-y-4">
+                      {question.parts.map((part) =>
+                        renderPart(question.id, part, [part.id]),
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => addPart(question.id)}
+                        className="rounded-lg bg-[#eaf2ff] px-3 py-2 text-xs font-bold text-[#1557c0] transition hover:bg-blue-100"
+                      >
+                        Add Part
+                      </button>
+                    </div>
+                  </section>
+                ))}
+                <button
+                  type="button"
+                  onClick={addQuestion}
+                  className="rounded-xl bg-[#1557c0] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#124cad]"
+                >
+                  Add Question
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="grid min-h-96 place-items-center text-center">
+              <div>
+                <FileText className="mx-auto h-10 w-10 text-[#1557c0]" />
+                <p className="mt-3 text-sm font-semibold text-slate-700">
+                  Choose an assessment from the Assess tab.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function CheckpointSceneCanvas({
+  onRenameScene,
+  scene,
+}: {
+  onRenameScene: (sceneId: string, title: string) => void;
+  scene: AdminSceneDraft;
+}) {
+  const promptBlock =
+    scene.blocks?.find((block) => block.type === "checkpoint") ??
+    scene.blocks?.[0];
+  const prompt = promptBlock
+    ? getPreviewBlockText(promptBlock)
+    : "Add a checkpoint prompt from the sidebar.";
+  const supportingBlocks = (scene.blocks ?? []).filter(
+    (block) => block.id !== promptBlock?.id,
+  );
+
+  return (
+    <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[#f4f7fb]">
+      <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-500">
+            Checkpoint scene
+          </div>
+          <div className="mt-1 truncate text-sm font-semibold text-slate-950">
+            {scene.title}
+          </div>
+        </div>
+        <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+          Learner gate
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6">
+        <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)] ring-1 ring-amber-100">
+          <div className="border-b border-amber-100 bg-amber-50 px-8 py-6">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
+              Embedded checkpoint
+            </p>
+            <h1 className="mt-2 font-serif-paper text-4xl font-semibold text-slate-950">
+              <EditableSceneTitle
+                title={scene.title || "Checkpoint"}
+                onRename={(title) => onRenameScene(scene.id, title)}
+              />
+            </h1>
+            <p className="mt-2 text-sm font-semibold text-amber-800">
+              This scene interrupts the lesson flow and asks the learner to respond before continuing.
+            </p>
+          </div>
+
+          <div className="grid gap-6 p-8 md:grid-cols-[1fr_280px]">
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                Question prompt
+              </p>
+              <p className="mt-4 whitespace-pre-line text-xl font-semibold leading-8 text-slate-950">
+                {prompt}
+              </p>
+              <div className="mt-6 min-h-32 rounded-xl border border-dashed border-amber-200 bg-amber-50/45 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                  Student response
+                </p>
+                <div className="mt-4 space-y-3">
+                  <div className="h-7 border-b border-amber-200" />
+                  <div className="h-7 border-b border-amber-200" />
+                  <div className="h-7 border-b border-amber-200" />
+                </div>
+              </div>
+            </section>
+
+            <aside className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                Checkpoint behavior
+              </p>
+              <div className="mt-4 space-y-3 text-sm font-semibold text-slate-700">
+                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
+                  Displays as a learner response gate
+                </div>
+                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
+                  Uses checkpoint blocks as prompt content
+                </div>
+                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
+                  Returns learner to lesson flow after submit
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          {supportingBlocks.length > 0 ? (
+            <div className="border-t border-slate-100 px-8 py-5">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                Supporting content
+              </p>
+              <div className="mt-3 space-y-2">
+                {supportingBlocks.map((block) => (
+                  <StaticPreviewBlock key={block.id} block={block} />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export function StudioCanvas({
+  assessment,
+  assessmentLabel,
+  canvasMode,
+  lessonTitle,
+  onAssessmentChange,
   onActiveEditorChange,
   onDeleteBlock,
   onDeselectBlock,
+  onRenameScene,
   onSelectBlock,
   onUpdateBlock,
   scene,
   selectedBlockId,
+  topicTitle,
 }: {
+  assessment?: AdminAssessmentDraft;
+  assessmentLabel?: string;
+  canvasMode: "scene" | "assessment";
+  lessonTitle?: string;
+  onAssessmentChange?: (assessment: AdminAssessmentDraft) => void;
   onActiveEditorChange: (editor: Editor | null) => void;
   onDeleteBlock: (sceneId: string, blockId: string) => void;
   onDeselectBlock: () => void;
+  onRenameScene: (sceneId: string, title: string) => void;
   onSelectBlock: (blockId: string) => void;
   onUpdateBlock: (
     sceneId: string,
@@ -464,7 +1967,22 @@ export function StudioCanvas({
   ) => void;
   scene?: AdminSceneDraft;
   selectedBlockId: string | null;
+  topicTitle?: string;
 }) {
+  if (canvasMode === "assessment") {
+    return (
+      <AssessmentCanvasPreview
+        assessment={assessment}
+        label={assessmentLabel}
+        onAssessmentChange={onAssessmentChange}
+      />
+    );
+  }
+
+  if (scene?.type === "checkpoint") {
+    return <CheckpointSceneCanvas scene={scene} onRenameScene={onRenameScene} />;
+  }
+
   const blocks = scene?.blocks ?? [];
   const horizontalLayout = getHorizontalLayout(scene);
   const verticalLayout = getVerticalLayout(scene);
@@ -472,15 +1990,24 @@ export function StudioCanvas({
   return (
     <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[#f4f7fb]">
       <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5">
-        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
-          <span>Scene</span>
-          <span className="text-slate-300">/</span>
-          <span className="truncate text-slate-950">
-            {scene?.title ?? "Untitled scene"}
-          </span>
-        </div>
-        <div className="min-w-0 flex-1 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-          Preview order
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            <span className="shrink-0">Topic</span>
+            <span className="text-slate-300">/</span>
+            <span className="truncate normal-case tracking-normal text-[#1557c0]">
+              {topicTitle ?? "No topic selected"}
+            </span>
+          </div>
+
+          <div className="mt-1 flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
+            <span className="truncate text-slate-950">
+              {lessonTitle ?? "Untitled lesson"}
+            </span>
+            <span className="shrink-0 text-slate-300">/</span>
+            <span className="truncate text-slate-600">
+              {scene?.title ?? "Untitled scene"}
+            </span>
+          </div>
         </div>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
@@ -490,7 +2017,7 @@ export function StudioCanvas({
               aria-label="Open canvas menu"
               title="Canvas menu"
             >
-              <MoreHorizontal className="h-5 w-5" />
+              <MoreVertical className="h-5 w-5" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -528,7 +2055,14 @@ export function StudioCanvas({
 
             <div className="relative w-full max-w-4xl">
               <h1 className="font-serif-paper text-5xl font-semibold text-foreground">
-                {scene?.title ?? "Create your first learning scene"}
+                {scene ? (
+                  <EditableSceneTitle
+                    title={scene.title || "Untitled scene"}
+                    onRename={(title) => onRenameScene(scene.id, title)}
+                  />
+                ) : (
+                  "Create your first learning scene"
+                )}
               </h1>
 
               {blocks.length > 0 ? (

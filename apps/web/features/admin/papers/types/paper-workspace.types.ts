@@ -95,6 +95,91 @@ export interface AdminLessonDraft {
   scenes: AdminSceneDraft[];
 }
 
+export type AdminAnswerKind =
+  | "short"
+  | "long"
+  | "gap"
+  | "working"
+  | "code"
+  | "table"
+  | "label"
+  | "tick"
+  | "multi_tick"
+  | "true_false"
+  | "match"
+  | "order"
+  | "classify"
+  | "diagram";
+
+export interface AdminAnswerSlotDraft {
+  id: string;
+  kind: AdminAnswerKind;
+  label: string;
+  lines?: number;
+  placeholder?: string;
+  columns?: string[];
+  rows?: number;
+  options?: string[];
+  optionColumns?: string[];
+  leftItems?: string[];
+  rightItems?: string[];
+  items?: string[];
+  categories?: string[];
+}
+
+export interface AdminMarkPointDraft {
+  id: string;
+  text: string;
+  marks: number;
+  keywords?: string[];
+  acceptedAlternatives?: string[];
+  topic?: string;
+  requiresEvidence?: boolean;
+}
+
+export interface AdminAssessmentPartDraft {
+  id: string;
+  label: string;
+  prompt: string;
+  marks: number;
+  answerSlots: AdminAnswerSlotDraft[];
+  markScheme: AdminMarkPointDraft[];
+  guidance?: string;
+  expectedAnswer?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  subparts?: AdminAssessmentPartDraft[];
+  tags?: string[];
+  topic?: string;
+}
+
+export interface AdminAssessmentQuestionDraft {
+  id: string;
+  number: number;
+  title: string;
+  source?: {
+    paper?: string;
+    session?: string;
+    questionRef?: string;
+  };
+  context?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  tags?: string[];
+  parts: AdminAssessmentPartDraft[];
+}
+
+export interface AdminAssessmentDraft {
+  id: string;
+  title: string;
+  scope: "embedded" | "topical" | "module";
+  description?: string;
+  durationMinutes?: number;
+  unlock?: {
+    markScheme: "immediate" | "after_submit" | "teacher_only";
+    expectedAnswer: "immediate" | "after_submit" | "teacher_only";
+  };
+  questions: AdminAssessmentQuestionDraft[];
+}
+
 export interface AdminSubtopicDraft {
   id: string;
   title: string;
@@ -108,6 +193,7 @@ export interface AdminTopicDraft {
   status?: "draft" | "published" | "archived";
   subtopics: AdminSubtopicDraft[];
   topicalAssessmentTitle: string;
+  topicalAssessment?: AdminAssessmentDraft;
 }
 
 export interface AdminPaperDraft {
@@ -115,6 +201,7 @@ export interface AdminPaperDraft {
   paperId: string;
   updatedAt: string;
   moduleAssessmentTitle: string;
+  moduleAssessment?: AdminAssessmentDraft;
   subjectMeta?: {
     title: string;
     code: string;

@@ -28,10 +28,12 @@ import {
   renameSubtopic,
   renameTopic,
   renameTopicalAssessment,
+  updateModuleAssessment,
   updateLessonStatus,
   updatePaperMeta,
   updateScene,
   updateSubjectMeta,
+  updateTopicalAssessment,
   updateTopicStatus,
   updateWorkspaceUi,
 } from "@/features/admin/papers/services/paper-workspace.service";
@@ -363,6 +365,14 @@ export function PaperLessonWorkspaceShell({
             setDraft((current) =>
               renameTopicalAssessment(current, topicId, title),
             )
+          }
+          onUpdateTopicalAssessment={(topicId, assessment) =>
+            setDraft((current) =>
+              updateTopicalAssessment(current, topicId, assessment),
+            )
+          }
+          onUpdateModuleAssessment={(assessment) =>
+            setDraft((current) => updateModuleAssessment(current, assessment))
           }
           onUpdateLessonStatus={(lessonId, status) =>
             setDraft((current) => updateLessonStatus(current, lessonId, status))

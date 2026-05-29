@@ -1,4 +1,5 @@
 import type {
+  AdminAssessmentDraft,
   AdminLessonDraft,
   AdminPaperDraft,
   AdminSceneDraft,
@@ -20,6 +21,126 @@ function slugify(value: string) {
 function uniqueId(prefix: string, title?: string) {
   const slug = title ? slugify(title) : "";
   return `${prefix}-${slug || Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function createAssessmentDraft(
+  scope: AdminAssessmentDraft["scope"],
+  title: string,
+): AdminAssessmentDraft {
+  return {
+    id: uniqueId(`${scope}-assessment`, title),
+    title,
+    scope,
+    description:
+      scope === "module"
+        ? "Full-paper assessment draft with exam-style questions."
+        : "Topic checkpoint draft with exam-style questions.",
+    durationMinutes: scope === "module" ? 60 : 20,
+    unlock: {
+      markScheme: "after_submit",
+      expectedAnswer: "after_submit",
+    },
+    questions: [
+      {
+        id: uniqueId("question", title),
+        number: 1,
+        title: "Question 1",
+        difficulty: "medium",
+        tags: [],
+        source: {
+          paper: "",
+          session: "",
+          questionRef: "",
+        },
+        context: "",
+        parts: [
+          {
+            id: uniqueId("part", "a"),
+            label: "(a)",
+            prompt:
+              "Explain why a binary search is more efficient than a linear search when the data is sorted.",
+            marks: 3,
+            answerSlots: [],
+            markScheme: [
+              {
+                id: uniqueId("mark-point", "point"),
+                text: "States that binary search repeatedly halves the search space.",
+                marks: 1,
+                keywords: ["halves", "middle", "sorted"],
+                acceptedAlternatives: [],
+                requiresEvidence: true,
+              },
+            ],
+            guidance: "",
+            expectedAnswer:
+              "Binary search compares the target with the middle item, then discards half of the remaining values each time. This means fewer comparisons are needed than checking each value in order.",
+            subparts: [],
+            tags: ["searching", "algorithm efficiency"],
+            topic: "Searching algorithms",
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function normalizeAssessmentDraft(
+  assessment: AdminAssessmentDraft | undefined,
+  scope: AdminAssessmentDraft["scope"],
+  title: string,
+): AdminAssessmentDraft {
+  const starter = assessment ?? createAssessmentDraft(scope, title);
+
+  return {
+    ...starter,
+    title: starter.title || title,
+    scope,
+    durationMinutes: starter.durationMinutes ?? (scope === "module" ? 60 : 20),
+    unlock: {
+      markScheme: starter.unlock?.markScheme ?? "after_submit",
+      expectedAnswer: starter.unlock?.expectedAnswer ?? "after_submit",
+    },
+    questions: (starter.questions ?? []).map((question, questionIndex) => ({
+      ...question,
+      number: question.number ?? questionIndex + 1,
+      title:
+        question.title && !/^Question \d+$/i.test(question.title)
+          ? question.title
+          : "Searching a sorted list",
+      tags: question.tags ?? [],
+      parts: (question.parts ?? []).map(normalizeAssessmentPartDraft),
+    })),
+  };
+}
+
+function normalizeAssessmentPartDraft(
+  part: AdminAssessmentDraft["questions"][number]["parts"][number],
+): AdminAssessmentDraft["questions"][number]["parts"][number] {
+  return {
+    ...part,
+    marks: part.marks ?? 1,
+    answerSlots: (part.answerSlots ?? []).map((slot) => ({
+      ...slot,
+      label:
+        slot.label ??
+        (slot.kind === "code"
+          ? "Pseudocode answer"
+          : slot.kind === "table"
+            ? "Complete the table"
+            : "Candidate answer"),
+      kind: slot.kind ?? "long",
+      lines: slot.lines ?? (slot.kind === "short" ? 1 : 4),
+    })),
+    markScheme: (part.markScheme ?? []).map((markPoint) => ({
+      ...markPoint,
+      marks: markPoint.marks ?? 1,
+      keywords: markPoint.keywords ?? [],
+      acceptedAlternatives: markPoint.acceptedAlternatives ?? [],
+      requiresEvidence: markPoint.requiresEvidence ?? true,
+    })),
+    subparts: (part.subparts ?? []).map(normalizeAssessmentPartDraft),
+    tags: part.tags ?? [],
+  };
 }
 
 function withUpdatedAt(draft: AdminPaperDraft): AdminPaperDraft {
@@ -647,6 +768,11 @@ export function normalizePaperDraft(draft: AdminPaperDraft): AdminPaperDraft {
   return {
     ...draft,
     moduleAssessmentTitle: draft.moduleAssessmentTitle ?? "Paper 1 module assessment",
+    moduleAssessment: normalizeAssessmentDraft(
+      draft.moduleAssessment,
+      "module",
+      draft.moduleAssessmentTitle ?? "Paper 1 module assessment",
+    ),
     subjectMeta: draft.subjectMeta
       ? {
           ...draft.subjectMeta,
@@ -679,9 +805,18 @@ export function normalizePaperDraft(draft: AdminPaperDraft): AdminPaperDraft {
       };
 
       if (legacyTopic.subtopics) {
+        const topicalAssessmentTitle =
+          legacyTopic.topicalAssessmentTitle ?? `${legacyTopic.title} checkpoint`;
+
         return {
           ...legacyTopic,
           status: legacyTopic.status ?? "draft",
+          topicalAssessmentTitle,
+          topicalAssessment: normalizeAssessmentDraft(
+            legacyTopic.topicalAssessment,
+            "topical",
+            topicalAssessmentTitle,
+          ),
           subtopics: legacyTopic.subtopics.map((subtopic) => ({
             ...subtopic,
             status: subtopic.status ?? "draft",
@@ -698,7 +833,13 @@ export function normalizePaperDraft(draft: AdminPaperDraft): AdminPaperDraft {
         id: legacyTopic.id,
         title: legacyTopic.title,
         status: legacyTopic.status ?? "draft",
-        topicalAssessmentTitle: legacyTopic.topicalAssessmentTitle,
+        topicalAssessmentTitle:
+          legacyTopic.topicalAssessmentTitle ?? `${legacyTopic.title} checkpoint`,
+        topicalAssessment: normalizeAssessmentDraft(
+          legacyTopic.topicalAssessment,
+          "topical",
+          legacyTopic.topicalAssessmentTitle ?? `${legacyTopic.title} checkpoint`,
+        ),
         subtopics: [
           {
             id: `${legacyTopic.id}-subtopic`,
@@ -799,6 +940,10 @@ export function addTopic(draft: AdminPaperDraft, title: string): AdminPaperDraft
     title: title || "Untitled topic",
     status: "draft",
     topicalAssessmentTitle: `${title || "Untitled topic"} checkpoint`,
+    topicalAssessment: createAssessmentDraft(
+      "topical",
+      `${title || "Untitled topic"} checkpoint`,
+    ),
     subtopics: [],
   };
 
@@ -1215,12 +1360,23 @@ export function renameTopicalAssessment(
   topicId: string,
   title: string,
 ): AdminPaperDraft {
+  const nextTitle = title.trim();
+
   return {
     ...draft,
     updatedAt: new Date().toISOString(),
     topics: draft.topics.map((topic) =>
       topic.id === topicId
-        ? { ...topic, topicalAssessmentTitle: title || topic.topicalAssessmentTitle }
+        ? {
+            ...topic,
+            topicalAssessmentTitle: nextTitle || topic.topicalAssessmentTitle,
+            topicalAssessment: topic.topicalAssessment
+              ? {
+                  ...topic.topicalAssessment,
+                  title: nextTitle || topic.topicalAssessment.title,
+                }
+              : topic.topicalAssessment,
+          }
         : topic,
     ),
   };
@@ -1230,9 +1386,55 @@ export function renameModuleAssessment(
   draft: AdminPaperDraft,
   title: string,
 ): AdminPaperDraft {
+  const nextTitle = title.trim();
+
   return {
     ...draft,
     updatedAt: new Date().toISOString(),
-    moduleAssessmentTitle: title || draft.moduleAssessmentTitle,
+    moduleAssessmentTitle: nextTitle || draft.moduleAssessmentTitle,
+    moduleAssessment: draft.moduleAssessment
+      ? {
+          ...draft.moduleAssessment,
+          title: nextTitle || draft.moduleAssessment.title,
+        }
+      : draft.moduleAssessment,
   };
+}
+
+export function updateTopicalAssessment(
+  draft: AdminPaperDraft,
+  topicId: string,
+  assessment: AdminAssessmentDraft,
+): AdminPaperDraft {
+  return withUpdatedAt({
+    ...draft,
+    topics: draft.topics.map((topic) =>
+      topic.id === topicId
+        ? {
+            ...topic,
+            topicalAssessmentTitle: assessment.title || topic.topicalAssessmentTitle,
+            topicalAssessment: normalizeAssessmentDraft(
+              assessment,
+              "topical",
+              assessment.title || topic.topicalAssessmentTitle,
+            ),
+          }
+        : topic,
+    ),
+  });
+}
+
+export function updateModuleAssessment(
+  draft: AdminPaperDraft,
+  assessment: AdminAssessmentDraft,
+): AdminPaperDraft {
+  return withUpdatedAt({
+    ...draft,
+    moduleAssessmentTitle: assessment.title || draft.moduleAssessmentTitle,
+    moduleAssessment: normalizeAssessmentDraft(
+      assessment,
+      "module",
+      assessment.title || draft.moduleAssessmentTitle,
+    ),
+  });
 }

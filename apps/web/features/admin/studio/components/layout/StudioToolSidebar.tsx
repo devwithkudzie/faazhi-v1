@@ -1,4 +1,5 @@
 import type {
+  AdminAssessmentDraft,
   AdminLessonDraft,
   AdminPaperDraft,
   AdminSceneBlock,
@@ -6,6 +7,9 @@ import type {
   AdminSceneType,
 } from "@/features/admin/papers/types/paper-workspace.types";
 import type { PublishStatus } from "@/features/admin/subjects/types/subject.types";
+import {
+  AssessmentTool,
+} from "@/features/admin/studio/components/tools/AssessmentTool";
 import {
   ContentTool,
   type ContentTab,
@@ -21,9 +25,13 @@ import { VoiceoverTool } from "@/features/admin/studio/components/tools/Voiceove
 import type { StudioTool } from "@/features/admin/studio/components/layout/StudioToolRail";
 
 type MoveDirection = "up" | "down";
+type SelectedAssessmentTarget =
+  | { type: "topical"; topicId: string }
+  | { type: "module" };
 
 const toolTitles: Record<StudioTool, string> = {
   structure: "Structure",
+  assessment: "Assessments",
   content: "Scene flow",
   text: "Text",
   design: "Design",
@@ -48,6 +56,9 @@ export function StudioToolSidebar({
   onMoveLesson,
   onRenameLesson,
   onRenameTopic,
+  onSelectAssessmentTarget,
+  onUpdateModuleAssessment,
+  onUpdateTopicalAssessment,
   onUpdateTopicStatus,
   onSelectLesson,
   onSelectBlock,
@@ -63,6 +74,7 @@ export function StudioToolSidebar({
   scene,
   selectedBlockId,
   scenes,
+  selectedAssessmentTarget,
   storageKey,
   tool,
 }: {
@@ -83,6 +95,12 @@ export function StudioToolSidebar({
   ) => void;
   onRenameLesson: (lessonId: string, title: string) => void;
   onRenameTopic: (topicId: string, title: string) => void;
+  onSelectAssessmentTarget: (target: SelectedAssessmentTarget) => void;
+  onUpdateModuleAssessment: (assessment: AdminAssessmentDraft) => void;
+  onUpdateTopicalAssessment: (
+    topicId: string,
+    assessment: AdminAssessmentDraft,
+  ) => void;
   onUpdateTopicStatus: (topicId: string, status: PublishStatus) => void;
   onSelectLesson: (lesson: AdminLessonDraft) => void;
   onSelectBlock: (blockId: string) => void;
@@ -106,6 +124,7 @@ export function StudioToolSidebar({
   scene?: AdminSceneDraft;
   selectedBlockFocusKey: number;
   selectedBlockId: string | null;
+  selectedAssessmentTarget: SelectedAssessmentTarget;
   scenes: AdminSceneDraft[];
   storageKey: string;
   tool: StudioTool;
@@ -149,8 +168,19 @@ export function StudioToolSidebar({
             onMoveLesson={onMoveLesson}
             onRenameLesson={onRenameLesson}
             onRenameTopic={onRenameTopic}
+            onSelectAssessmentTarget={onSelectAssessmentTarget}
             onUpdateTopicStatus={onUpdateTopicStatus}
             onToggleTopic={onToggleTopic}
+          />
+        ) : null}
+
+        {tool === "assessment" ? (
+          <AssessmentTool
+            draft={draft}
+            onUpdateModuleAssessment={onUpdateModuleAssessment}
+            onUpdateTopicalAssessment={onUpdateTopicalAssessment}
+            selectedTarget={selectedAssessmentTarget}
+            onSelectTarget={onSelectAssessmentTarget}
           />
         ) : null}
 

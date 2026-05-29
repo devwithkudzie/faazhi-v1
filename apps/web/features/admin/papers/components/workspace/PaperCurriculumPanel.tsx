@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Circle,
+  ClipboardList,
   FileQuestion,
   Menu,
   Plus,
@@ -10,7 +11,9 @@ import {
   X,
 } from "lucide-react";
 
+import { AssessmentQuestionEditor } from "@/features/admin/papers/components/workspace/AssessmentQuestionEditor";
 import type {
+  AdminAssessmentDraft,
   AdminPaperDraft,
   AdminSceneDraft,
   AdminLessonDraft,
@@ -172,10 +175,12 @@ export function PaperCurriculumPanel({
   onRenameTopicalAssessment,
   onSelectScene,
   onToggleTopicExpanded,
+  onUpdateModuleAssessment,
   onUpdateLessonStatus,
   onUpdatePaperMeta,
   onUpdateScene,
   onUpdateSubjectMeta,
+  onUpdateTopicalAssessment,
   onUpdateTopicStatus,
   paper,
   readiness = getPaperReadiness(draft),
@@ -217,11 +222,16 @@ export function PaperCurriculumPanel({
   onRenameTopicalAssessment: (topicId: string, title: string) => void;
   onSelectScene: (scene: AdminSceneDraft) => void;
   onToggleTopicExpanded: (topicId: string) => void;
+  onUpdateModuleAssessment: (assessment: AdminAssessmentDraft) => void;
   onUpdateLessonStatus: (lessonId: string, status: PublishStatus) => void;
   onUpdatePaperMeta: (paperMeta: NonNullable<AdminPaperDraft["paperMeta"]>) => void;
   onUpdateScene: (sceneId: string, updates: Partial<AdminSceneDraft>) => void;
   onUpdateSubjectMeta: (
     subjectMeta: NonNullable<AdminPaperDraft["subjectMeta"]>,
+  ) => void;
+  onUpdateTopicalAssessment: (
+    topicId: string,
+    assessment: AdminAssessmentDraft,
   ) => void;
   onUpdateTopicStatus: (topicId: string, status: PublishStatus) => void;
   paper: SubjectPaperSummary;
@@ -244,6 +254,9 @@ export function PaperCurriculumPanel({
     estimatedMinutes: getPaperDurationMinutes(draft),
     status: paper.status,
   };
+  const [expandedAssessmentId, setExpandedAssessmentId] = useState<string | null>(
+    null,
+  );
 
   if (!isOpen) {
     return (
@@ -667,10 +680,32 @@ export function PaperCurriculumPanel({
                         className="w-full text-sm font-semibold text-amber-900"
                       />
                       <p className="mt-1 text-xs text-slate-500">
-                        Topical assessment draft
+                        {topic.topicalAssessment?.questions.length ?? 0} questions ·{" "}
+                        {topic.topicalAssessment?.durationMinutes ?? 20}m
                       </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedAssessmentId((current) =>
+                            current === topic.id ? null : topic.id,
+                          )
+                        }
+                        className="mt-2 inline-flex h-8 items-center gap-2 rounded-lg bg-amber-100 px-3 text-xs font-semibold text-amber-950 transition hover:bg-amber-200"
+                      >
+                        <ClipboardList className="h-3.5 w-3.5" />
+                        Edit questions
+                      </button>
                     </div>
                   </div>
+
+                  {expandedAssessmentId === topic.id && topic.topicalAssessment ? (
+                    <AssessmentQuestionEditor
+                      assessment={topic.topicalAssessment}
+                      onChange={(assessment) =>
+                        onUpdateTopicalAssessment(topic.id, assessment)
+                      }
+                    />
+                  ) : null}
                 </div>
               </div>
               ) : null}
@@ -683,17 +718,36 @@ export function PaperCurriculumPanel({
             <span className="grid h-7 w-7 place-items-center rounded-md border border-[#2f6b27]">
               <FileQuestion className="h-4 w-4" />
             </span>
-            <span>
-              <EditableTitle
-                value={draft.moduleAssessmentTitle}
-                onSave={onRenameModuleAssessment}
-                className="w-full text-sm font-semibold text-[#2f6b27]"
-              />
-              <span className="mt-1 block text-xs text-slate-500">
-                Module assessment draft
+              <span>
+                <EditableTitle
+                  value={draft.moduleAssessmentTitle}
+                  onSave={onRenameModuleAssessment}
+                  className="w-full text-sm font-semibold text-[#2f6b27]"
+                />
+                <span className="mt-1 block text-xs text-slate-500">
+                  {draft.moduleAssessment?.questions.length ?? 0} questions ·{" "}
+                  {draft.moduleAssessment?.durationMinutes ?? 60}m
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedAssessmentId((current) =>
+                      current === "module-assessment" ? null : "module-assessment",
+                    )
+                  }
+                  className="mt-2 inline-flex h-8 items-center gap-2 rounded-lg bg-emerald-50 px-3 text-xs font-semibold text-[#2f6b27] transition hover:bg-emerald-100"
+                >
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  Edit questions
+                </button>
               </span>
-            </span>
-          </div>
+            </div>
+          {expandedAssessmentId === "module-assessment" && draft.moduleAssessment ? (
+            <AssessmentQuestionEditor
+              assessment={draft.moduleAssessment}
+              onChange={onUpdateModuleAssessment}
+            />
+          ) : null}
         </div>
       </div>
     </aside>

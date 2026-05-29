@@ -3,9 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
-  addSceneToFirstLesson,
+  addSceneToLesson,
+  normalizePaperDraft,
+  updateModuleAssessment,
+  updateTopicalAssessment,
 } from "@/features/admin/papers/services/paper-workspace.service";
 import type {
+  AdminAssessmentDraft,
   AdminLessonDraft,
   AdminPaperDraft,
   AdminSceneBlock,
@@ -34,6 +38,10 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 
 type MoveDirection = "up" | "down";
 type SaveState = "saved" | "dirty" | "saving";
+type CanvasMode = "scene" | "assessment";
+type SelectedAssessmentTarget =
+  | { type: "topical"; topicId: string }
+  | { type: "module" };
 type WorkspaceSnapshot = {
   draft: AdminPaperDraft;
   savedAt?: string;
@@ -58,11 +66,11 @@ function loadWorkspaceSnapshot(
   initialDraft: AdminPaperDraft,
 ): WorkspaceSnapshot {
   if (typeof window === "undefined") {
-    return { draft: initialDraft };
+    return { draft: normalizePaperDraft(initialDraft) };
   }
 
   const saved = window.localStorage.getItem(key);
-  if (!saved) return { draft: initialDraft };
+  if (!saved) return { draft: normalizePaperDraft(initialDraft) };
 
   try {
     const parsed = JSON.parse(saved) as WorkspaceSnapshot;
@@ -70,12 +78,15 @@ function loadWorkspaceSnapshot(
       parsed.draft?.subjectId !== initialDraft.subjectId ||
       parsed.draft?.paperId !== initialDraft.paperId
     ) {
-      return { draft: initialDraft };
+      return { draft: normalizePaperDraft(initialDraft) };
     }
 
-    return parsed;
+    return {
+      ...parsed,
+      draft: normalizePaperDraft(parsed.draft),
+    };
   } catch {
-    return { draft: initialDraft };
+    return { draft: normalizePaperDraft(initialDraft) };
   }
 }
 
@@ -186,6 +197,9 @@ export default function LessonStudioPage({
   );
 
   const [activeTool, setActiveTool] = useState<StudioTool>("structure");
+  const [canvasMode, setCanvasMode] = useState<CanvasMode>("scene");
+  const [selectedAssessmentTarget, setSelectedAssessmentTarget] =
+    useState<SelectedAssessmentTarget>({ type: "module" });
   const [activeContentTab, setActiveContentTab] =
     useState<ContentTab>("scene");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -229,6 +243,18 @@ export default function LessonStudioPage({
   const activeLesson =
     lessons.find((lesson) => lesson.id === activeLessonId) ?? lessons[0];
 
+  const activeTopic = useMemo(
+    () =>
+      draft.topics.find((topic) =>
+        topic.subtopics.some((subtopic) =>
+          subtopic.lessons.some(
+            (lesson) => lesson.id === activeLesson?.id,
+          ),
+        ),
+      ),
+    [activeLesson?.id, draft.topics],
+  );
+
   const lessonScenes = activeLesson?.scenes ?? [];
 
   const [activeSceneId, setActiveSceneId] = useState(
@@ -239,6 +265,38 @@ export default function LessonStudioPage({
     lessonScenes.find((scene) => scene.id === activeSceneId) ??
     lessonScenes[0] ??
     scenes[0];
+  const activeAssessment =
+    selectedAssessmentTarget.type === "module"
+      ? draft.moduleAssessment
+      : draft.topics.find((topic) => topic.id === selectedAssessmentTarget.topicId)
+          ?.topicalAssessment;
+  const activeAssessmentLabel =
+    selectedAssessmentTarget.type === "module"
+      ? draft.moduleAssessmentTitle
+      : draft.topics.find((topic) => topic.id === selectedAssessmentTarget.topicId)
+          ?.topicalAssessmentTitle;
+
+  function updateActiveAssessment(assessment: AdminAssessmentDraft) {
+    if (selectedAssessmentTarget.type === "module") {
+      handleUpdateModuleAssessment(assessment);
+      return;
+    }
+
+    handleUpdateTopicalAssessment(selectedAssessmentTarget.topicId, assessment);
+  }
+
+  function handleSelectAssessmentTarget(target: SelectedAssessmentTarget) {
+    setSelectedAssessmentTarget(target);
+    setCanvasMode("assessment");
+  }
+
+  function handleSelectTool(tool: StudioTool) {
+    setActiveTool(tool);
+
+    if (tool === "assessment") {
+      setCanvasMode("assessment");
+    }
+  }
 
   const dirty = saveState === "dirty";
 
@@ -359,6 +417,30 @@ export default function LessonStudioPage({
 
     return () => window.clearTimeout(autosave);
   }, [dirty, draft, activeLessonId, activeSceneId, expandedTopicIds, handleSave, token]);
+
+  useEffect(() => {
+    if (!dirty || !token) return;
+
+    function saveBeforeLeavingFocus() {
+      void handleSave({ silent: true });
+    }
+
+    function saveBeforeHiding() {
+      if (document.visibilityState === "hidden") {
+        saveBeforeLeavingFocus();
+      }
+    }
+
+    window.addEventListener("blur", saveBeforeLeavingFocus);
+    window.addEventListener("pagehide", saveBeforeLeavingFocus);
+    document.addEventListener("visibilitychange", saveBeforeHiding);
+
+    return () => {
+      window.removeEventListener("blur", saveBeforeLeavingFocus);
+      window.removeEventListener("pagehide", saveBeforeLeavingFocus);
+      document.removeEventListener("visibilitychange", saveBeforeHiding);
+    };
+  }, [dirty, handleSave, token]);
 
   function updateScene(sceneId: string, updates: Partial<AdminSceneDraft>) {
     updateDraft((current) => ({
@@ -548,18 +630,25 @@ export default function LessonStudioPage({
   }
 
   function handleCreateScene(type: AdminSceneType) {
+    if (!activeLesson?.id) return;
+
     updateDraft((current) => {
-      const nextDraft = addSceneToFirstLesson(current, {
+      const nextDraft = addSceneToLesson(current, activeLesson.id, {
         title: `${type.replace("-", " ")} scene`,
         type,
         summary: `Draft ${type.replace("-", " ")} content block for this learning scene.`,
       });
 
-      const nextScene =
-        nextDraft.topics[0]?.subtopics[0]?.lessons[0]?.scenes.at(-1);
+      const nextLesson = nextDraft.topics
+        .flatMap((topic) =>
+          topic.subtopics.flatMap((subtopic) => subtopic.lessons),
+        )
+        .find((lesson) => lesson.id === activeLesson.id);
+      const nextScene = nextLesson?.scenes.at(-1);
 
       if (nextScene) {
         setActiveSceneId(nextScene.id);
+        setCanvasMode("scene");
         setSaveState("dirty");
       }
 
@@ -569,12 +658,14 @@ export default function LessonStudioPage({
 
   function handleSelectScene(scene: AdminSceneDraft) {
     setActiveSceneId(scene.id);
+    setCanvasMode("scene");
     setSaveState("dirty");
     clearSelection();
   }
 
   function handleSelectSceneById(sceneId: string) {
     setActiveSceneId(sceneId);
+    setCanvasMode("scene");
     setSaveState("dirty");
     clearSelection();
   }
@@ -631,6 +722,7 @@ export default function LessonStudioPage({
   function handleSelectLesson(lesson: AdminLessonDraft) {
     setActiveLessonId(lesson.id);
     setActiveSceneId(lesson.scenes[0]?.id ?? "");
+    setCanvasMode("scene");
     setSaveState("dirty");
     clearSelection();
   }
@@ -699,6 +791,19 @@ export default function LessonStudioPage({
         topic.id === topicId ? { ...topic, status } : topic,
       ),
     }));
+  }
+
+  function handleUpdateTopicalAssessment(
+    topicId: string,
+    assessment: AdminAssessmentDraft,
+  ) {
+    updateDraft((current) =>
+      updateTopicalAssessment(current, topicId, assessment),
+    );
+  }
+
+  function handleUpdateModuleAssessment(assessment: AdminAssessmentDraft) {
+    updateDraft((current) => updateModuleAssessment(current, assessment));
   }
 
   function handleDeleteTopic(topicId: string) {
@@ -854,7 +959,7 @@ export default function LessonStudioPage({
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <StudioToolRail activeTool={activeTool} onSelectTool={setActiveTool} />
+        <StudioToolRail activeTool={activeTool} onSelectTool={handleSelectTool} />
 
         <StudioToolSidebar
           activeLessonId={activeLesson?.id}
@@ -870,6 +975,9 @@ export default function LessonStudioPage({
           onMoveLesson={handleMoveLesson}
           onRenameLesson={handleRenameLesson}
           onRenameTopic={handleRenameTopic}
+          onUpdateModuleAssessment={handleUpdateModuleAssessment}
+          onUpdateTopicalAssessment={handleUpdateTopicalAssessment}
+          onSelectAssessmentTarget={handleSelectAssessmentTarget}
           onUpdateTopicStatus={handleUpdateTopicStatus}
           onSelectBlock={handleHighlightBlock}
           onSelectLesson={handleSelectLesson}
@@ -886,19 +994,27 @@ export default function LessonStudioPage({
           selectedBlockFocusKey={selectedBlockFocusKey}
           selectedBlockId={selectedBlockId}
           scenes={lessonScenes}
+          selectedAssessmentTarget={selectedAssessmentTarget}
           storageKey={`api:${subject.id}:${paper.id}`}
           tool={activeTool}
         />
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <StudioCanvas
+            assessment={activeAssessment}
+            assessmentLabel={activeAssessmentLabel}
+            canvasMode={canvasMode}
+            lessonTitle={activeLesson?.title ?? "Untitled lesson"}
+            onAssessmentChange={updateActiveAssessment}
             onActiveEditorChange={setActiveEditor}
             onDeleteBlock={handleDeleteBlock}
             onDeselectBlock={handleDeselectBlock}
+            onRenameScene={handleRenameScene}
             onSelectBlock={handleSelectBlock}
             onUpdateBlock={handleUpdateBlock}
             scene={activeScene}
             selectedBlockId={selectedBlockId}
+            topicTitle={activeTopic?.title}
           />
 
           <StudioTimeline

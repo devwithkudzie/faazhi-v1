@@ -539,8 +539,10 @@ function saveWorkspaceDraft(
     .map((scene) => scene.id);
   const flattenedLessons = flattenWorkspaceLessons(draft);
   const nextLessonIds = flattenedLessons.map((lesson) => lesson.id);
-  const nextScenes = flattenedLessons.flatMap((lesson) => lesson.scenes);
-  const nextSceneIds = nextScenes.map((scene) => scene.id);
+  const nextScenes = flattenedLessons.flatMap((lesson) =>
+    lesson.scenes.map((scene) => ({ lessonId: lesson.id, scene })),
+  );
+  const nextSceneIds = nextScenes.map(({ scene }) => scene.id);
 
   store.lessons = [
     ...store.lessons.filter((lesson) => lesson.paperId !== paper.id),

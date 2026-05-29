@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -9,7 +9,6 @@ import {
   Circle,
   FileQuestion,
   MoreHorizontal,
-  Pencil,
   Plus,
   Trash2,
   X,
@@ -22,6 +21,9 @@ import type {
 import type { PublishStatus } from "@/features/admin/subjects/types/subject.types";
 
 type MoveDirection = "up" | "down";
+type SelectedAssessmentTarget =
+  | { type: "topical"; topicId: string }
+  | { type: "module" };
 const statusOptions: PublishStatus[] = ["draft", "published", "archived"];
 
 function topicStatusClass(status: PublishStatus) {
@@ -34,6 +36,107 @@ function topicStatusClass(status: PublishStatus) {
   }
 
   return "border-amber-200 bg-amber-50 text-amber-800 ring-amber-200";
+}
+
+function InlineEditableTitle({
+  ariaLabel,
+  className,
+  inputClassName,
+  onSave,
+  value,
+}: {
+  ariaLabel: string;
+  className: string;
+  inputClassName?: string;
+  onSave: (title: string) => void;
+  value: string;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftValue, setDraftValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const skipNextBlurRef = useRef(false);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  function commitEdit() {
+    const nextTitle = draftValue.trim();
+
+    if (nextTitle && nextTitle !== value) {
+      onSave(nextTitle);
+    }
+
+    setIsEditing(false);
+  }
+
+  function cancelEdit() {
+    skipNextBlurRef.current = true;
+    setDraftValue(value);
+    setIsEditing(false);
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        aria-label={ariaLabel}
+        value={draftValue}
+        onBlur={() => {
+          if (skipNextBlurRef.current) {
+            skipNextBlurRef.current = false;
+            return;
+          }
+
+          commitEdit();
+        }}
+        onChange={(event) => setDraftValue(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            cancelEdit();
+          }
+        }}
+        className={[
+          "min-w-0 rounded-md border border-blue-200 bg-white px-1.5 py-0.5 outline-none transition focus:border-[#1557c0] focus:ring-2 focus:ring-[#1557c0]/10",
+          inputClassName ?? "",
+        ].join(" ")}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={(event) => {
+        event.stopPropagation();
+        setDraftValue(value);
+        setIsEditing(true);
+      }}
+      className={[
+        "group inline-flex min-w-0 max-w-full items-center gap-1 rounded-md px-1 py-0.5 text-left transition hover:bg-white/70",
+        className,
+      ].join(" ")}
+    >
+      <span className="min-w-0 truncate">{value}</span>
+      <span
+        aria-hidden="true"
+        className="shrink-0 text-slate-400 opacity-0 transition group-hover:opacity-100"
+      >
+        |
+      </span>
+    </button>
+  );
 }
 
 export function CurriculumTool({
@@ -49,6 +152,7 @@ export function CurriculumTool({
   onMoveLesson,
   onRenameLesson,
   onRenameTopic,
+  onSelectAssessmentTarget,
   onUpdateTopicStatus,
   onToggleTopic,
 }: {
@@ -68,6 +172,7 @@ export function CurriculumTool({
   ) => void;
   onRenameLesson: (lessonId: string, title: string) => void;
   onRenameTopic: (topicId: string, title: string) => void;
+  onSelectAssessmentTarget: (target: SelectedAssessmentTarget) => void;
   onUpdateTopicStatus: (topicId: string, status: PublishStatus) => void;
   onToggleTopic: (topicId: string) => void;
 }) {
@@ -146,15 +251,20 @@ export function CurriculumTool({
               <button
                 type="button"
                 onClick={() => onToggleTopic(topic.id)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-white ring-1 ring-slate-200 transition hover:bg-slate-50"
+                title={isOpen ? "Collapse topic" : "Expand topic"}
+                aria-label={isOpen ? "Collapse topic" : "Expand topic"}
               >
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-white ring-1 ring-slate-200">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-[#1557c0]" />
-                </span>
-                <h3 className="min-w-0 truncate text-xs font-semibold text-slate-900">
-                  {topic.title}
-                </h3>
+                <span className="h-2.5 w-2.5 rounded-sm bg-[#1557c0]" />
               </button>
+
+              <InlineEditableTitle
+                ariaLabel="Rename topic"
+                value={topic.title}
+                onSave={(title) => onRenameTopic(topic.id, title)}
+                className="flex-1 text-xs font-semibold text-slate-900"
+                inputClassName="h-6 flex-1 text-xs font-semibold text-slate-900"
+              />
 
               <div className="flex shrink-0 items-center gap-1">
                 <button
@@ -175,17 +285,6 @@ export function CurriculumTool({
                   title="Move topic down"
                 >
                   <ArrowDown className="h-3 w-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const title = window.prompt("Rename topic", topic.title);
-                    if (title?.trim()) onRenameTopic(topic.id, title.trim());
-                  }}
-                  className="grid h-6 w-6 place-items-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  title="Rename topic"
-                >
-                  <Pencil className="h-3 w-3" />
                 </button>
                 <button
                   type="button"
@@ -286,8 +385,9 @@ export function CurriculumTool({
                       {subtopic.lessons.map((lesson, lessonIndex) => (
                         <div
                           key={lesson.id}
+                          onClick={() => onSelectLesson(lesson)}
                           className={[
-                            "flex w-full items-start gap-2 rounded-lg px-2 py-1 text-left transition",
+                            "flex w-full cursor-pointer items-start gap-2 rounded-lg px-2 py-1 text-left transition",
                             lesson.id === activeLessonId
                               ? "bg-[#eaf2ff] text-[#1557c0]"
                               : "text-slate-600 hover:bg-white",
@@ -295,31 +395,39 @@ export function CurriculumTool({
                         >
                           <button
                             type="button"
-                            onClick={() => onSelectLesson(lesson)}
-                            className="flex min-w-0 flex-1 items-start gap-2 text-left"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onSelectLesson(lesson);
+                            }}
+                            className="pt-0.5"
+                            aria-label={`Select ${lesson.title}`}
                           >
-                            <div className="pt-0.5">
-                              {lesson.id === activeLessonId ? (
-                                <CheckCircle2 className="h-3.5 w-3.5 text-[#1557c0]" />
-                              ) : (
-                                <Circle className="h-3.5 w-3.5 text-slate-300" />
-                              )}
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-[11px] font-semibold">
-                                {lesson.title}
-                              </p>
-
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                                <span>{lesson.scenes.length} scenes</span>
-                                <span>•</span>
-                                <span className="capitalize">
-                                  {lesson.status}
-                                </span>
-                              </div>
-                            </div>
+                            {lesson.id === activeLessonId ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-[#1557c0]" />
+                            ) : (
+                              <Circle className="h-3.5 w-3.5 text-slate-300" />
+                            )}
                           </button>
+
+                          <div className="min-w-0 flex-1">
+                            <InlineEditableTitle
+                              ariaLabel="Rename lesson"
+                              value={lesson.title}
+                              onSave={(title) =>
+                                onRenameLesson(lesson.id, title)
+                              }
+                              className="text-[11px] font-semibold"
+                              inputClassName="h-6 w-full text-[11px] font-semibold"
+                            />
+
+                            <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                              <span>{lesson.scenes.length} scenes</span>
+                              <span>•</span>
+                              <span className="capitalize">
+                                {lesson.status}
+                              </span>
+                            </div>
+                          </div>
 
                           <div
                             className="flex shrink-0 items-center gap-0.5"
@@ -349,22 +457,6 @@ export function CurriculumTool({
                               title="Move lesson down"
                             >
                               <ArrowDown className="h-3 w-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const title = window.prompt(
-                                  "Rename lesson",
-                                  lesson.title,
-                                );
-                                if (title?.trim()) {
-                                  onRenameLesson(lesson.id, title.trim());
-                                }
-                              }}
-                              className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-white hover:text-slate-700"
-                              title="Rename lesson"
-                            >
-                              <Pencil className="h-3 w-3" />
                             </button>
                             <button
                               type="button"
@@ -431,18 +523,51 @@ export function CurriculumTool({
                   </div>
                 ))}
 
-                <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-2 py-1.5 text-amber-900 ring-1 ring-amber-100">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onSelectAssessmentTarget({
+                      type: "topical",
+                      topicId: topic.id,
+                    })
+                  }
+                  className="flex w-full items-center gap-2 rounded-lg bg-amber-50 px-2 py-1.5 text-left text-amber-900 ring-1 ring-amber-100 transition hover:bg-amber-100"
+                >
                   <FileQuestion className="h-3.5 w-3.5 shrink-0" />
 
-                  <span className="truncate text-xs font-semibold">
-                    {topic.topicalAssessmentTitle}
-                  </span>
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-semibold">
+                      {topic.topicalAssessmentTitle}
+                    </span>
+                    <span className="block text-[10px] text-slate-500">
+                      {topic.topicalAssessment?.questions.length ?? 0} questions
+                    </span>
+                  </div>
+                </button>
               </div>
             ) : null}
           </section>
         );
       })}
+
+      <button
+        type="button"
+        onClick={() => onSelectAssessmentTarget({ type: "module" })}
+        className="w-full rounded-xl border border-emerald-200 bg-emerald-50 p-2 text-left text-emerald-900 ring-1 ring-emerald-100 transition hover:bg-emerald-100"
+      >
+        <div className="flex items-center gap-2">
+          <FileQuestion className="h-3.5 w-3.5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold">
+              {draft.moduleAssessmentTitle}
+            </span>
+            <span className="block text-[10px] text-slate-500">
+              {draft.moduleAssessment?.questions.length ?? 0} questions ·{" "}
+              {draft.moduleAssessment?.durationMinutes ?? 60}m
+            </span>
+          </div>
+        </div>
+      </button>
 
       {creatingTopic ? (
         <div className="rounded-xl bg-white p-2 ring-1 ring-blue-200">
