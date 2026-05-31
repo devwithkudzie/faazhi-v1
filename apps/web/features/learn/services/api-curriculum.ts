@@ -1,9 +1,16 @@
 import type {
+  AdminAssessmentDraft,
+  AdminAssessmentPartDraft,
   AdminPaperDraft,
   AdminSceneBlock,
   AdminSceneDraft,
 } from "@/features/admin/papers/types/paper-workspace.types";
-import type { LearnCurriculum, Scene, SceneVisualBlock } from "@/features/learn/types";
+import type {
+  LearnCurriculum,
+  PaperQuestion,
+  Scene,
+  SceneVisualBlock,
+} from "@/features/learn/types";
 
 export interface ApiSubject {
   id: string;
@@ -146,6 +153,55 @@ function adminSceneDurationSeconds(scene: AdminSceneDraft) {
   return maxSeconds || 60;
 }
 
+function mapAssessmentToPaperQuestion(
+  assessment?: AdminAssessmentDraft,
+): PaperQuestion | undefined {
+  const question = assessment?.questions[0];
+  if (!question) return undefined;
+  const parts = question.parts.flatMap((part) =>
+    mapAssessmentPartToPaperQuestionParts(part),
+  );
+
+  return {
+    answerFields: [],
+    markScheme: question.parts.flatMap((part) =>
+      part.markScheme.map((point) => ({
+        criterion: point.text,
+        marks: point.marks,
+      })),
+    ),
+    marks: parts.reduce((total, part) => total + part.marks, 0),
+    paperRef: question.source?.paper || assessment.title,
+    parts,
+    prompt: question.context || question.title,
+    questionRef: question.source?.questionRef || `Question ${question.number}`,
+  };
+}
+
+function mapAssessmentPartToPaperQuestionParts(
+  part: AdminAssessmentPartDraft,
+  depth = 0,
+): NonNullable<PaperQuestion["parts"]> {
+  return [
+    {
+      depth,
+      id: part.id,
+      label: part.label,
+      prompt: part.prompt,
+      marks: part.marks,
+      answerFields: part.answerSlots.map((slot) => ({
+        id: slot.id,
+        label: slot.label,
+        lines: slot.lines ?? (slot.kind === "short" ? 1 : 4),
+        placeholder: slot.placeholder,
+      })),
+    },
+    ...(part.subparts ?? []).flatMap((subpart) =>
+      mapAssessmentPartToPaperQuestionParts(subpart, depth + 1),
+    ),
+  ];
+}
+
 function mapAdminDraftSceneToLearn(scene: AdminSceneDraft): Scene {
   const blocks = scene.blocks ?? [];
   const blockText = (block: AdminSceneBlock) =>
@@ -167,6 +223,7 @@ function mapAdminDraftSceneToLearn(scene: AdminSceneDraft): Scene {
     return "paragraph";
   };
   const narration = blocks.map(blockText).join(" ") || scene.summary || scene.title;
+  const paperQuestion = mapAssessmentToPaperQuestion(scene.assessment);
 
   return {
     id: scene.id,
@@ -195,10 +252,13 @@ function mapAdminDraftSceneToLearn(scene: AdminSceneDraft): Scene {
       | undefined,
     question:
       scene.type === "checkpoint"
-        ? blocks[0]
+        ? paperQuestion
+          ? paperQuestion.prompt
+          : blocks[0]
           ? blockText(blocks[0])
           : scene.summary
         : undefined,
+    paperQuestion,
     layout: {
       horizontalAlign: scene.design?.horizontalAlign ?? "center",
       verticalAlign: scene.design?.verticalAlign ?? "center",
@@ -244,8 +304,9 @@ export function buildLearnCurriculumFromAdminDraft(
         topicalAssessment: {
           id: `${topic.id}-topic-assessment`,
           title: topic.topicalAssessmentTitle,
-          durationLabel: "10 min",
+          durationLabel: `${topic.topicalAssessment?.durationMinutes ?? 20} min`,
           state: "available" as const,
+          assessment: topic.topicalAssessment,
         },
       };
     })
@@ -261,8 +322,9 @@ export function buildLearnCurriculumFromAdminDraft(
     moduleAssessment: {
       id: `${draft.paperId}-module-assessment`,
       title: draft.moduleAssessmentTitle,
-      durationLabel: "20 min",
+      durationLabel: `${draft.moduleAssessment?.durationMinutes ?? 60} min`,
       state: "available",
+      assessment: draft.moduleAssessment,
     },
   };
 }

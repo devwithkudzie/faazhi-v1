@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { LessonTree } from "./components/sidebar/LessonTree";
 import { ScenePlayer } from "./components/player/ScenePlayer";
@@ -411,6 +411,26 @@ function LearnWorkspaceExperience({
   const activeLesson =
     lessons.find((lesson) => lesson.id === activeLessonId) ?? lessons[0];
   const player = useScenePlayer(activeLesson.scenes);
+  const checkpointMarkers = useMemo(
+    () =>
+      activeLesson.scenes
+        .map((scene, index) =>
+          scene.type === "checkpoint" || scene.type === "quiz"
+            ? {
+                label: scene.title || "Checkpoint",
+                time: getSceneStart(activeLesson.scenes, index),
+                type: "checkpoint" as const,
+              }
+            : null,
+        )
+        .filter(
+          (
+            marker,
+          ): marker is { label: string; time: number; type: "checkpoint" } =>
+            Boolean(marker),
+        ),
+    [activeLesson.scenes],
+  );
   const sceneAudio = useSceneAudio({
     isPlaying: player.isPlaying,
     scene: player.scene,
@@ -518,6 +538,7 @@ function LearnWorkspaceExperience({
                 currentTime={player.currentTime}
                 duration={player.duration}
                 isPlaying={player.isPlaying}
+                markers={checkpointMarkers}
                 onContinueScene={continueScene}
                 onSeek={player.seek}
                 onToggleCaptions={() =>

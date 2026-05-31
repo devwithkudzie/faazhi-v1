@@ -1,4 +1,5 @@
 import type { Scene } from "./scene";
+import type { AdminAssessmentDraft } from "@/features/admin/papers/types/paper-workspace.types";
 
 export type LessonState = "completed" | "current" | "locked" | "available";
 
@@ -16,6 +17,7 @@ export type TopicalAssessment = {
   title: string;
   durationLabel: string;
   state: "available" | "locked" | "completed";
+  assessment?: AdminAssessmentDraft;
 };
 
 export type TopicNode = {
@@ -31,6 +33,7 @@ export type ModuleAssessment = {
   title: string;
   durationLabel: string;
   state: "available" | "locked" | "completed";
+  assessment?: AdminAssessmentDraft;
 };
 
 export type LearnCurriculum = {

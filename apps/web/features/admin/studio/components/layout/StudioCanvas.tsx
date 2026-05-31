@@ -3,9 +3,7 @@ import {
   Code2,
   CopyPlus,
   FileText,
-  Heading1,
   Image,
-  Layers3,
   List,
   ListChecks,
   MessageSquareText,
@@ -29,6 +27,10 @@ import type {
   AdminSceneBlock,
   AdminSceneDraft,
 } from "@/features/admin/papers/types/paper-workspace.types";
+import {
+  createAssessmentDraft,
+  normalizeAssessmentDraft,
+} from "@/features/admin/papers/services/paper-workspace.service";
 import { TiptapTextBlock } from "@/features/admin/studio/components/layout/TiptapTextBlock";
 
 const textCapableBlocks = new Set([
@@ -195,6 +197,17 @@ function deletePartTree(
       ? { ...part, subparts: deletePartTree(part.subparts ?? [], rest) }
       : part,
   );
+}
+
+function renumberPartTree(
+  parts: AdminAssessmentPartDraft[],
+  depth = 0,
+): AdminAssessmentPartDraft[] {
+  return parts.map((part, index) => ({
+    ...part,
+    label: depth === 0 ? partLabel(index) : subpartLabel(index),
+    subparts: renumberPartTree(part.subparts ?? [], depth + 1),
+  }));
 }
 
 function movePartTree(
@@ -869,13 +882,19 @@ function AnswerSlotPreview({ slot }: { slot: AdminAnswerSlotDraft }) {
 
 function AssessmentFloatingToolbar({
   assessment,
+  onAddSubpart,
   onAssessmentChange,
+  onDeletePart,
+  onMovePart,
   part,
   partPath,
   questionId,
 }: {
   assessment: AdminAssessmentDraft;
+  onAddSubpart?: () => void;
   onAssessmentChange?: (assessment: AdminAssessmentDraft) => void;
+  onDeletePart?: () => void;
+  onMovePart?: (direction: "up" | "down") => void;
   part?: AdminAssessmentPartDraft;
   partPath?: PartPath;
   questionId?: string;
@@ -883,7 +902,9 @@ function AssessmentFloatingToolbar({
   const [tool, setTool] = useState<AssessmentCanvasTool | null>(null);
   const [pasteText, setPasteText] = useState("");
   const [markingOpen, setMarkingOpen] = useState(false);
-  const canEdit = Boolean(onAssessmentChange && part && questionId && partPath);
+  const canEdit = Boolean(
+    onAssessmentChange && part && questionId && partPath && partPath.length > 0,
+  );
 
   function updatePart(updater: (part: AdminAssessmentPartDraft) => AdminAssessmentPartDraft) {
     if (!onAssessmentChange || !part || !questionId || !partPath) return;
@@ -975,89 +996,218 @@ function AssessmentFloatingToolbar({
 
       {tool ? (
         <div className="absolute right-24 top-24 z-20 w-72 rounded-2xl bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
-        {tool === "source" ? (
-          <div className="space-y-2">
-            <label className="block">
-              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                Assessment title
-              </span>
-              <input
-                value={assessment.title}
-                onChange={(event) => updateAssessment({ title: event.target.value })}
-                className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                Selected part
-              </span>
-              <div className="rounded-lg bg-slate-50 p-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                {part ? `${part.label} · ${part.marks} marks` : "Click a prompt"}
+          {tool === "source" ? (
+            <div className="space-y-2">
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Assessment title
+                </span>
+                <input
+                  value={assessment.title}
+                  onChange={(event) => updateAssessment({ title: event.target.value })}
+                  className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Selected part
+                </span>
+                <div className="rounded-lg bg-slate-50 p-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  {part ? `${part.label} · ${part.marks} marks` : "Click a prompt"}
+                </div>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Marks
+                </span>
+                <input
+                  value={part?.marks ?? ""}
+                  disabled={!canEdit}
+                  onChange={(event) =>
+                    updatePart((current) => ({
+                      ...current,
+                      marks: Number(event.target.value) || 1,
+                    }))
+                  }
+                  className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={part?.topic ?? ""}
+                  disabled={!canEdit}
+                  placeholder="Topic"
+                  onChange={(event) =>
+                    updatePart((current) => ({
+                      ...current,
+                      topic: event.target.value,
+                    }))
+                  }
+                  className="h-9 rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none placeholder:text-slate-400 focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
+                />
+                <input
+                  value={(part?.tags ?? []).join(", ")}
+                  disabled={!canEdit}
+                  placeholder="Tags"
+                  onChange={(event) =>
+                    updatePart((current) => ({
+                      ...current,
+                      tags: event.target.value
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter(Boolean),
+                    }))
+                  }
+                  className="h-9 rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none placeholder:text-slate-400 focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
+                />
               </div>
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                Marks
-              </span>
-              <input
-                value={part?.marks ?? ""}
+              <textarea
+                value={part?.expectedAnswer ?? ""}
                 disabled={!canEdit}
+                rows={4}
+                placeholder="Expected answer, e.g. The candidate should explain that primary keys uniquely identify records."
                 onChange={(event) =>
                   updatePart((current) => ({
                     ...current,
-                    marks: Number(event.target.value) || 1,
+                    expectedAnswer: event.target.value,
                   }))
                 }
-                className="h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
+                className="w-full resize-y rounded-lg border border-slate-200 px-2 py-2 text-xs leading-5 outline-none placeholder:text-slate-400 focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
               />
-            </label>
-          </div>
-        ) : null}
-
-        {tool === "inputs" ? (
-          <div className="space-y-2">
-            <div className="grid max-h-60 grid-cols-1 gap-2 overflow-auto">
-              {(Object.keys(answerKindLabels) as AdminAnswerKind[]).map((kind) => (
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
-                  key={kind}
                   type="button"
-                  disabled={!canEdit}
-                  onClick={() =>
-                    updatePart((current) => ({
-                      ...current,
-                      answerSlots: [...current.answerSlots, createCanvasAnswerSlot(kind)],
-                    }))
-                  }
-                  className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-slate-100 text-xs font-bold capitalize text-slate-700 transition hover:bg-[#eaf2ff] hover:text-[#1557c0] disabled:opacity-40"
+                  disabled={!canEdit || !onAddSubpart}
+                  onClick={onAddSubpart}
+                  className="h-9 rounded-lg bg-[#eaf2ff] text-xs font-bold text-[#1557c0] transition hover:bg-blue-100 disabled:opacity-40"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  {answerKindLabels[kind]}
+                  Add sub-part
                 </button>
-              ))}
+                <button
+                  type="button"
+                  disabled={!canEdit || !onDeletePart}
+                  onClick={onDeletePart}
+                  className="h-9 rounded-lg bg-rose-50 text-xs font-bold text-rose-600 transition hover:bg-rose-100 disabled:opacity-40"
+                >
+                  Delete part
+                </button>
+                <button
+                  type="button"
+                  disabled={!canEdit || !onMovePart}
+                  onClick={() => onMovePart?.("up")}
+                  className="h-9 rounded-lg bg-slate-50 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:text-[#1557c0] disabled:opacity-40"
+                >
+                  Move up
+                </button>
+                <button
+                  type="button"
+                  disabled={!canEdit || !onMovePart}
+                  onClick={() => onMovePart?.("down")}
+                  className="h-9 rounded-lg bg-slate-50 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:text-[#1557c0] disabled:opacity-40"
+                >
+                  Move down
+                </button>
+              </div>
             </div>
+          ) : null}
+
+          {tool === "inputs" ? (
+          <div className="space-y-2">
+            <select
+              disabled={!canEdit}
+              defaultValue=""
+              onChange={(event) => {
+                const kind = event.target.value as AdminAnswerKind;
+                if (!kind) return;
+                updatePart((current) => ({
+                  ...current,
+                  answerSlots: [
+                    ...current.answerSlots,
+                    createCanvasAnswerSlot(kind),
+                  ],
+                }));
+                event.currentTarget.value = "";
+              }}
+              className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100 disabled:opacity-40"
+            >
+              <option value="">Choose response type...</option>
+              {(Object.keys(answerKindLabels) as AdminAnswerKind[]).map((kind) => (
+                <option key={kind} value={kind}>
+                  {answerKindLabels[kind]}
+                </option>
+              ))}
+            </select>
             <div className="space-y-1">
               {(part?.answerSlots ?? []).map((slot) => (
                 <div
                   key={slot.id}
-                  className="flex items-center justify-between rounded-lg bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"
+                  className="grid gap-1 rounded-lg bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"
                 >
-                  <span className="capitalize">{slot.kind.replace("_", " ")}</span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updatePart((current) => ({
-                        ...current,
-                        answerSlots: current.answerSlots.filter(
-                          (candidate) => candidate.id !== slot.id,
-                        ),
-                      }))
-                    }
-                    className="text-slate-400 hover:text-rose-600"
-                    aria-label="Remove answer input"
-                    title="Remove answer input"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="capitalize">{answerKindLabels[slot.kind]}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updatePart((current) => ({
+                          ...current,
+                          answerSlots: current.answerSlots.filter(
+                            (candidate) => candidate.id !== slot.id,
+                          ),
+                        }))
+                      }
+                      className="text-slate-400 hover:text-rose-600"
+                      aria-label="Remove answer input"
+                      title="Remove answer input"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {["long", "working", "code"].includes(slot.kind) ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
+                        Lines
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updatePart((current) => ({
+                            ...current,
+                            answerSlots: current.answerSlots.map((candidate) =>
+                              candidate.id === slot.id
+                                ? {
+                                    ...candidate,
+                                    lines: Math.max(1, (candidate.lines ?? 4) - 1),
+                                  }
+                                : candidate,
+                            ),
+                          }))
+                        }
+                        className="grid h-6 w-6 place-items-center rounded bg-white ring-1 ring-slate-200"
+                      >
+                        -
+                      </button>
+                      <span>{slot.lines ?? 4}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updatePart((current) => ({
+                            ...current,
+                            answerSlots: current.answerSlots.map((candidate) =>
+                              candidate.id === slot.id
+                                ? {
+                                    ...candidate,
+                                    lines: (candidate.lines ?? 4) + 1,
+                                  }
+                                : candidate,
+                            ),
+                          }))
+                        }
+                        className="grid h-6 w-6 place-items-center rounded bg-white ring-1 ring-slate-200"
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -1223,9 +1373,18 @@ function AssessmentCanvasPreview({
   const selectedQuestion =
     assessment?.questions.find((question) => question.id === selectedQuestionId) ??
     firstQuestion;
-  const selectedPart = selectedQuestion
+  const selectedQuestionOnly = Boolean(
+    selectedPartKey && selectedQuestion && selectedPath.length === 0,
+  );
+  const selectedPart = selectedPath.length > 0 && selectedQuestion
     ? findPartInTree(selectedQuestion.parts, selectedPath) ?? firstPart
-    : firstPart;
+    : selectedPartKey
+      ? undefined
+      : firstPart;
+
+  function selectQuestion(questionId: string) {
+    setSelectedPartKey(`${questionId}:`);
+  }
 
   function selectPart(questionId: string, path: PartPath) {
     setSelectedPartKey(`${questionId}:${path.join("/")}`);
@@ -1319,12 +1478,25 @@ function AssessmentCanvasPreview({
 
   function deleteQuestion(questionId: string) {
     if (!assessment || !onAssessmentChange) return;
+    const deletedIndex = assessment.questions.findIndex(
+      (question) => question.id === questionId,
+    );
+    const questions = assessment.questions
+      .filter((question) => question.id !== questionId)
+      .map((question, index) => ({ ...question, number: index + 1 }));
+
     onAssessmentChange({
       ...assessment,
-      questions: assessment.questions
-        .filter((question) => question.id !== questionId)
-        .map((question, index) => ({ ...question, number: index + 1 })),
+      questions,
     });
+
+    const replacement = questions[Math.min(Math.max(deletedIndex, 0), questions.length - 1)];
+    if (replacement) {
+      selectQuestion(replacement.id);
+      return;
+    }
+
+    setSelectedPartKey(null);
   }
 
   function addPart(questionId: string) {
@@ -1350,7 +1522,7 @@ function AssessmentCanvasPreview({
     const subpart = createCanvasPart(subpartLabel(parent?.subparts?.length ?? 0));
     updatePart(questionId, path, (part) => ({
       ...part,
-      subparts: [...(part.subparts ?? []), subpart],
+      subparts: renumberPartTree([...(part.subparts ?? []), subpart], 1),
     }));
     selectPart(questionId, [...path, subpart.id]);
   }
@@ -1361,7 +1533,12 @@ function AssessmentCanvasPreview({
       ...assessment,
       questions: assessment.questions.map((question) =>
         question.id === questionId
-          ? { ...question, parts: movePartTree(question.parts, path, direction) }
+          ? {
+              ...question,
+              parts: renumberPartTree(
+                movePartTree(question.parts, path, direction),
+              ),
+            }
           : question,
       ),
     });
@@ -1369,14 +1546,45 @@ function AssessmentCanvasPreview({
 
   function deletePart(questionId: string, path: PartPath) {
     if (!assessment || !onAssessmentChange) return;
+    const parentPath = path.slice(0, -1);
+    let nextQuestionParts: AdminAssessmentPartDraft[] = [];
+
     onAssessmentChange({
       ...assessment,
       questions: assessment.questions.map((question) =>
         question.id === questionId
-          ? { ...question, parts: deletePartTree(question.parts, path) }
+          ? (() => {
+              nextQuestionParts = renumberPartTree(
+                deletePartTree(question.parts, path),
+              );
+              return { ...question, parts: nextQuestionParts };
+            })()
           : question,
       ),
     });
+
+    if (parentPath.length > 0) {
+      selectPart(questionId, parentPath);
+      return;
+    }
+
+    if (nextQuestionParts[0]) {
+      selectPart(questionId, [nextQuestionParts[0].id]);
+      return;
+    }
+
+    selectQuestion(questionId);
+  }
+
+  function deleteSelected() {
+    if (!selectedQuestion) return;
+
+    if (selectedPath.length > 0) {
+      deletePart(selectedQuestion.id, selectedPath);
+      return;
+    }
+
+    deleteQuestion(selectedQuestion.id);
   }
 
   function renderPart(
@@ -1390,47 +1598,35 @@ function AssessmentCanvasPreview({
     return (
       <div key={part.id} className="space-y-3" style={{ marginLeft: depth * 28 }}>
         <div
-          onClick={() => selectPart(questionId, path)}
+          onClick={(event) => {
+            event.stopPropagation();
+            selectPart(questionId, path);
+          }}
           className={[
-            "grid grid-cols-[64px_1fr_64px] gap-3 rounded-lg p-2 transition",
-            selected ? "bg-blue-50 ring-2 ring-[#1557c0]/20" : "hover:bg-slate-50",
+            "grid grid-cols-[52px_1fr_56px] gap-3 rounded-lg p-2 transition",
+            selected ? "bg-blue-50/55" : "hover:bg-slate-50/70",
           ].join(" ")}
         >
-          <div>
-            <span className="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-slate-100 text-slate-500">
-              <Layers3 className="h-4 w-4" />
+          <div className="pt-0.5">
+            <span className="block w-full px-0 py-0.5 text-sm font-bold text-slate-900">
+              {part.label}
             </span>
-            <input
-              value={part.label}
-              onChange={(event) =>
-                updatePart(questionId, path, (current) => ({
-                  ...current,
-                  label: event.target.value,
-                }))
-              }
-              className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm font-bold text-slate-900 outline-none hover:border-blue-100 hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-[#1557c0]/10"
-              aria-label={`Edit part label ${part.label}`}
-            />
           </div>
 
           <div>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                <MessageSquareText className="h-3.5 w-3.5" />
-                {depth === 0 ? "Part prompt" : "Sub-part prompt"}
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-300">
-                {part.topic || "No topic"}
-              </span>
-            </div>
             <textarea
               value={part.prompt}
               rows={Math.max(2, part.prompt.split("\n").length)}
+              placeholder={
+                depth === 0
+                  ? "Describe the task for this part, e.g. Explain why the database should use a primary key."
+                  : "Describe this sub-part, e.g. State one validation check that could be used."
+              }
               onFocus={() => selectPart(questionId, path)}
               onChange={(event) =>
                 updatePartPrompt(questionId, path, event.target.value)
               }
-              className="w-full resize-y rounded-md border border-transparent bg-transparent px-2 py-1 text-sm leading-6 text-slate-950 outline-none transition hover:border-blue-100 hover:bg-blue-50/35 focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+              className="w-full resize-y bg-transparent px-0 py-0.5 text-sm leading-6 text-slate-950 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
               aria-label={`Edit prompt ${part.label}`}
             />
 
@@ -1464,98 +1660,13 @@ function AssessmentCanvasPreview({
             ))}
 
             {selected ? (
-              <div className="mt-4 space-y-3 rounded-lg bg-slate-50 p-2 ring-1 ring-slate-200">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                    <CopyPlus className="h-3.5 w-3.5" />
-                    Add input
-                  </span>
-                  {(Object.keys(answerKindLabels) as AdminAnswerKind[]).map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      onClick={() =>
-                        updatePart(questionId, path, (current) => ({
-                          ...current,
-                          answerSlots: [
-                            ...current.answerSlots,
-                            createCanvasAnswerSlot(kind),
-                          ],
-                        }))
-                      }
-                      className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-[#eaf2ff] hover:text-[#1557c0]"
-                    >
-                      {answerKindLabels[kind]}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <input
-                    value={part.topic ?? ""}
-                    placeholder="Topic, e.g. Normalisation"
-                    onChange={(event) =>
-                      updatePart(questionId, path, (current) => ({
-                        ...current,
-                        topic: event.target.value,
-                      }))
-                    }
-                    className="h-8 min-w-40 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
-                  />
-                  <input
-                    value={(part.tags ?? []).join(", ")}
-                    placeholder="Tags"
-                    onChange={(event) =>
-                      updatePart(questionId, path, (current) => ({
-                        ...current,
-                        tags: event.target.value
-                          .split(",")
-                          .map((tag) => tag.trim())
-                          .filter(Boolean),
-                      }))
-                    }
-                    className="h-8 min-w-32 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addSubpart(questionId, path)}
-                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
-                  >
-                    Add sub-part
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => movePart(questionId, path, "up")}
-                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
-                  >
-                    Move up
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => movePart(questionId, path, "down")}
-                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:text-[#1557c0]"
-                  >
-                    Move down
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deletePart(questionId, path)}
-                    className="rounded-md bg-white px-2 py-1 text-[11px] font-bold text-rose-600 ring-1 ring-rose-100 hover:bg-rose-50"
-                  >
-                    Delete part
-                  </button>
-                </div>
-                <textarea
-                  value={part.expectedAnswer ?? ""}
-                  placeholder="Expected answer, e.g. The candidate should explain that primary keys uniquely identify records..."
-                  onChange={(event) =>
-                    updatePart(questionId, path, (current) => ({
-                      ...current,
-                      expectedAnswer: event.target.value,
-                    }))
-                  }
-                  className="min-h-20 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-xs leading-5 outline-none focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => addSubpart(questionId, path)}
+                className="mt-3 rounded-lg bg-[#eaf2ff] px-3 py-2 text-xs font-bold text-[#1557c0] transition hover:bg-blue-100"
+              >
+                Add Sub-part
+              </button>
             ) : null}
           </div>
 
@@ -1568,12 +1679,9 @@ function AssessmentCanvasPreview({
                   marks: Number(event.target.value) || 0,
                 }))
               }
-              className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-right text-sm font-bold text-slate-500 outline-none hover:border-blue-100 hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-[#1557c0]/10"
+              className="w-full bg-transparent px-0 py-0.5 text-right text-sm font-bold text-slate-500 outline-none transition hover:bg-blue-50/50 focus:bg-blue-50/70"
               aria-label={`Edit marks for ${part.label}`}
             />
-            <p className="mt-1 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-slate-300">
-              marks
-            </p>
           </div>
         </div>
 
@@ -1593,7 +1701,22 @@ function AssessmentCanvasPreview({
       {assessment ? (
         <AssessmentFloatingToolbar
           assessment={assessment}
+          onAddSubpart={
+            selectedQuestion && selectedPath.length > 0
+              ? () => addSubpart(selectedQuestion.id, selectedPath)
+              : undefined
+          }
           onAssessmentChange={onAssessmentChange}
+          onDeletePart={
+            selectedQuestion && selectedPath.length > 0
+              ? () => deletePart(selectedQuestion.id, selectedPath)
+              : undefined
+          }
+          onMovePart={
+            selectedQuestion && selectedPath.length > 0
+              ? (direction) => movePart(selectedQuestion.id, selectedPath, direction)
+              : undefined
+          }
           part={selectedPart}
           partPath={selectedPath}
           questionId={selectedQuestion?.id}
@@ -1609,8 +1732,20 @@ function AssessmentCanvasPreview({
             {label ?? assessment?.title ?? "Assessment"}
           </div>
         </div>
-        <div className="rounded-full bg-[#eaf2ff] px-3 py-1 text-xs font-bold text-[#1557c0]">
-          {totalMarks} marks
+        <div className="flex shrink-0 items-center gap-2">
+          {selectedPartKey && selectedQuestion ? (
+            <button
+              type="button"
+              onClick={deleteSelected}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-rose-50 px-3 text-xs font-bold text-rose-600 ring-1 ring-rose-100 transition hover:bg-rose-100"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete selected
+            </button>
+          ) : null}
+          <div className="rounded-full bg-[#eaf2ff] px-3 py-1 text-xs font-bold text-[#1557c0]">
+            {totalMarks} marks
+          </div>
         </div>
       </div>
 
@@ -1634,14 +1769,17 @@ function AssessmentCanvasPreview({
                 {assessment.questions.map((question) => (
                   <section
                     key={question.id}
-                    className="break-inside-avoid rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                    onClick={() => selectQuestion(question.id)}
+                    className={[
+                      "break-inside-avoid rounded-2xl border bg-white p-6 shadow-sm transition",
+                      selectedQuestionOnly && selectedQuestion?.id === question.id
+                        ? "border-[#1557c0] ring-4 ring-blue-100"
+                        : "border-slate-200",
+                    ].join(" ")}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start gap-3">
-                          <span className="mt-1 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#eaf2ff] text-[#1557c0]">
-                            <Heading1 className="h-4 w-4" />
-                          </span>
                           <label className="min-w-0 flex-1">
                             <span className="block text-xl font-bold text-slate-950">
                               Question {question.number}
@@ -1654,12 +1792,12 @@ function AssessmentCanvasPreview({
                                 })
                               }
                               placeholder="Short internal title, e.g. Database design scenario"
-                              className="mt-1 w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:border-blue-100 hover:bg-blue-50/35 focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+                              className="mt-1 w-full bg-transparent px-0 py-0.5 text-sm font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                               aria-label={`Edit question ${question.number} title`}
                             />
                           </label>
                         </div>
-                        <div className="ml-10 mt-2 grid gap-2 sm:grid-cols-4">
+                        <div className="mt-2 grid gap-2 sm:grid-cols-4">
                           <input
                             value={question.source?.paper ?? ""}
                             placeholder="9618/12"
@@ -1679,7 +1817,7 @@ function AssessmentCanvasPreview({
                                 ),
                               })
                             }
-                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                            className="h-8 bg-transparent px-0 text-xs font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                           />
                           <input
                             value={question.source?.session ?? ""}
@@ -1700,7 +1838,7 @@ function AssessmentCanvasPreview({
                                 ),
                               })
                             }
-                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                            className="h-8 bg-transparent px-0 text-xs font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                           />
                           <input
                             value={question.source?.questionRef ?? ""}
@@ -1721,7 +1859,7 @@ function AssessmentCanvasPreview({
                                 ),
                               })
                             }
-                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                            className="h-8 bg-transparent px-0 text-xs font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                           />
                           <input
                             value={(question.tags ?? []).join(", ")}
@@ -1742,7 +1880,7 @@ function AssessmentCanvasPreview({
                                 ),
                               })
                             }
-                            className="h-8 rounded-md border border-transparent bg-slate-50 px-2 text-xs font-semibold text-slate-500 outline-none hover:bg-white focus:border-[#1557c0] focus:ring-4 focus:ring-blue-100"
+                            className="h-8 bg-transparent px-0 text-xs font-semibold text-slate-500 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                           />
                         </div>
                       </div>
@@ -1771,20 +1909,17 @@ function AssessmentCanvasPreview({
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-start gap-3">
-                      <span className="mt-2 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
-                        <FileText className="h-4 w-4" />
-                      </span>
+                    <div className="mt-4">
                       <textarea
                         value={question.context ?? ""}
                         rows={Math.max(2, (question.context ?? "").split("\n").length)}
-                        placeholder="Add the main question prompt, scenario, stem, or source extract here..."
+                        placeholder="A library stores details about books, members and loans in a database. The librarian needs to search for overdue books and produce reports for each member."
                         onChange={(event) =>
                           updateQuestionText(question.id, {
                             context: event.target.value,
                           })
                         }
-                        className="min-h-20 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 hover:bg-white focus:border-[#1557c0] focus:bg-white focus:ring-4 focus:ring-[#1557c0]/10"
+                        className="min-h-16 w-full resize-y bg-transparent p-0 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-300 hover:bg-blue-50/45 focus:bg-blue-50/70"
                         aria-label={`Edit question ${question.number} main prompt`}
                       />
                     </div>
@@ -1829,108 +1964,35 @@ function AssessmentCanvasPreview({
 }
 
 function CheckpointSceneCanvas({
-  onRenameScene,
+  onAssessmentChange,
   scene,
 }: {
-  onRenameScene: (sceneId: string, title: string) => void;
+  onAssessmentChange?: (assessment: AdminAssessmentDraft) => void;
   scene: AdminSceneDraft;
 }) {
-  const promptBlock =
-    scene.blocks?.find((block) => block.type === "checkpoint") ??
-    scene.blocks?.[0];
-  const prompt = promptBlock
-    ? getPreviewBlockText(promptBlock)
-    : "Add a checkpoint prompt from the sidebar.";
-  const supportingBlocks = (scene.blocks ?? []).filter(
-    (block) => block.id !== promptBlock?.id,
+  const assessment = normalizeAssessmentDraft(
+    scene.assessment ?? createAssessmentDraft("embedded", scene.title || "Checkpoint"),
+    "embedded",
+    scene.title || "Checkpoint",
   );
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[#f4f7fb]">
-      <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5">
-        <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-500">
-            Checkpoint scene
-          </div>
-          <div className="mt-1 truncate text-sm font-semibold text-slate-950">
-            {scene.title}
-          </div>
-        </div>
-        <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-          Learner gate
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6">
-        <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)] ring-1 ring-amber-100">
-          <div className="border-b border-amber-100 bg-amber-50 px-8 py-6">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
-              Embedded checkpoint
-            </p>
-            <h1 className="mt-2 font-serif-paper text-4xl font-semibold text-slate-950">
-              <EditableSceneTitle
-                title={scene.title || "Checkpoint"}
-                onRename={(title) => onRenameScene(scene.id, title)}
-              />
-            </h1>
-            <p className="mt-2 text-sm font-semibold text-amber-800">
-              This scene interrupts the lesson flow and asks the learner to respond before continuing.
-            </p>
-          </div>
-
-          <div className="grid gap-6 p-8 md:grid-cols-[1fr_280px]">
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                Question prompt
-              </p>
-              <p className="mt-4 whitespace-pre-line text-xl font-semibold leading-8 text-slate-950">
-                {prompt}
-              </p>
-              <div className="mt-6 min-h-32 rounded-xl border border-dashed border-amber-200 bg-amber-50/45 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
-                  Student response
-                </p>
-                <div className="mt-4 space-y-3">
-                  <div className="h-7 border-b border-amber-200" />
-                  <div className="h-7 border-b border-amber-200" />
-                  <div className="h-7 border-b border-amber-200" />
-                </div>
-              </div>
-            </section>
-
-            <aside className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                Checkpoint behavior
-              </p>
-              <div className="mt-4 space-y-3 text-sm font-semibold text-slate-700">
-                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-                  Displays as a learner response gate
-                </div>
-                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-                  Uses checkpoint blocks as prompt content
-                </div>
-                <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-                  Returns learner to lesson flow after submit
-                </div>
-              </div>
-            </aside>
-          </div>
-
-          {supportingBlocks.length > 0 ? (
-            <div className="border-t border-slate-100 px-8 py-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                Supporting content
-              </p>
-              <div className="mt-3 space-y-2">
-                {supportingBlocks.map((block) => (
-                  <StaticPreviewBlock key={block.id} block={block} />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </main>
+    <AssessmentCanvasPreview
+      assessment={assessment}
+      label="Embedded checkpoint"
+      onAssessmentChange={(nextAssessment) => {
+        onAssessmentChange?.(
+          normalizeAssessmentDraft(
+            {
+              ...nextAssessment,
+              title: nextAssessment.title || scene.title || "Checkpoint",
+            },
+            "embedded",
+            scene.title || "Checkpoint",
+          ),
+        );
+      }}
+    />
   );
 }
 
@@ -1944,6 +2006,7 @@ export function StudioCanvas({
   onDeleteBlock,
   onDeselectBlock,
   onRenameScene,
+  onUpdateSceneAssessment,
   onSelectBlock,
   onUpdateBlock,
   scene,
@@ -1959,6 +2022,10 @@ export function StudioCanvas({
   onDeleteBlock: (sceneId: string, blockId: string) => void;
   onDeselectBlock: () => void;
   onRenameScene: (sceneId: string, title: string) => void;
+  onUpdateSceneAssessment?: (
+    sceneId: string,
+    assessment: AdminAssessmentDraft,
+  ) => void;
   onSelectBlock: (blockId: string) => void;
   onUpdateBlock: (
     sceneId: string,
@@ -1980,7 +2047,14 @@ export function StudioCanvas({
   }
 
   if (scene?.type === "checkpoint") {
-    return <CheckpointSceneCanvas scene={scene} onRenameScene={onRenameScene} />;
+    return (
+      <CheckpointSceneCanvas
+        scene={scene}
+        onAssessmentChange={(assessment) =>
+          onUpdateSceneAssessment?.(scene.id, assessment)
+        }
+      />
+    );
   }
 
   const blocks = scene?.blocks ?? [];

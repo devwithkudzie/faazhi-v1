@@ -17,6 +17,7 @@ export function SceneControls({
   currentTime,
   duration,
   isPlaying,
+  markers,
   onSeek,
   onToggleCaptions,
   onTogglePlay,
@@ -29,6 +30,11 @@ export function SceneControls({
   currentTime: number;
   duration: number;
   isPlaying: boolean;
+  markers?: Array<{
+    label: string;
+    time: number;
+    type?: "checkpoint";
+  }>;
   onSeek: (time: number) => void;
   onToggleCaptions: () => void;
   onTogglePlay: () => void;
@@ -39,7 +45,12 @@ export function SceneControls({
 }) {
   return (
     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent px-5 pb-5 pt-12 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-      <Timeline currentTime={currentTime} duration={duration} onSeek={onSeek} />
+      <Timeline
+        currentTime={currentTime}
+        duration={duration}
+        markers={markers}
+        onSeek={onSeek}
+      />
 
       <div className="mt-3 flex items-center justify-between gap-3 text-white">
         <div className="flex items-center gap-2">

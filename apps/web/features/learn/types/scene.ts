@@ -69,6 +69,7 @@ export type PaperMarkSchemeItem = {
 };
 
 export type PaperQuestionPart = {
+  depth?: number;
   id: string;
   label: string;
   prompt: string;

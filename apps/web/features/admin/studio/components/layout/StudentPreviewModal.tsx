@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 
 import type {
+  AdminAssessmentDraft,
+  AdminAssessmentPartDraft,
   AdminLessonDraft,
   AdminPaperDraft,
   AdminSceneDraft,
@@ -31,6 +33,7 @@ import type {
   LearnCurriculum,
   LessonNode,
   Scene,
+  PaperQuestion,
   SceneVisualBlock,
   SceneType,
 } from "@/features/learn/types";
@@ -197,6 +200,55 @@ function getVoiceoverMode(scene: AdminSceneDraft) {
   return "generated";
 }
 
+function mapAssessmentToPaperQuestion(
+  assessment?: AdminAssessmentDraft,
+): PaperQuestion | undefined {
+  const question = assessment?.questions[0];
+  if (!question) return undefined;
+  const parts = question.parts.flatMap((part) =>
+    mapAssessmentPartToPaperQuestionParts(part),
+  );
+
+  return {
+    answerFields: [],
+    markScheme: question.parts.flatMap((part) =>
+      part.markScheme.map((point) => ({
+        criterion: point.text,
+        marks: point.marks,
+      })),
+    ),
+    marks: parts.reduce((total, part) => total + part.marks, 0),
+    paperRef: question.source?.paper || assessment.title,
+    parts,
+    prompt: question.context || question.title,
+    questionRef: question.source?.questionRef || `Question ${question.number}`,
+  };
+}
+
+function mapAssessmentPartToPaperQuestionParts(
+  part: AdminAssessmentPartDraft,
+  depth = 0,
+): NonNullable<PaperQuestion["parts"]> {
+  return [
+    {
+      depth,
+      id: part.id,
+      label: part.label,
+      prompt: part.prompt,
+      marks: part.marks,
+      answerFields: part.answerSlots.map((slot) => ({
+        id: slot.id,
+        label: slot.label,
+        lines: slot.lines ?? (slot.kind === "short" ? 1 : 4),
+        placeholder: slot.placeholder,
+      })),
+    },
+    ...(part.subparts ?? []).flatMap((subpart) =>
+      mapAssessmentPartToPaperQuestionParts(subpart, depth + 1),
+    ),
+  ];
+}
+
 function mapAdminSceneToStudentScene(scene: AdminSceneDraft): Scene {
   const blocks = scene.blocks ?? [];
   const stepStartTimes = getStepStartTimes(blocks);
@@ -210,6 +262,7 @@ function mapAdminSceneToStudentScene(scene: AdminSceneDraft): Scene {
   const checkpointBlock = scene.blocks?.find(
     (block) => block.type === "checkpoint",
   );
+  const paperQuestion = mapAssessmentToPaperQuestion(scene.assessment);
 
   return {
     id: scene.id,
@@ -245,6 +298,8 @@ function mapAdminSceneToStudentScene(scene: AdminSceneDraft): Scene {
     visualBlocks,
     question: checkpointBlock
       ? getBlockText(checkpointBlock.content)
+      : paperQuestion
+        ? paperQuestion.prompt
       : scene.type === "checkpoint" || scene.type === "exam-extract"
         ? scene.summary
         : undefined,
@@ -256,6 +311,7 @@ function mapAdminSceneToStudentScene(scene: AdminSceneDraft): Scene {
       scene.type === "checkpoint" || scene.type === "exam-extract"
         ? "Answer option A"
         : undefined,
+    paperQuestion,
     examinerInsight: scene.summary,
   };
 }
@@ -320,16 +376,18 @@ export function mapDraftToStudentCurriculum({
         topicalAssessment: {
           id: `${topic.id}-assessment`,
           title: topic.topicalAssessmentTitle,
-          durationLabel: "20 min",
+          durationLabel: `${topic.topicalAssessment?.durationMinutes ?? 20} min`,
           state: "available",
+          assessment: topic.topicalAssessment,
         },
       };
     }),
     moduleAssessment: {
       id: `${paper.id}-module-assessment`,
       title: draft.moduleAssessmentTitle,
-      durationLabel: "55 min",
+      durationLabel: `${draft.moduleAssessment?.durationMinutes ?? 60} min`,
       state: "available",
+      assessment: draft.moduleAssessment,
     },
   };
 }
@@ -375,6 +433,26 @@ function StudentPreviewWorkspace({
   const activeLesson =
     lessons.find((lesson) => lesson.id === activeLessonId) ?? lessons[0];
   const player = useScenePlayer(activeLesson.scenes);
+  const checkpointMarkers = useMemo(
+    () =>
+      activeLesson.scenes
+        .map((scene, index) =>
+          scene.type === "checkpoint" || scene.type === "quiz"
+            ? {
+                label: scene.title || "Checkpoint",
+                time: getSceneStart(activeLesson.scenes, index),
+                type: "checkpoint" as const,
+              }
+            : null,
+        )
+        .filter(
+          (
+            marker,
+          ): marker is { label: string; time: number; type: "checkpoint" } =>
+            Boolean(marker),
+        ),
+    [activeLesson.scenes],
+  );
   const sceneAudio = useSceneAudio({
     isPlaying: player.isPlaying,
     scene: player.scene,
@@ -482,6 +560,7 @@ function StudentPreviewWorkspace({
                 currentTime={player.currentTime}
                 duration={player.duration}
                 isPlaying={player.isPlaying}
+                markers={checkpointMarkers}
                 onContinueScene={continueScene}
                 onSeek={player.seek}
                 onToggleCaptions={() =>

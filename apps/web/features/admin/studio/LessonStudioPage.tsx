@@ -1011,6 +1011,9 @@ export default function LessonStudioPage({
             onDeselectBlock={handleDeselectBlock}
             onRenameScene={handleRenameScene}
             onSelectBlock={handleSelectBlock}
+            onUpdateSceneAssessment={(sceneId, assessment) =>
+              updateScene(sceneId, { assessment })
+            }
             onUpdateBlock={handleUpdateBlock}
             scene={activeScene}
             selectedBlockId={selectedBlockId}

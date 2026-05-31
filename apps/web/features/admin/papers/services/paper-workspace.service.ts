@@ -23,10 +23,330 @@ function uniqueId(prefix: string, title?: string) {
   return `${prefix}-${slug || Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function createAssessmentDraft(
+export function createAssessmentDraft(
   scope: AdminAssessmentDraft["scope"],
   title: string,
 ): AdminAssessmentDraft {
+  const topicQuestions: AdminAssessmentDraft["questions"] = [
+    {
+      id: uniqueId("question", `${title}-binary`),
+      number: 1,
+      title: "Binary and hexadecimal representation",
+      difficulty: "medium",
+      tags: ["binary", "hexadecimal", "number systems"],
+      source: {
+        paper: "9618/12",
+        session: "Specimen",
+        questionRef: "Q1",
+      },
+      context: "A computer stores the binary value 10110110.",
+      parts: [
+        {
+          id: uniqueId("part", "a"),
+          label: "(a)",
+          prompt:
+            "Convert this value into denary. Show your working.",
+          marks: 3,
+          answerSlots: [
+            {
+              id: uniqueId("answer", "working"),
+              kind: "working",
+              label: "Working",
+              lines: 4,
+              placeholder: "Show selected place values...",
+            },
+            {
+              id: uniqueId("answer", "final"),
+              kind: "short",
+              label: "Final denary answer",
+              lines: 1,
+              placeholder: "e.g. 182",
+            },
+          ],
+          markScheme: [
+            {
+              id: uniqueId("mark-point", "place-values"),
+              text: "Identifies the place values 128, 32, 16, 4 and 2.",
+              marks: 1,
+              keywords: ["128", "32", "16", "4", "2"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "addition"),
+              text: "Adds the selected place values correctly.",
+              marks: 1,
+              keywords: ["128", "32", "16", "4", "2", "182"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "answer"),
+              text: "Gives the final denary answer 182.",
+              marks: 1,
+              keywords: ["182"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+          ],
+          expectedAnswer:
+            "10110110 = 128 + 32 + 16 + 4 + 2 = 182.",
+          subparts: [],
+          tags: ["binary conversion"],
+          topic: "Data representation",
+        },
+        {
+          id: uniqueId("part", "b"),
+          label: "(b)",
+          prompt:
+            "Select the statements that correctly describe hexadecimal representation.",
+          marks: 3,
+          answerSlots: [
+            {
+              id: uniqueId("answer", "hex-statements"),
+              kind: "multi_tick",
+              label: "Choose all that apply",
+              options: [
+                "One hexadecimal digit can represent four binary bits.",
+                "Hexadecimal is base 8.",
+                "A-F represent values ten to fifteen.",
+                "Hexadecimal changes the value being stored.",
+              ],
+            },
+          ],
+          markScheme: [
+            {
+              id: uniqueId("mark-point", "four-bits"),
+              text: "Recognises that one hexadecimal digit represents four binary bits.",
+              marks: 1,
+              keywords: ["four binary bits", "4 bits"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "base-16"),
+              text: "Recognises hexadecimal as base 16 with A-F representing 10-15.",
+              marks: 1,
+              keywords: ["base 16", "A-F", "ten", "fifteen"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "representation"),
+              text: "Understands that hexadecimal is a representation of the same stored value.",
+              marks: 1,
+              keywords: ["representation", "same value"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+          ],
+          expectedAnswer:
+            "Correct statements: one hexadecimal digit can represent four binary bits; A-F represent values ten to fifteen.",
+          subparts: [],
+          tags: ["hexadecimal"],
+          topic: "Data representation",
+        },
+      ],
+    },
+    {
+      id: uniqueId("question", `${title}-conversion-table`),
+      number: 2,
+      title: "Number base conversion table",
+      difficulty: "medium",
+      tags: ["binary", "denary", "hexadecimal"],
+      source: {
+        paper: "9618/12",
+        session: "Specimen",
+        questionRef: "Q2",
+      },
+      context: "",
+      parts: [
+        {
+          id: uniqueId("part", "table"),
+          label: "(a)",
+          prompt:
+            "Complete the table by converting each representation into the missing form.",
+          marks: 6,
+          answerSlots: [
+            {
+              id: uniqueId("answer", "conversion-table"),
+              kind: "table",
+              label: "Conversion table",
+              columns: ["Binary", "Denary", "Hexadecimal"],
+              rows: 3,
+              options: ["10101010", "199", "7F"],
+            },
+          ],
+          markScheme: [
+            {
+              id: uniqueId("mark-point", "row-one"),
+              text: "Correctly converts 10101010 into denary and hexadecimal.",
+              marks: 2,
+              keywords: ["170", "AA"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "row-two"),
+              text: "Correctly converts 199 into binary and hexadecimal.",
+              marks: 2,
+              keywords: ["11000111", "C7"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "row-three"),
+              text: "Correctly converts 7F into binary and denary.",
+              marks: 2,
+              keywords: ["01111111", "127"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+          ],
+          expectedAnswer:
+            "10101010 = 170 = AA; 199 = 11000111 = C7; 7F = 01111111 = 127.",
+          subparts: [],
+          tags: ["conversion"],
+          topic: "Data representation",
+        },
+      ],
+    },
+  ];
+  const moduleOnlyQuestions: AdminAssessmentDraft["questions"] = [
+    {
+      id: uniqueId("question", `${title}-colour-depth`),
+      number: 3,
+      title: "Bitmap colour depth",
+      difficulty: "medium",
+      tags: ["bitmap", "colour depth", "file size"],
+      source: {
+        paper: "9618/12",
+        session: "Specimen",
+        questionRef: "Q3",
+      },
+      context: "",
+      parts: [
+        {
+          id: uniqueId("part", "colour-depth"),
+          label: "(a)",
+          prompt:
+            "A bitmap image is stored using 24-bit colour depth. Explain how colour depth affects file size and image quality.",
+          marks: 6,
+          answerSlots: [
+            {
+              id: uniqueId("answer", "colour-depth"),
+              kind: "long",
+              label: "Answer",
+              lines: 7,
+              placeholder: "Write a structured explanation...",
+            },
+          ],
+          markScheme: [
+            {
+              id: uniqueId("mark-point", "bits-per-pixel"),
+              text: "Explains that colour depth is the number of bits used per pixel.",
+              marks: 2,
+              keywords: ["bits", "pixel"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "file-size"),
+              text: "Links higher colour depth to increased file size.",
+              marks: 2,
+              keywords: ["higher", "file size", "storage"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "quality"),
+              text: "Links higher colour depth to more possible colours and smoother image quality.",
+              marks: 2,
+              keywords: ["more colours", "quality", "smoother"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+          ],
+          expectedAnswer:
+            "Colour depth is the number of bits stored for each pixel. Increasing colour depth increases the number of possible colours, which can improve image quality, but it also increases the number of bits stored and therefore the file size.",
+          subparts: [],
+          tags: ["images"],
+          topic: "Data representation",
+        },
+      ],
+    },
+    {
+      id: uniqueId("question", `${title}-pseudocode`),
+      number: 4,
+      title: "Counting bits algorithm",
+      difficulty: "hard",
+      tags: ["pseudocode", "iteration", "counting"],
+      source: {
+        paper: "9618/22",
+        session: "Specimen",
+        questionRef: "Q4",
+      },
+      context: "",
+      parts: [
+        {
+          id: uniqueId("part", "pseudocode"),
+          label: "(a)",
+          prompt:
+            "Write pseudocode that counts how many binary digits in an 8-bit string are equal to 1.",
+          marks: 8,
+          answerSlots: [
+            {
+              id: uniqueId("answer", "pseudocode"),
+              kind: "code",
+              label: "Pseudocode",
+              lines: 9,
+              placeholder: "Write your algorithm...",
+            },
+          ],
+          markScheme: [
+            {
+              id: uniqueId("mark-point", "initialise"),
+              text: "Initialises a counter before iteration.",
+              marks: 2,
+              keywords: ["count", "0"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "loop"),
+              text: "Loops through each of the 8 binary digits.",
+              marks: 2,
+              keywords: ["for", "while", "8"],
+              acceptedAlternatives: ["loop"],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "condition"),
+              text: "Tests whether the current digit is equal to 1.",
+              marks: 2,
+              keywords: ["if", "1"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+            {
+              id: uniqueId("mark-point", "output"),
+              text: "Outputs or returns the final count.",
+              marks: 2,
+              keywords: ["output", "return", "count"],
+              acceptedAlternatives: [],
+              requiresEvidence: true,
+            },
+          ],
+          expectedAnswer:
+            "count <- 0\nFOR i <- 1 TO 8\n  IF bitString[i] = '1' THEN\n    count <- count + 1\n  ENDIF\nNEXT i\nOUTPUT count",
+          subparts: [],
+          tags: ["algorithm design"],
+          topic: "Programming",
+        },
+      ],
+    },
+  ];
+
   return {
     id: uniqueId(`${scope}-assessment`, title),
     title,
@@ -40,51 +360,14 @@ function createAssessmentDraft(
       markScheme: "after_submit",
       expectedAnswer: "after_submit",
     },
-    questions: [
-      {
-        id: uniqueId("question", title),
-        number: 1,
-        title: "Question 1",
-        difficulty: "medium",
-        tags: [],
-        source: {
-          paper: "",
-          session: "",
-          questionRef: "",
-        },
-        context: "",
-        parts: [
-          {
-            id: uniqueId("part", "a"),
-            label: "(a)",
-            prompt:
-              "Explain why a binary search is more efficient than a linear search when the data is sorted.",
-            marks: 3,
-            answerSlots: [],
-            markScheme: [
-              {
-                id: uniqueId("mark-point", "point"),
-                text: "States that binary search repeatedly halves the search space.",
-                marks: 1,
-                keywords: ["halves", "middle", "sorted"],
-                acceptedAlternatives: [],
-                requiresEvidence: true,
-              },
-            ],
-            guidance: "",
-            expectedAnswer:
-              "Binary search compares the target with the middle item, then discards half of the remaining values each time. This means fewer comparisons are needed than checking each value in order.",
-            subparts: [],
-            tags: ["searching", "algorithm efficiency"],
-            topic: "Searching algorithms",
-          },
-        ],
-      },
-    ],
+    questions:
+      scope === "module"
+        ? [...topicQuestions, ...moduleOnlyQuestions]
+        : topicQuestions,
   };
 }
 
-function normalizeAssessmentDraft(
+export function normalizeAssessmentDraft(
   assessment: AdminAssessmentDraft | undefined,
   scope: AdminAssessmentDraft["scope"],
   title: string,
@@ -862,6 +1145,14 @@ function normalizeSceneDraft(scene: AdminSceneDraft): AdminSceneDraft {
     ...scene,
     status: scene.status ?? "draft",
     durationMinutes: scene.durationMinutes ?? sceneDurationMinutes(scene),
+    assessment:
+      scene.type === "checkpoint" || scene.assessment
+        ? normalizeAssessmentDraft(
+            scene.assessment,
+            "embedded",
+            scene.title || "Embedded checkpoint",
+          )
+        : scene.assessment,
   };
 
   if (!scene.voiceover) return normalizedScene;
@@ -907,6 +1198,10 @@ export function addSceneToFirstLesson(
       horizontalAlign: "center" as const,
       verticalAlign: "center" as const,
     },
+    assessment:
+      input.type === "checkpoint"
+        ? createAssessmentDraft("embedded", input.title || `Scene ${nextOrder}`)
+        : undefined,
   };
 
   return {
@@ -1238,6 +1533,13 @@ export function addSceneToLesson(
               horizontalAlign: "center",
               verticalAlign: "center",
             },
+            assessment:
+              input.type === "checkpoint"
+                ? createAssessmentDraft(
+                    "embedded",
+                    input.title || `Scene ${nextOrder}`,
+                  )
+                : undefined,
           };
 
           return {

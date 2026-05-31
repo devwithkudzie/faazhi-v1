@@ -86,6 +86,7 @@ export interface AdminSceneDraft {
   design?: AdminSceneDesign;
   transition?: AdminSceneTransition;
   voiceover?: AdminVoiceoverDraft;
+  assessment?: AdminAssessmentDraft;
 }
 
 export interface AdminLessonDraft {

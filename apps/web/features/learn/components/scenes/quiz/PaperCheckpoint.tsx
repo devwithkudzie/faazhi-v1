@@ -1,9 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckpointSurface } from "./CheckpointSurface";
 import { CheckpointActions } from "./CheckpointActions";
 import type { PaperQuestion, PaperQuestionPart, Scene } from "../../../types";
+
+function LinedCheckpointTextarea({
+  lines = 3,
+  onChange,
+  placeholder,
+  value,
+}: {
+  lines?: number;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineHeight = 32;
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(lines * lineHeight, textarea.scrollHeight)}px`;
+  }, [lineHeight, lines, value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      rows={lines}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+      className="w-full resize-none overflow-hidden border-0 bg-transparent px-0 py-0 text-base leading-8 text-slate-900 outline-none placeholder:text-slate-400"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(to bottom, transparent 0, transparent 31px, #cbd5e1 31px, #cbd5e1 32px)",
+        lineHeight: `${lineHeight}px`,
+        minHeight: `${lines * lineHeight}px`,
+      }}
+    />
+  );
+}
 
 export function PaperCheckpoint({
   scene,
@@ -15,6 +55,7 @@ export function PaperCheckpoint({
   onContinueScene?: () => void;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const hasExplicitParts = Boolean(paperQuestion.parts?.length);
 
   const parts: PaperQuestionPart[] =
     paperQuestion.parts ??
@@ -46,8 +87,6 @@ export function PaperCheckpoint({
       <div className="space-y-6">
         <div className="rounded-[26px] bg-[#f8fafc] p-3 shadow-inner">
           <div className="min-h-[440px] rounded-[22px] bg-white p-7 shadow-[0_22px_65px_rgba(15,23,42,0.10)]">
-            
-            {/* Minimal header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-5">
               <div>
                 <p className="text-sm font-medium text-slate-500">
@@ -64,33 +103,31 @@ export function PaperCheckpoint({
               </div>
             </div>
 
-            {/* Question parts */}
-            <div className="mt-7 space-y-8">
+            {hasExplicitParts && paperQuestion.prompt ? (
+              <p className="mt-7 whitespace-pre-line text-lg font-normal leading-8 text-slate-950">
+                {paperQuestion.prompt}
+              </p>
+            ) : null}
+
+            <div className="mt-8 space-y-8">
               {parts.map((part) => (
                 <section
                   key={part.id}
-                  className="grid gap-4"
+                  className="grid gap-4 md:grid-cols-[minmax(0,1fr)_84px]"
                 >
-                  <div className="flex items-start gap-3">
-                    
-                    {/* Part label */}
-                    <div className="min-w-10 pt-1 text-sm font-semibold text-slate-900">
+                  <div
+                    className="flex min-w-0 items-start gap-4"
+                    style={{ marginLeft: Math.max(0, part.depth ?? 0) * 28 }}
+                  >
+                    <div className="w-10 shrink-0 pt-1 text-base font-semibold text-slate-900">
                       {part.label}
                     </div>
 
-                    {/* Part content */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <p className="whitespace-pre-line text-base leading-7 text-slate-900">
-                          {part.prompt}
-                        </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="whitespace-pre-line text-base font-normal leading-7 text-slate-900">
+                        {part.prompt}
+                      </p>
 
-                        <span className="shrink-0 text-sm font-semibold text-slate-500">
-                          [{part.marks}]
-                        </span>
-                      </div>
-
-                      {/* Answer areas */}
                       <div className="mt-4 space-y-4">
                         {(part.answerFields?.length
                           ? part.answerFields
@@ -110,24 +147,17 @@ export function PaperCheckpoint({
                               key={fieldKey}
                               className="block"
                             >
-                              {field.label ? (
-                                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                                  {field.label}
-                                </span>
-                              ) : null}
-
                               <div className="flex items-end gap-3">
-                                <textarea
+                                <LinedCheckpointTextarea
                                   value={answers[fieldKey] ?? ""}
-                                  rows={field.lines ?? 3}
+                                  lines={field.lines ?? 3}
                                   placeholder={field.placeholder}
-                                  onChange={(event) =>
+                                  onChange={(nextValue) =>
                                     setAnswers((current) => ({
                                       ...current,
-                                      [fieldKey]: event.target.value,
+                                      [fieldKey]: nextValue,
                                     }))
                                   }
-                                  className="min-h-[120px] flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base leading-7 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1557c0] focus:bg-[#f8fbff] focus:ring-4 focus:ring-[#1557c0]/10"
                                 />
 
                                 {field.suffix ? (
@@ -141,6 +171,12 @@ export function PaperCheckpoint({
                         })}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="justify-self-start md:justify-self-end">
+                    <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
+                      {part.marks} point{part.marks === 1 ? "" : "s"}
+                    </span>
                   </div>
                 </section>
               ))}

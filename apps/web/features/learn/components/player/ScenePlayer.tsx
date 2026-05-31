@@ -2,6 +2,7 @@ import type { CaptionSegment, Scene } from "../../types";
 import { SceneRenderer } from "../scenes/SceneRenderer";
 import { SceneCanvas } from "./SceneCanvas";
 import { SceneControls } from "./SceneControls";
+import { Timeline } from "./Timeline";
 
 export function ScenePlayer({
   caption,
@@ -9,6 +10,7 @@ export function ScenePlayer({
   currentTime,
   duration,
   isPlaying,
+  markers,
   onContinueScene,
   onSeek,
   onToggleCaptions,
@@ -25,6 +27,11 @@ export function ScenePlayer({
   currentTime: number;
   duration: number;
   isPlaying: boolean;
+  markers?: Array<{
+    label: string;
+    time: number;
+    type?: "checkpoint";
+  }>;
   onContinueScene?: () => void;
   onSeek: (time: number) => void;
   onToggleCaptions: () => void;
@@ -64,6 +71,18 @@ export function ScenePlayer({
               sceneTime={sceneTime}
             />
           </div>
+          <div className="absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-5 pb-5 pt-12">
+            <Timeline
+              currentTime={currentTime}
+              duration={duration}
+              markers={markers}
+              onSeek={onSeek}
+            />
+            <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-white/90">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#dc2626] shadow-[0_0_0_2px_rgba(255,255,255,0.85)]" />
+              Checkpoint
+            </div>
+          </div>
         </>
       ) : (
         <>
@@ -79,6 +98,7 @@ export function ScenePlayer({
             currentTime={currentTime}
             duration={duration}
             isPlaying={isPlaying}
+            markers={markers}
             onSeek={onSeek}
             onToggleCaptions={onToggleCaptions}
             onTogglePlay={onTogglePlay}

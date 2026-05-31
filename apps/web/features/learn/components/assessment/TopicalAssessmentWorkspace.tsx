@@ -10,13 +10,20 @@ import {
   RotateCcw,
   Send,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LearnCurriculum, TopicNode } from "../../types";
+import type {
+  AdminAnswerKind,
+  AdminAnswerSlotDraft,
+  AdminAssessmentDraft,
+  AdminAssessmentPartDraft,
+  AdminAssessmentQuestionDraft,
+} from "@/features/admin/papers/types/paper-workspace.types";
 
 type PaperInput =
   | {
       id: string;
-      type: "text" | "textarea" | "number";
+      type: "text" | "textarea" | "number" | "code";
       label: string;
       placeholder?: string;
       lines?: number;
@@ -25,6 +32,7 @@ type PaperInput =
       id: string;
       type: "choice";
       label: string;
+      multiple?: boolean;
       options: string[];
     }
   | {
@@ -33,15 +41,26 @@ type PaperInput =
       label: string;
       columns: string[];
       rows: Array<{ id: string; label: string }>;
+    }
+  | {
+      id: string;
+      type: "matching" | "ordering" | "classification";
+      label: string;
+      categories?: string[];
+      items: string[];
     };
 
 type PaperQuestion = {
+  context?: string;
+  expectedAnswer?: string;
   groupNumber?: string;
   id: string;
+  keywords: string[];
   number: string;
   partLabel?: string;
   prompt: string;
   marks: number;
+  depth?: number;
   inputs: PaperInput[];
 };
 
@@ -55,113 +74,6 @@ type MarkingResult = {
   questionResults: Record<string, QuestionResult>;
   score: number;
 };
-
-const questions: PaperQuestion[] = [
-  {
-    groupNumber: "1",
-    id: "q1a",
-    number: "1(a)",
-    partLabel: "(a)",
-    prompt:
-      "A computer stores the binary value 10110110. Convert this value into denary. Show your working.",
-    marks: 3,
-    inputs: [
-      {
-        id: "working",
-        type: "textarea",
-        label: "Working",
-        lines: 4,
-        placeholder: "Show selected place values...",
-      },
-      {
-        id: "answer",
-        type: "number",
-        label: "Final denary answer",
-      },
-    ],
-  },
-  {
-    groupNumber: "1",
-    id: "q1b",
-    number: "1(b)",
-    partLabel: "(b)",
-    prompt:
-      "Select the statements that correctly describe hexadecimal representation.",
-    marks: 3,
-    inputs: [
-      {
-        id: "hex-statements",
-        type: "choice",
-        label: "Choose all that apply",
-        options: [
-          "One hexadecimal digit can represent four binary bits.",
-          "Hexadecimal is base 8.",
-          "A-F represent values ten to fifteen.",
-          "Hexadecimal changes the value being stored.",
-        ],
-      },
-    ],
-  },
-  {
-    groupNumber: "2",
-    id: "q2",
-    number: "2.",
-    prompt:
-      "Complete the table by converting each representation into the missing form.",
-    marks: 6,
-    inputs: [
-      {
-        id: "conversion-table",
-        type: "table",
-        label: "Conversion table",
-        columns: ["Binary", "Denary", "Hexadecimal"],
-        rows: [
-          { id: "row-1", label: "10101010" },
-          { id: "row-2", label: "199" },
-          { id: "row-3", label: "7F" },
-        ],
-      },
-    ],
-  },
-];
-
-const moduleQuestions: PaperQuestion[] = [
-  ...questions,
-  {
-    groupNumber: "3",
-    id: "q3",
-    number: "3.",
-    prompt:
-      "A bitmap image is stored using 24-bit colour depth. Explain how colour depth affects file size and image quality.",
-    marks: 6,
-    inputs: [
-      {
-        id: "colour-depth",
-        type: "textarea",
-        label: "Answer",
-        lines: 7,
-        placeholder: "Write a structured explanation...",
-      },
-    ],
-  },
-  {
-    groupNumber: "4",
-    id: "q4",
-    number: "4.",
-    prompt:
-      "Write pseudocode that counts how many binary digits in an 8-bit string are equal to 1.",
-    marks: 8,
-    inputs: [
-      {
-        id: "pseudocode",
-        type: "textarea",
-        label: "Pseudocode",
-        lines: 9,
-        placeholder: "Write your algorithm...",
-      },
-    ],
-  },
-];
 
 export function TopicalAssessmentWorkspace({
   curriculum,
@@ -186,7 +98,13 @@ export function TopicalAssessmentWorkspace({
     [answers],
   );
   const isModule = mode === "module";
-  const activeQuestions = isModule ? moduleQuestions : questions;
+  const activeAssessment = isModule
+    ? curriculum?.moduleAssessment.assessment
+    : topic?.topicalAssessment.assessment;
+  const activeQuestions = useMemo(
+    () => mapAssessmentToPaperQuestions(activeAssessment),
+    [activeAssessment],
+  );
   const title = isModule
     ? (curriculum?.moduleAssessment.title ?? "Module assessment")
     : (topic?.title ?? "Topical assessment");
@@ -220,7 +138,7 @@ export function TopicalAssessmentWorkspace({
   }
 
   function submitAssessment() {
-    if (submissionState === "marking" || attemptsLeft <= 0) return;
+    if (submissionState === "marking" || attemptsLeft <= 0 || activeQuestions.length === 0) return;
 
     setSubmissionState("marking");
     setMarkingResult(null);
@@ -294,6 +212,17 @@ export function TopicalAssessmentWorkspace({
             />
           ) : null}
 
+          {activeQuestions.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-8">
+              <h2 className="text-xl font-semibold text-slate-950">
+                This assessment has no questions yet.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Once an admin saves authored questions, they will appear here.
+              </p>
+            </div>
+          ) : null}
+
           <div className="space-y-16">
             {questionGroups.map((group, groupIndex) => (
               <section
@@ -308,59 +237,24 @@ export function TopicalAssessmentWorkspace({
                   {group.groupNumber}.
                 </div>
 
-                <div className="space-y-12">
-                  {group.questions.map((question) => (
-                    <div
-                      key={question.id}
-                      id={`assessment-${question.id}`}
-                      className="scroll-mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_96px]"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-start gap-4">
-                          {question.partLabel ? (
-                            <span className="min-w-10 text-xl font-semibold leading-8 text-slate-950">
-                              {question.partLabel}
-                            </span>
-                          ) : null}
-                          <h2 className="text-xl font-semibold leading-8 text-slate-950">
-                            {question.prompt}
-                          </h2>
-                        </div>
+                <div className="min-w-0">
+                  {group.context ? (
+                    <p className="mb-10 whitespace-pre-line text-xl font-normal leading-8 text-slate-950">
+                      {group.context}
+                    </p>
+                  ) : null}
 
-                        <div
-                          className={[
-                            "mt-9 space-y-5",
-                            question.partLabel ? "md:ml-14" : "",
-                          ].join(" ")}
-                        >
-                          {question.inputs.map((input) => (
-                            <AssessmentInput
-                              key={input.id}
-                              input={input}
-                              value={answers[input.id] ?? ""}
-                              values={answers}
-                              onChange={setAnswer}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="justify-self-start md:justify-self-end">
-                        <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
-                          {question.marks} point
-                          {question.marks === 1 ? "" : "s"}
-                        </span>
-                      </div>
-
-                      {markingResult ? (
-                        <div className={question.partLabel ? "md:ml-14" : ""}>
-                          <QuestionFeedback
-                            result={markingResult.questionResults[question.id]}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
+                  <div className="space-y-12">
+                    {group.questions.map((question) => (
+                      <AssessmentQuestionRow
+                        key={question.id}
+                        answers={answers}
+                        markingResult={markingResult}
+                        onAnswerChange={setAnswer}
+                        question={question}
+                      />
+                    ))}
+                  </div>
                 </div>
               </section>
             ))}
@@ -400,7 +294,8 @@ export function TopicalAssessmentWorkspace({
             disabled={
               submissionState === "marking" ||
               Boolean(markingResult?.passed) ||
-              attemptsLeft <= 0
+              attemptsLeft <= 0 ||
+              activeQuestions.length === 0
             }
             onClick={submitAssessment}
             className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#1557c0] px-5 text-sm font-semibold text-white transition hover:bg-[#124aa3] disabled:cursor-not-allowed disabled:opacity-60"
@@ -429,7 +324,7 @@ function QuestionNavigator({
   results,
 }: {
   answers: Record<string, string>;
-  groups: Array<{ groupNumber: string; questions: PaperQuestion[] }>;
+  groups: PaperQuestionGroup[];
   results?: Record<string, QuestionResult>;
 }) {
   const answeredGroups = groups.filter((group) =>
@@ -547,6 +442,248 @@ function QuestionNavigator({
       </div>
     </aside>
   );
+}
+
+type PaperQuestionGroup = {
+  context?: string;
+  groupNumber: string;
+  questions: PaperQuestion[];
+  title?: string;
+};
+
+function AssessmentQuestionRow({
+  answers,
+  markingResult,
+  onAnswerChange,
+  question,
+}: {
+  answers: Record<string, string>;
+  markingResult: MarkingResult | null;
+  onAnswerChange: (id: string, value: string) => void;
+  question: PaperQuestion;
+}) {
+  const indent = Math.max(0, question.depth ?? 0) * 32;
+  const answerIndent = question.partLabel ? 56 + indent : indent;
+
+  return (
+    <div
+      id={`assessment-${question.id}`}
+      className="scroll-mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_104px]"
+    >
+      <div className="min-w-0">
+        <div
+          className="flex min-w-0 items-start gap-4"
+          style={{ marginLeft: indent }}
+        >
+          {question.partLabel ? (
+            <span className="w-10 shrink-0 text-xl font-semibold leading-8 text-slate-950">
+              {question.partLabel}
+            </span>
+          ) : null}
+          <h2 className="min-w-0 flex-1 whitespace-pre-line text-xl font-normal leading-8 text-slate-950">
+            {question.prompt}
+          </h2>
+        </div>
+
+        {question.inputs.length > 0 ? (
+          <div
+            className="mt-9 space-y-5"
+            style={{ marginLeft: answerIndent }}
+          >
+            {question.inputs.map((input) => (
+              <AssessmentInput
+                key={input.id}
+                input={input}
+                value={answers[input.id] ?? ""}
+                values={answers}
+                onChange={onAnswerChange}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="justify-self-start md:justify-self-end">
+        <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
+          {question.marks} point
+          {question.marks === 1 ? "" : "s"}
+        </span>
+      </div>
+
+      {markingResult ? (
+        <div
+          className="md:col-span-2"
+          style={{ marginLeft: answerIndent }}
+        >
+          <QuestionFeedback
+            result={markingResult.questionResults[question.id]}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function mapAssessmentToPaperQuestions(
+  assessment?: AdminAssessmentDraft,
+): PaperQuestion[] {
+  if (!assessment) return [];
+
+  return assessment.questions.flatMap((question) =>
+    question.parts.flatMap((part) =>
+      mapAssessmentPartToPaperQuestions(question, part),
+    ),
+  );
+}
+
+function mapAssessmentPartToPaperQuestions(
+  question: AdminAssessmentQuestionDraft,
+  part: AdminAssessmentPartDraft,
+  parentLabels: string[] = [],
+  depth = 0,
+): PaperQuestion[] {
+  const labels = [...parentLabels, part.label].filter(Boolean);
+  const promptQuestion: PaperQuestion | null =
+    part.prompt.trim() || part.answerSlots.length
+      ? {
+          depth,
+          expectedAnswer: part.expectedAnswer,
+          context: question.context,
+          groupNumber: String(question.number),
+          id: part.id,
+          inputs: part.answerSlots.map((slot) => mapAnswerSlotToPaperInput(slot)),
+          keywords: [
+            ...(part.expectedAnswer ?? "")
+              .split(/[^a-zA-Z0-9]+/)
+              .filter((word) => word.length > 3),
+            ...part.markScheme.flatMap((point) => point.keywords ?? []),
+          ],
+          marks: part.marks,
+          number: `${question.number}${labels.join("")}`,
+          partLabel: part.label,
+          prompt: part.prompt,
+        }
+      : null;
+  const subpartQuestions = (part.subparts ?? []).flatMap((subpart) =>
+    mapAssessmentPartToPaperQuestions(question, subpart, labels, depth + 1),
+  );
+
+  return promptQuestion ? [promptQuestion, ...subpartQuestions] : subpartQuestions;
+}
+
+function mapAnswerSlotToPaperInput(slot: AdminAnswerSlotDraft): PaperInput {
+  const label = slot.label || answerKindToLabel(slot.kind);
+
+  if (slot.kind === "tick" || slot.kind === "multi_tick" || slot.kind === "true_false") {
+    return {
+      id: slot.id,
+      label,
+      multiple: slot.kind === "multi_tick",
+      options:
+        slot.kind === "true_false"
+          ? ["True", "False"]
+          : slot.options?.length
+            ? slot.options
+            : ["Option A", "Option B"],
+      type: "choice",
+    };
+  }
+
+  if (slot.kind === "table") {
+    const rowLabels = slot.options?.length
+      ? slot.options
+      : Array.from({ length: Math.max(1, slot.rows ?? 3) }).map(
+          (_, index) => `Row ${index + 1}`,
+        );
+
+    return {
+      id: slot.id,
+      label,
+      columns: slot.columns?.length ? slot.columns : ["Value", "Answer"],
+      rows: rowLabels.map((row, index) => ({
+        id: `${slot.id}-row-${index + 1}`,
+        label: row,
+      })),
+      type: "table",
+    };
+  }
+
+  if (slot.kind === "match") {
+    return {
+      id: slot.id,
+      items: slot.leftItems?.length ? slot.leftItems : ["Item 1", "Item 2"],
+      label,
+      type: "matching",
+    };
+  }
+
+  if (slot.kind === "order") {
+    return {
+      id: slot.id,
+      items: slot.items?.length ? slot.items : ["Step 1", "Step 2", "Step 3"],
+      label,
+      type: "ordering",
+    };
+  }
+
+  if (slot.kind === "classify") {
+    return {
+      id: slot.id,
+      categories: slot.categories?.length ? slot.categories : ["Category A", "Category B"],
+      items: slot.items?.length ? slot.items : ["Item 1", "Item 2"],
+      label,
+      type: "classification",
+    };
+  }
+
+  if (slot.kind === "short" || slot.kind === "gap") {
+    return {
+      id: slot.id,
+      label,
+      lines: slot.lines,
+      placeholder: slot.placeholder,
+      type: "text",
+    };
+  }
+
+  if (slot.kind === "code") {
+    return {
+      id: slot.id,
+      label,
+      lines: slot.lines ?? 8,
+      placeholder: slot.placeholder,
+      type: "code",
+    };
+  }
+
+  return {
+    id: slot.id,
+    label,
+    lines: slot.lines ?? (slot.kind === "working" ? 5 : 4),
+    placeholder: slot.placeholder,
+    type: "textarea",
+  };
+}
+
+function answerKindToLabel(kind: AdminAnswerKind) {
+  const labels: Record<AdminAnswerKind, string> = {
+    classify: "Classification",
+    code: "Pseudocode",
+    diagram: "Diagram response",
+    gap: "Answer",
+    label: "Diagram labels",
+    long: "Answer",
+    match: "Matching",
+    multi_tick: "Choose all that apply",
+    order: "Ordering",
+    short: "Answer",
+    table: "Table",
+    tick: "Choose one",
+    true_false: "True / False",
+    working: "Working",
+  };
+
+  return labels[kind];
 }
 
 function AssessmentResultPanel({
@@ -682,8 +819,8 @@ function isQuestionGroupAnswered(
   );
 }
 
-function groupPaperQuestions(questionsToGroup: PaperQuestion[]) {
-  const groups: Array<{ groupNumber: string; questions: PaperQuestion[] }> = [];
+function groupPaperQuestions(questionsToGroup: PaperQuestion[]): PaperQuestionGroup[] {
+  const groups: PaperQuestionGroup[] = [];
 
   questionsToGroup.forEach((question) => {
     const groupNumber =
@@ -698,6 +835,7 @@ function groupPaperQuestions(questionsToGroup: PaperQuestion[]) {
     }
 
     groups.push({
+      context: question.context,
       groupNumber,
       questions: [question],
     });
@@ -720,7 +858,9 @@ function markAssessment(
   const correctCount = Object.values(questionResults).filter(
     (result) => result.correct,
   ).length;
-  const score = Math.round((correctCount / questionsToMark.length) * 100);
+  const score = questionsToMark.length
+    ? Math.round((correctCount / questionsToMark.length) * 100)
+    : 0;
 
   return {
     passed: score >= 80,
@@ -733,74 +873,100 @@ function markQuestion(
   question: PaperQuestion,
   answers: Record<string, string>,
 ): QuestionResult {
-  if (question.id === "q1a") {
-    const answer = answers.answer?.trim();
-    const correct = answer === "182";
-
-    return {
-      correct,
-      comment: correct
-        ? "Correct. 10110110 = 128 + 32 + 16 + 4 + 2 = 182."
-        : "Review the place values. 10110110 should add 128, 32, 16, 4, and 2.",
-    };
-  }
-
-  if (question.id === "q1b") {
-    const selected = answers["hex-statements"]?.split("|").filter(Boolean) ?? [];
-    const expected = [
-      "One hexadecimal digit can represent four binary bits.",
-      "A-F represent values ten to fifteen.",
-    ];
-    const correct =
-      selected.length === expected.length &&
-      expected.every((item) => selected.includes(item));
-
-    return {
-      correct,
-      comment: correct
-        ? "Correct. Hexadecimal is base 16 and maps neatly to four binary bits."
-        : "Check the base and mapping: hexadecimal is base 16, and each hex digit maps to four bits.",
-    };
-  }
-
-  if (question.id === "q2") {
-    const filledCells = Object.entries(answers).filter(
-      ([key, value]) => key.startsWith("conversion-table:") && value.trim(),
-    ).length;
-    const correct = filledCells >= 4;
-
-    return {
-      correct,
-      comment: correct
-        ? "Good. Your conversion table has enough completed working for this checkpoint."
-        : "Complete more table cells so each representation can be compared clearly.",
-    };
-  }
-
-  if (question.id === "q3") {
-    const answer = answers["colour-depth"]?.trim() ?? "";
-    const correct = answer.length >= 80;
-
-    return {
-      correct,
-      comment: correct
-        ? "Good explanation. You connected colour depth to file size and image quality."
-        : "Add more detail: higher colour depth stores more bits per pixel, increasing file size and colour range.",
-    };
-  }
-
-  const answer = answers.pseudocode?.trim() ?? "";
-  const correct =
-    answer.length >= 40 &&
-    /count|total/i.test(answer) &&
-    /for|while|loop/i.test(answer);
+  const combinedAnswer = getQuestionAnswerText(question, answers);
+  const lowerAnswer = combinedAnswer.toLowerCase();
+  const expectedKeywords = Array.from(
+    new Set(
+      question.keywords
+        .map((keyword) => keyword.trim())
+        .filter((keyword) => keyword.length > 1),
+    ),
+  );
+  const matchedKeywords = expectedKeywords.filter((keyword) =>
+    lowerAnswer.includes(keyword.toLowerCase()),
+  );
+  const answered = isQuestionAnswered(question, answers);
+  const requiredMatches = Math.min(
+    expectedKeywords.length,
+    Math.max(1, Math.ceil(expectedKeywords.length * 0.35)),
+  );
+  const correct = expectedKeywords.length
+    ? matchedKeywords.length >= requiredMatches
+    : answered;
 
   return {
     correct,
     comment: correct
-      ? "Good structure. Your answer includes iteration and a counter."
-      : "Review the algorithm: loop through each bit and increment a counter when the bit is 1.",
+      ? "Good response. Your answer includes enough of the expected marking points for this attempt."
+      : question.expectedAnswer
+        ? `Review the expected idea: ${question.expectedAnswer}`
+        : "Review the prompt and add more evidence for the marking points.",
   };
+}
+
+function getQuestionAnswerText(
+  question: PaperQuestion,
+  answers: Record<string, string>,
+) {
+  return question.inputs
+    .flatMap((input) => {
+      if (input.type === "table") {
+        return Object.entries(answers)
+          .filter(([key]) => key.startsWith(`${input.id}:`))
+          .map(([, value]) => value);
+      }
+
+      return answers[input.id] ?? "";
+    })
+    .join(" ");
+}
+
+function LinedAnswerTextarea({
+  ariaLabel,
+  className = "",
+  lines = 3,
+  onChange,
+  placeholder,
+  value,
+}: {
+  ariaLabel?: string;
+  className?: string;
+  lines?: number;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineHeight = 32;
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(lines * lineHeight, textarea.scrollHeight)}px`;
+  }, [lineHeight, lines, value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      aria-label={ariaLabel}
+      value={value}
+      rows={lines}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+      className={[
+        "w-full resize-none overflow-hidden border-0 bg-transparent px-0 py-0 text-base leading-8 text-slate-900 outline-none placeholder:text-slate-400",
+        className,
+      ].join(" ")}
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(to bottom, transparent 0, transparent 31px, #cbd5e1 31px, #cbd5e1 32px)",
+        lineHeight: `${lineHeight}px`,
+        minHeight: `${lines * lineHeight}px`,
+      }}
+    />
+  );
 }
 
 function AssessmentInput({
@@ -827,7 +993,9 @@ function AssessmentInput({
             const isSelected = selected.includes(option);
             const nextValue = isSelected
               ? selected.filter((item) => item !== option).join("|")
-              : [...selected, option].join("|");
+              : input.multiple
+                ? [...selected, option].join("|")
+                : option;
 
             return (
               <button
@@ -909,18 +1077,64 @@ function AssessmentInput({
     );
   }
 
-  if (input.type === "textarea") {
+  if (
+    input.type === "matching" ||
+    input.type === "ordering" ||
+    input.type === "classification"
+  ) {
     return (
       <label className="block">
-        <span className="mb-2 block text-sm font-semibold text-slate-700">
-          {input.label}
-        </span>
-        <textarea
+        <div className="mb-3 flex flex-wrap gap-2">
+          {input.items.map((item) => (
+            <span
+              key={item}
+              className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+        {input.type === "classification" && input.categories?.length ? (
+          <p className="mb-3 text-sm font-semibold text-slate-500">
+            Categories: {input.categories.join(", ")}
+          </p>
+        ) : null}
+        <LinedAnswerTextarea
           value={value}
-          rows={input.lines ?? 3}
+          lines={5}
+          placeholder="Write your matches, order, or classifications clearly..."
+          onChange={(nextValue) => onChange(input.id, nextValue)}
+        />
+      </label>
+    );
+  }
+
+  if (input.type === "textarea" || input.type === "code") {
+    return (
+      <label className="block">
+        <LinedAnswerTextarea
+          value={value}
+          lines={input.lines ?? 3}
+          placeholder={input.placeholder}
+          onChange={(nextValue) => onChange(input.id, nextValue)}
+          className={[
+            input.type === "code" ? "font-mono" : "",
+          ].join(" ")}
+        />
+      </label>
+    );
+  }
+
+  if (input.type === "text" || input.type === "number") {
+    return (
+      <label className="block max-w-md">
+        <input
+          aria-label={input.label}
+          type={input.type === "number" ? "number" : "text"}
+          value={value}
           placeholder={input.placeholder}
           onChange={(event) => onChange(input.id, event.target.value)}
-          className="min-h-[112px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base leading-7 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1557c0] focus:bg-[#f8fbff] focus:ring-4 focus:ring-[#1557c0]/10"
+          className="h-10 w-full border-0 border-b border-slate-300 bg-transparent px-0 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1557c0]"
         />
       </label>
     );
@@ -928,15 +1142,11 @@ function AssessmentInput({
 
   return (
     <label className="block max-w-md">
-      <span className="mb-2 block text-sm font-semibold text-slate-700">
-        {input.label}
-      </span>
       <input
-        type={input.type === "number" ? "number" : "text"}
+        aria-label={input.label}
         value={value}
-        placeholder={input.placeholder}
         onChange={(event) => onChange(input.id, event.target.value)}
-        className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1557c0] focus:bg-[#f8fbff] focus:ring-4 focus:ring-[#1557c0]/10"
+        className="h-10 w-full border-0 border-b border-slate-300 bg-transparent px-0 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1557c0]"
       />
     </label>
   );
