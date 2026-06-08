@@ -52,19 +52,8 @@ export function ScenePlayer({
     <div className="group relative h-full overflow-hidden rounded-2xl bg-white shadow-[0_20px_80px_rgba(21,87,192,0.12)]">
       {isCheckpointScene ? (
         <>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fbff_42%,#eef4ff_100%)]">
-            <div className="flex h-full items-center justify-center p-10 text-center">
-              <div className="max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1557c0]">
-                  Player paused
-                </p>
-                <p className="mt-4 text-lg font-semibold text-slate-700">
-                  Complete the checkpoint to continue the lesson.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="absolute inset-0 z-20">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,#dbeafe_0%,#94a3b8_48%,#334155_100%)]" />
+          <div className="absolute inset-x-0 bottom-24 top-0 z-20 overflow-y-auto">
             <SceneRenderer
               onContinueScene={onContinueScene}
               scene={scene}

@@ -84,104 +84,95 @@ export function PaperCheckpoint({
       title={scene.title}
       icon={<span>📝</span>}
     >
-      <div className="space-y-6">
-        <div className="rounded-[26px] bg-[#f8fafc] p-3 shadow-inner">
-          <div className="min-h-[440px] rounded-[22px] bg-white p-7 shadow-[0_22px_65px_rgba(15,23,42,0.10)]">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  {paperQuestion.paperRef}
-                </p>
-
-                <h3 className="mt-1 text-xl font-semibold text-slate-950">
-                  {paperQuestion.questionRef}
-                </h3>
-              </div>
-
-              <div className="rounded-full bg-[#eef4ff] px-3 py-1 text-sm font-semibold text-[#1557c0]">
-                {paperQuestion.marks} marks
-              </div>
-            </div>
-
-            {hasExplicitParts && paperQuestion.prompt ? (
-              <p className="mt-7 whitespace-pre-line text-lg font-normal leading-8 text-slate-950">
-                {paperQuestion.prompt}
-              </p>
-            ) : null}
-
-            <div className="mt-8 space-y-8">
-              {parts.map((part) => (
-                <section
-                  key={part.id}
-                  className="grid gap-4 md:grid-cols-[minmax(0,1fr)_84px]"
-                >
-                  <div
-                    className="flex min-w-0 items-start gap-4"
-                    style={{ marginLeft: Math.max(0, part.depth ?? 0) * 28 }}
-                  >
-                    <div className="w-10 shrink-0 pt-1 text-base font-semibold text-slate-900">
-                      {part.label}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="whitespace-pre-line text-base font-normal leading-7 text-slate-900">
-                        {part.prompt}
-                      </p>
-
-                      <div className="mt-4 space-y-4">
-                        {(part.answerFields?.length
-                          ? part.answerFields
-                          : [
-                              {
-                                id: `${part.id}-answer`,
-                                label: "",
-                                lines: Math.max(3, part.marks ?? 2),
-                                placeholder: "Write your answer here...",
-                              },
-                            ]
-                        ).map((field) => {
-                          const fieldKey = `${part.id}:${field.id}`;
-
-                          return (
-                            <label
-                              key={fieldKey}
-                              className="block"
-                            >
-                              <div className="flex items-end gap-3">
-                                <LinedCheckpointTextarea
-                                  value={answers[fieldKey] ?? ""}
-                                  lines={field.lines ?? 3}
-                                  placeholder={field.placeholder}
-                                  onChange={(nextValue) =>
-                                    setAnswers((current) => ({
-                                      ...current,
-                                      [fieldKey]: nextValue,
-                                    }))
-                                  }
-                                />
-
-                                {field.suffix ? (
-                                  <span className="pb-3 text-sm font-semibold text-slate-500">
-                                    {field.suffix}
-                                  </span>
-                                ) : null}
-                              </div>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="justify-self-start md:justify-self-end">
-                    <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
-                      {part.marks} point{part.marks === 1 ? "" : "s"}
-                    </span>
-                  </div>
-                </section>
-              ))}
-            </div>
+      <div>
+        <div className="flex items-start justify-between gap-5">
+          <div>
+            <p className="text-sm font-medium text-slate-500">
+              {paperQuestion.paperRef}
+            </p>
+            <p className="mt-1 text-base font-semibold text-slate-900">
+              {paperQuestion.questionRef}
+            </p>
           </div>
+          <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
+            {paperQuestion.marks} marks
+          </span>
+        </div>
+
+        {hasExplicitParts && paperQuestion.prompt ? (
+          <p className="mt-5 whitespace-pre-line text-lg font-normal leading-8 text-slate-950">
+            {paperQuestion.prompt}
+          </p>
+        ) : null}
+
+        <div className="mt-7 space-y-7">
+          {parts.map((part) => (
+            <section
+              key={part.id}
+              className="grid gap-4 md:grid-cols-[minmax(0,1fr)_84px]"
+            >
+              <div
+                className="flex min-w-0 items-start gap-4"
+                style={{ marginLeft: Math.max(0, part.depth ?? 0) * 28 }}
+              >
+                <div className="w-10 shrink-0 pt-1 text-base font-semibold text-slate-900">
+                  {part.label}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="whitespace-pre-line text-base font-normal leading-7 text-slate-900">
+                    {part.prompt}
+                  </p>
+
+                  <div className="mt-4 space-y-4">
+                    {(part.answerFields?.length
+                      ? part.answerFields
+                      : [
+                          {
+                            id: `${part.id}-answer`,
+                            label: "",
+                            lines: Math.max(3, part.marks ?? 2),
+                            placeholder: "Write your answer here...",
+                          },
+                        ]
+                    ).map((field) => {
+                      const fieldKey = `${part.id}:${field.id}`;
+
+                      return (
+                        <label key={fieldKey} className="block">
+                          <div className="flex items-end gap-3">
+                            <LinedCheckpointTextarea
+                              value={answers[fieldKey] ?? ""}
+                              lines={field.lines ?? 3}
+                              placeholder={field.placeholder}
+                              onChange={(nextValue) =>
+                                setAnswers((current) => ({
+                                  ...current,
+                                  [fieldKey]: nextValue,
+                                }))
+                              }
+                            />
+
+                            {field.suffix ? (
+                              <span className="pb-3 text-sm font-semibold text-slate-500">
+                                {field.suffix}
+                              </span>
+                            ) : null}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="justify-self-start md:justify-self-end">
+                <span className="inline-flex whitespace-nowrap rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
+                  {part.marks} point{part.marks === 1 ? "" : "s"}
+                </span>
+              </div>
+            </section>
+          ))}
         </div>
       </div>
 

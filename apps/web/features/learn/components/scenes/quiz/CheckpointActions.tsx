@@ -6,7 +6,7 @@ export function CheckpointActions({
   children: React.ReactNode;
 }) {
   return (
-    <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white px-6 py-4">
+    <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white px-0 pb-0 pt-5">
       {children}
     </div>
   );
